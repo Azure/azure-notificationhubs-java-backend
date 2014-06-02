@@ -15,7 +15,7 @@ import org.xml.sax.SAXException;
  * Abstract class representing a registration.
  *
  */
-public abstract class Registration {
+public abstract class Registration implements Cloneable {
 	protected String registrationId;
 	protected Set<String> tags = new HashSet<String>();
 	protected String etag;
