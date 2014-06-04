@@ -16,6 +16,8 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.windowsazure.messaging.AdmRegistration;
+import com.windowsazure.messaging.AdmTemplateRegistration;
 import com.windowsazure.messaging.AppleRegistration;
 import com.windowsazure.messaging.AppleTemplateRegistration;
 import com.windowsazure.messaging.CollectionResult;
@@ -50,6 +52,10 @@ public class RegistrationCrudsE2E {
 	private static final String MPNSCHANNELURI2 = "http://dm2.notify.live.net/throttledthirdparty/01.00/12G9Ed13-Lb5RbCii5fWzpFpAgAAAAADAQAAAAQUZm52OkJCMjg1QTg1QkZDMkUxREQFBlVTTkMwMQ";
 	private static final String MPNSBODYTEMPLATE = "<wp:Notification xmlns:wp=\"WPNotification\"><wp:Toast><wp:Text1>$(message)</wp:Text1></wp:Toast></wp:Notification>";
 	private static final String MPNSBODYTEMPLATE2 = "<wp:Notification xmlns:wp=\"WPNotification\"><wp:Toast><wp:Text1>$(msg)</wp:Text1></wp:Toast></wp:Notification>";
+	private static final String ADMREGID = "ABCDEF";
+	private static final String ADMREGID2 = "123456";
+	private static final String ADMBODYTEMPLATE = "{\"data\":{\"key1\":\"$(value1)\"}}";
+	private static final String ADMBODYTEMPLATE2 = "{\"data\":{\"key1\":\"$(value2)\"}}";
 	
 	
 	private NotificationHub hub;
@@ -314,6 +320,76 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
+	public void testCreateAndDeleteAdmNativeRegistration() throws URISyntaxException {
+		AdmRegistration reg = new AdmRegistration(ADMREGID);
+		reg.getTags().add("myTag");
+		reg.getTags().add("myOtherTag");
+		
+		AdmRegistration reg2 = (AdmRegistration) hub.createRegistration(reg);
+		assertNotNull(reg2);
+		assertEquals(ADMREGID, reg2.getAdmRegistrationId());
+		assertEquals(2, reg2.getTags().size());
+		assertNotNull(reg2.getRegistrationId());
+		assertNotNull(reg2.getEtag());
+		
+		reg2.setAdmRegistrationId(GCMREGID2);
+		reg2.getTags().remove("myTag");
+		
+		AdmRegistration reg3 = (AdmRegistration) hub.updateRegistration(reg2);
+		assertNotNull(reg3);
+		assertEquals(ADMREGID2, reg3.getAdmRegistrationId());
+		assertEquals(1, reg3.getTags().size());
+		assertEquals(reg2.getRegistrationId(), reg3.getRegistrationId());
+		assertNotSame(reg2.getEtag(), reg3.getEtag());
+		
+		AdmRegistration reg4 = (AdmRegistration) hub.getRegistration(reg3.getRegistrationId());
+		assertNotNull(reg4);
+		assertEquals(ADMREGID2, reg4.getAdmRegistrationId());
+		assertEquals(1, reg4.getTags().size());
+		assertEquals(reg2.getRegistrationId(), reg4.getRegistrationId());
+		assertEquals(reg3.getEtag(), reg4.getEtag());
+		
+		hub.deleteRegistration(reg4.getRegistrationId());
+	}
+	
+	@Test
+	public void testCreateAndDeleteAdmTemplateRegistration() throws URISyntaxException {
+		AdmTemplateRegistration reg = new AdmTemplateRegistration(ADMREGID, ADMBODYTEMPLATE);
+		reg.getTags().add("myTag");
+		reg.getTags().add("myOtherTag");
+		
+		AdmTemplateRegistration reg2 = (AdmTemplateRegistration) hub.createRegistration(reg);
+		assertNotNull(reg2);
+		assertEquals(ADMREGID, reg2.getAdmRegistrationId());
+		assertEquals(2, reg2.getTags().size());
+		assertEquals(ADMBODYTEMPLATE, reg2.getBodyTemplate());
+		assertNotNull(reg2.getRegistrationId());
+		assertNotNull(reg2.getEtag());
+		
+		reg2.setAdmRegistrationId(ADMREGID2);
+		reg2.getTags().remove("myTag");
+		reg2.setBodyTemplate(ADMBODYTEMPLATE2);
+		
+		AdmTemplateRegistration reg3 = (AdmTemplateRegistration) hub.updateRegistration(reg2);
+		assertNotNull(reg3);
+		assertEquals(ADMREGID2, reg3.getAdmRegistrationId());
+		assertEquals(1, reg3.getTags().size());
+		assertEquals(ADMBODYTEMPLATE2, reg3.getBodyTemplate());
+		assertEquals(reg2.getRegistrationId(), reg3.getRegistrationId());
+		assertNotSame(reg2.getEtag(), reg3.getEtag());
+		
+		AdmTemplateRegistration reg4 = (AdmTemplateRegistration) hub.getRegistration(reg3.getRegistrationId());
+		assertNotNull(reg4);
+		assertEquals(ADMREGID2, reg4.getAdmRegistrationId());
+		assertEquals(1, reg4.getTags().size());
+		assertEquals(ADMBODYTEMPLATE2, reg4.getBodyTemplate());
+		assertEquals(reg2.getRegistrationId(), reg4.getRegistrationId());
+		assertEquals(reg3.getEtag(), reg4.getEtag());
+		
+		hub.deleteRegistration(reg4.getRegistrationId());
+	}
+	
+	@Test
 	public void testGetAllRegistration() throws URISyntaxException {
 		WindowsTemplateRegistration reg = new WindowsTemplateRegistration(new URI(CHANNELURI), WNSBODYTEMPLATE);
 		reg.getHeaders().put("X-WNS-Type", "wns/toast");
@@ -498,6 +574,21 @@ public class RegistrationCrudsE2E {
 	@Test
 	public void testSendGcmNotification() {
 		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+		
+		hub.sendNotification(n);
+		
+		Set<String> tags = new HashSet<String>();
+		tags.add("boo");
+		tags.add("foo");
+		
+		hub.sendNotification(n, tags);
+		
+		hub.sendNotification(n, "foo && ! bar");
+	}
+	
+	@Test
+	public void testSendAdmNotification() {
+		Notification n = Notification.createAdmNotifiation(ADMBODYTEMPLATE);
 		
 		hub.sendNotification(n);
 		

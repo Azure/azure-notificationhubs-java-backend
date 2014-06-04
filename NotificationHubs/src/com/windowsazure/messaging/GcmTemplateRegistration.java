@@ -30,6 +30,34 @@ public class GcmTemplateRegistration extends GcmRegistration {
 	public void setBodyTemplate(String bodyTemplate) {
 		this.bodyTemplate = bodyTemplate;
 	}
+	
+	
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((bodyTemplate == null) ? 0 : bodyTemplate.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		GcmTemplateRegistration other = (GcmTemplateRegistration) obj;
+		if (bodyTemplate == null) {
+			if (other.bodyTemplate != null)
+				return false;
+		} else if (!bodyTemplate.equals(other.bodyTemplate))
+			return false;
+		return true;
+	}
 
 	@Override
 	public String getXml() {

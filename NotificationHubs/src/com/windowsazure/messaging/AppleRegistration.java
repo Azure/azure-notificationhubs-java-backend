@@ -40,6 +40,31 @@ public class AppleRegistration extends Registration {
 	}
 
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((deviceToken == null) ? 0 : deviceToken.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AppleRegistration other = (AppleRegistration) obj;
+		if (deviceToken == null) {
+			if (other.deviceToken != null)
+				return false;
+		} else if (!deviceToken.equals(other.deviceToken))
+			return false;
+		return true;
+	}
 
 	@Override
 	public String getXml() {

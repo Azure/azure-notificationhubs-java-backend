@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
 
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.Test;
@@ -22,6 +23,9 @@ public class RegistrationParseTest {
 	private static final String GCMBODYTEMPLATE = "{ \"aps\": { \"alert\": \"$(message)\"} }";
 	private static final String MPNSCHANNELURI = "http://dm2.notify.live.net/throttledthirdparty/01.00/AQG9Ed13-Lb5RbCii5fWzpFpAgAAAAADAQAAAAQUZm52OkJCMjg1QTg1QkZDMkUxREQFBlVTTkMwMQ";
 	private static final String MPNSBODYTEMPLATE = "<wp:Notification xmlns:wp=\"WPNotification\"><wp:Toast><wp:Text1>$(message)</wp:Text1></wp:Toast></wp:Notification>";
+	private static final Date EXPIRATIONTIME = new Date(1409587066778L);
+	private static final Object ADMREGID = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	private static final Object ADMBODYTEMPLATE = "{ \"aps\": { \"alert\": \"$(message)\"} }";
 	
 	@Test
 	public void testParseNativeRegistration1() throws IOException, SAXException, URISyntaxException {
@@ -37,6 +41,7 @@ public class RegistrationParseTest {
 		assertEquals("3", reg.getEtag());
 		assertEquals(REGID, reg.getRegistrationId());
 		assertEquals(2, reg.getTags().size());
+		assertEquals(EXPIRATIONTIME, reg.getExpirationTime());
 		
 	}
 	
@@ -232,6 +237,40 @@ public class RegistrationParseTest {
 		
 		assertEquals(MPNSBODYTEMPLATE, reg.getBodyTemplate());
 		assertEquals(1, reg.getHeaders().size());
+	}
+	
+	@Test
+	public void testParseAdmNativeRegistration2() throws IOException, SAXException, URISyntaxException {
+		InputStream xml = this.getClass().getResourceAsStream("AdmNativeRegistrationType");
+		
+		AdmRegistration reg = (AdmRegistration) Registration.parse(xml);
+		
+		assertNotNull(reg);
+		
+		assertEquals(AdmRegistration.class, reg.getClass());
+		
+		assertEquals(ADMREGID, reg.getAdmRegistrationId());
+		assertEquals("3", reg.getEtag());
+		assertEquals(REGID, reg.getRegistrationId());
+		assertEquals(2, reg.getTags().size());
+	}
+	
+	@Test
+	public void testParseAdmTemplateRegistration1() throws IOException, SAXException, URISyntaxException {
+		InputStream xml = this.getClass().getResourceAsStream("AdmTemplateRegistrationNoType");
+		
+		AdmTemplateRegistration reg = (AdmTemplateRegistration) Registration.parse(xml);
+		
+		assertNotNull(reg);
+		
+		assertEquals(AdmTemplateRegistration.class, reg.getClass());
+		
+		assertEquals(ADMREGID, reg.getAdmRegistrationId());
+		assertEquals("3", reg.getEtag());
+		assertEquals(REGID, reg.getRegistrationId());
+		assertEquals(2, reg.getTags().size());
+		
+		assertEquals(ADMBODYTEMPLATE, reg.getBodyTemplate());
 	}
 	
 	@Test

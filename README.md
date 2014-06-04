@@ -38,7 +38,7 @@ Create iOS registration:
 	reg.getTags().add("myOtherTag");
 	hub.createRegistration(reg);
 
-Analogous for Android (GCM) and Windows Phone (MPNS).
+Analogous for Android (GCM), Windows Phone (MPNS), and Kindle Fire (ADM).
 
 Create template registrations:
 
@@ -109,7 +109,7 @@ Send iOS native:
 	hub.sendNotification(n);
 
 
-Analogous for Android and Windows Phone.
+Analogous for Android, Windows Phone, and Kindle Fire.
 
 Send template notification:
 

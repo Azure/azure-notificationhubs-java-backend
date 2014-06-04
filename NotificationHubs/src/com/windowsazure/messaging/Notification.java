@@ -77,6 +77,22 @@ public class Notification {
 
 		return n;
 	}
+	
+	/**
+	 * Utility method to set up a native notification for ADM.
+	 * 
+	 * @param body
+	 * @return
+	 */
+	public static Notification createAdmNotifiation(String body) {
+		Notification n = new Notification();
+		n.body = body;
+		n.contentType = ContentType.APPLICATION_JSON;
+
+		n.headers.put("ServiceBusNotification-Format", "adm");
+
+		return n;
+	}
 
 	/**
 	 * Utility method to set up a native notification for MPNS. Sets the

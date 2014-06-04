@@ -45,6 +45,40 @@ public class AppleTemplateRegistration extends AppleRegistration {
 	public void setExpiry(String expiry) {
 		this.expiry = expiry;
 	}
+	
+	
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((bodyTemplate == null) ? 0 : bodyTemplate.hashCode());
+		result = prime * result + ((expiry == null) ? 0 : expiry.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AppleTemplateRegistration other = (AppleTemplateRegistration) obj;
+		if (bodyTemplate == null) {
+			if (other.bodyTemplate != null)
+				return false;
+		} else if (!bodyTemplate.equals(other.bodyTemplate))
+			return false;
+		if (expiry == null) {
+			if (other.expiry != null)
+				return false;
+		} else if (!expiry.equals(other.expiry))
+			return false;
+		return true;
+	}
 
 	@Override
 	public String getXml() {

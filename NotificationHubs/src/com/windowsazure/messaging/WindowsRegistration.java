@@ -41,6 +41,34 @@ public class WindowsRegistration extends Registration {
 			throw new RuntimeException(channelUri);
 		}
 	}
+	
+	
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((channelUri == null) ? 0 : channelUri.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		WindowsRegistration other = (WindowsRegistration) obj;
+		if (channelUri == null) {
+			if (other.channelUri != null)
+				return false;
+		} else if (!channelUri.equals(other.channelUri))
+			return false;
+		return true;
+	}
 
 	@Override
 	public String getXml() {

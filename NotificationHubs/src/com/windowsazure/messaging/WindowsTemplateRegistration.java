@@ -30,6 +30,42 @@ public class WindowsTemplateRegistration extends WindowsRegistration {
 		this.headers = headers;
 	}
 
+	
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((bodyTemplate == null) ? 0 : bodyTemplate.hashCode());
+		result = prime * result + ((headers == null) ? 0 : headers.hashCode());
+		return result;
+	}
+
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		WindowsTemplateRegistration other = (WindowsTemplateRegistration) obj;
+		if (bodyTemplate == null) {
+			if (other.bodyTemplate != null)
+				return false;
+		} else if (!bodyTemplate.equals(other.bodyTemplate))
+			return false;
+		if (headers == null) {
+			if (other.headers != null)
+				return false;
+		} else if (!headers.equals(other.headers))
+			return false;
+		return true;
+	}
+
 
 
 	public WindowsTemplateRegistration(URI channelUri,
