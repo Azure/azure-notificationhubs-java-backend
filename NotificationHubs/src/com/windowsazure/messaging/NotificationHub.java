@@ -242,7 +242,8 @@ public class NotificationHub implements INotificationHub {
 
 			HttpResponse response = httpClient.execute(delete);
 
-			if (response.getStatusLine().getStatusCode() != 200)
+			if (response.getStatusLine().getStatusCode() != 200 && 
+					response.getStatusLine().getStatusCode() != 404)
 				throw new RuntimeException(getErrorString(response));
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -264,7 +265,8 @@ public class NotificationHub implements INotificationHub {
 
 			HttpResponse response = httpClient.execute(delete);
 
-			if (response.getStatusLine().getStatusCode() != 200)
+			if (response.getStatusLine().getStatusCode() != 200 && 
+					response.getStatusLine().getStatusCode() != 404)
 				throw new RuntimeException(getErrorString(response));
 		} catch (Exception e) {
 			throw new RuntimeException(e);
