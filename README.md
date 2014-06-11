@@ -7,6 +7,14 @@ Implements most of the Notification Hubs REST operations to perform registration
 
 Please send feedback/comments, and pull requests... :)
 
+# New
+
+* Support for transparent sharding across multiple hubs (for apps with > 5M devices)
+* Support for Kindle Fire
+* Support for CreateRegistrationId and Upsert (reccommended pattern to create registrations)
+
+
+
 #Use
 
 ##Compile and build
@@ -119,6 +127,32 @@ Send template notification:
 	Notification n = Notification.createTemplateNotification(prop);
 		
 	hub.sendNotification(n);
+
+## Sharded Client
+If your app has more than 5M devices it is usually better to partition the devices across multiple hubs for performance and reliability.
+
+The class ShardedNotificationHubClient implements INotificationHub (and thus looks and feels like a standard NotificationHub class) but under the hood it shards the registrations across multiple hubs.
+
+It is instantiated with an instance of INHConfiguration which provides the information of the hubs to be used. An implementation of this interface is provided and parses a properties file with this format:
+
+	shard_1_connectionstring: {first connection string}
+	shard_1_hubName: {first hub name}
+
+	shard_n_connectionstring: {n-th connection string}
+	shard_n_hubName: {n-th hub name}
+	
+	shardsWithFreeSpace: 2,3
+
+The sharded client creates new registrations by randomly selecting shards specified in the *shardsWithFreeSpace* property. This allows to add new shards when the first hubs are full.
+The sharded client then encodes the shard number in the registrationId in a transparent way.
+
+> IMPORTANT: Never change the order of the shards, as all the registration ids and continuationTokens (for queries) will be broken.
+
+Example:
+	
+	INHConfiguration configuration = new NHConfigurationFromProperties("/shardConfigurationTest.properties");
+	ShardedNotificationHubClient shardedHub = new ShardedNotificationHubClient(configuration);
+	shardedHub.upsertRegistration(reg);
 
 ## References:
 
