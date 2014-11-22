@@ -436,6 +436,12 @@ public class RegistrationCrudsE2E {
 	
 	@Test
 	public void testGetAllRegistrationTopANdContinuation() throws URISyntaxException {
+		CollectionResult allRegs = hub.getRegistrations(1, null);
+		assertNotNull(allRegs);
+		assertNotNull(allRegs.getRegistrations());
+		assertNotNull(allRegs.getContinuationToken());
+		assertEquals(0, allRegs.getRegistrations().size());
+		
 		WindowsTemplateRegistration reg = new WindowsTemplateRegistration(new URI(CHANNELURI), WNSBODYTEMPLATE);
 		reg.getHeaders().put("X-WNS-Type", "wns/toast");
 		reg.getTags().add("myTag");
@@ -450,7 +456,7 @@ public class RegistrationCrudsE2E {
 		WindowsRegistration reg4 = (WindowsRegistration) hub.createRegistration(reg3);
 		assertNotNull(reg4);
 		
-		CollectionResult allRegs = hub.getRegistrations(1, null);
+		allRegs = hub.getRegistrations(1, null);
 		assertNotNull(allRegs);
 		assertNotNull(allRegs.getRegistrations());
 		assertNotNull(allRegs.getContinuationToken());

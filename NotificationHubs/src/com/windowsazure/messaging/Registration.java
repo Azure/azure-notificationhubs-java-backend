@@ -2,9 +2,9 @@ package com.windowsazure.messaging;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.ObjectCreationFactory;
+import org.apache.commons.io.IOUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -105,9 +106,7 @@ public abstract class Registration implements Cloneable {
 			buf.append("</Tags>");
 		}
 		return buf.toString();
-	}
-	
-	
+	}	
 
 	public Date getExpirationTime() {
 		return expirationTime;
@@ -172,7 +171,8 @@ public abstract class Registration implements Cloneable {
 			SAXException {
 		//Digester digester = new Digester();
 		//addRegistrationRules(digester);
-
+		
+		
 		return singleRegParser.parse(content);
 	}
 
@@ -248,7 +248,7 @@ public abstract class Registration implements Cloneable {
 	}
 
 	public static class RegistrationCreationFactory implements
-			ObjectCreationFactory {
+			ObjectCreationFactory<Object> {
 		private Digester digester;
 
 		@Override

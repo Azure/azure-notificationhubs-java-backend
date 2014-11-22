@@ -33,7 +33,7 @@ import org.apache.http.impl.client.HttpClients;
  */
 public class NotificationHub implements INotificationHub {
 
-	private static final String APIVERSION = "?api-version=2013-10";
+	private static final String APIVERSION = "?api-version=2014-09";
 	private static final String CONTENT_LOCATION_HEADER = "Location";
 	private String endpoint;
 	private String hubPath;
@@ -127,7 +127,7 @@ public class NotificationHub implements INotificationHub {
 			if (response.getStatusLine().getStatusCode() != 200) {
 				throw new RuntimeException(getErrorString(response));
 			}
-
+			
 			return Registration.parse(response.getEntity().getContent());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -317,7 +317,7 @@ public class NotificationHub implements INotificationHub {
 
 			if (response.getStatusLine().getStatusCode() != 200)
 				throw new RuntimeException(getErrorString(response));
-
+					
 			CollectionResult result = Registration.parseRegistrations(response
 					.getEntity().getContent());
 			Header contTokenHeader = response

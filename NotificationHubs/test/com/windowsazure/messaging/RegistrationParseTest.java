@@ -1,13 +1,13 @@
 package com.windowsazure.messaging;
 import static org.junit.Assert.*;
 
+import java.awt.im.InputSubset;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
 
-import org.hamcrest.core.IsInstanceOf;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
