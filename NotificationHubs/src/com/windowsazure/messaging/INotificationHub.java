@@ -1,5 +1,6 @@
 package com.windowsazure.messaging;
 
+import java.util.List;
 import java.util.Set;
 
 
@@ -7,6 +8,11 @@ import java.util.Set;
  * Interface for the REST wrapper of WIndows Azure Notification Hubs
  */
 public interface INotificationHub {
+	void CreateOrUpdateInstallation(Installation installation);
+	void PatchInstallation(String installationId, PartialUpdateOperation... operations);
+	void PatchInstallation(String installationId, List<PartialUpdateOperation> operations);
+	void DeleteInstallation(String installationId);
+	Installation GetInstallation(String installationId);
 	
 	/**
 	 * Create a registrationId, without creating an actual registration. To create use upsert.

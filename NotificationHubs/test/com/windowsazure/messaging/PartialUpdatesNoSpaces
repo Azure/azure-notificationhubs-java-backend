@@ -1,0 +1,1 @@
+[{"op":"add","path":"/templates/template1","value":"{\"body\":\"{\\\"data\\\":{\\\"key1\\\":\\\"value\\\"}}\"}"},{"op":"remove","path":"/remove/path"},{"op":"replace","path":"/replace/path","value":"replace-value"}]

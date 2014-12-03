@@ -1,11 +1,13 @@
 package com.windowsazure.messaging;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,8 +22,10 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
@@ -442,4 +446,103 @@ public class NotificationHub implements INotificationHub {
 	public CollectionResult getRegistrationsByChannel(String channel) {
 		return getRegistrationsByChannel(channel, 0, null);
 	}
+
+	@Override
+	public void CreateOrUpdateInstallation(Installation installation) {
+		HttpPut put = null;
+		try {
+			URI uri = new URI(endpoint + hubPath + "/installations/" + installation.getInstallationId() + APIVERSION);
+			put = new HttpPut(uri);
+			put.setHeader("Authorization", generateSasToken(uri));
+						
+			StringEntity entity = new StringEntity(installation.toJson(), ContentType.APPLICATION_JSON);
+			entity.setContentEncoding("utf-8");
+			put.setEntity(entity);
+			HttpResponse response = httpClient.execute(put);
+
+			if (response.getStatusLine().getStatusCode() != 200) {
+				throw new RuntimeException(getErrorString(response));
+			}			
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (put != null)
+				put.releaseConnection();
+		}
+	}
+
+	@Override
+	public void PatchInstallation(String installationId, PartialUpdateOperation... operations) {
+		patchInstallationInternal(installationId, PartialUpdateOperation.toJson(operations));
+	}
+
+	@Override
+	public void PatchInstallation(String installationId, List<PartialUpdateOperation> operations) {
+		patchInstallationInternal(installationId, PartialUpdateOperation.toJson(operations));
+	}
+
+	@Override
+	public void DeleteInstallation(String installationId) {
+		HttpDelete delete = null;
+		try {
+			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + APIVERSION);
+			delete = new HttpDelete(uri);
+			delete.setHeader("Authorization", generateSasToken(uri));
+						
+			HttpResponse response = httpClient.execute(delete);
+			if (response.getStatusLine().getStatusCode() != 204) {
+				throw new RuntimeException(getErrorString(response));
+			}			
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (delete != null)
+				delete.releaseConnection();
+		}
+	}
+
+	@Override
+	public Installation GetInstallation(String installationId) {
+		HttpGet get = null;
+		try {
+			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + APIVERSION);
+			get = new HttpGet(uri);
+			get.setHeader("Authorization", generateSasToken(uri));
+						
+			HttpResponse response = httpClient.execute(get);
+			if (response.getStatusLine().getStatusCode() != 200) {
+				throw new RuntimeException(getErrorString(response));
+			}
+			
+			return Installation.fromJson(response.getEntity().getContent());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (get != null)
+				get.releaseConnection();
+		}
+	}
+	
+	public void patchInstallationInternal(String installationId, String operationsJson) {
+		HttpPatch patch = null;
+		try {
+			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + APIVERSION);
+			patch = new HttpPatch(uri);
+			patch.setHeader("Authorization", generateSasToken(uri));
+						
+			StringEntity entity = new StringEntity(operationsJson, ContentType.APPLICATION_JSON);
+			entity.setContentEncoding("utf-8");
+			patch.setEntity(entity);
+			HttpResponse response = httpClient.execute(patch);
+
+			if (response.getStatusLine().getStatusCode() != 200) {
+				throw new RuntimeException(getErrorString(response));
+			}			
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (patch != null)
+				patch.releaseConnection();
+		}
+	}	
 }

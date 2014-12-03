@@ -116,10 +116,8 @@ public abstract class Registration implements Cloneable {
 		this.expirationTime = expirationTime;
 	}
 
-	public void setExpirationTimeFromString(String expirationTimeString) throws ParseException {
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
-		
-		this.expirationTime = df.parse(expirationTimeString);
+	public void setExpirationTimeFromString(String expirationTimeString) throws ParseException {		
+		this.expirationTime = javax.xml.bind.DatatypeConverter.parseDateTime(expirationTimeString).getTime();
 	}
 	
 	@Override
@@ -169,10 +167,6 @@ public abstract class Registration implements Cloneable {
 
 	public static Registration parse(InputStream content) throws IOException,
 			SAXException {
-		//Digester digester = new Digester();
-		//addRegistrationRules(digester);
-		
-		
 		return singleRegParser.parse(content);
 	}
 

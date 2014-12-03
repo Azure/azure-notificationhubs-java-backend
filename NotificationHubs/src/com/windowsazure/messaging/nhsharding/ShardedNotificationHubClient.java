@@ -8,8 +8,10 @@ import java.util.TreeMap;
 
 import com.windowsazure.messaging.CollectionResult;
 import com.windowsazure.messaging.INotificationHub;
+import com.windowsazure.messaging.Installation;
 import com.windowsazure.messaging.Notification;
 import com.windowsazure.messaging.NotificationHub;
+import com.windowsazure.messaging.PartialUpdateOperation;
 import com.windowsazure.messaging.Registration;
 
 /**
@@ -302,6 +304,38 @@ public class ShardedNotificationHubClient implements INotificationHub {
 			return shard + SHARDED_CONTINUATIONTOKEN_SEPARATOR
 					+ ( continuationToken != null ? continuationToken : "") ;
 		}
+	}
+
+	@Override
+	public void CreateOrUpdateInstallation(Installation installation) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void PatchInstallation(String installationId,
+			PartialUpdateOperation... operations) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void PatchInstallation(String installationId,
+			List<PartialUpdateOperation> operations) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void DeleteInstallation(String installationId) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Installation GetInstallation(String installationId) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
