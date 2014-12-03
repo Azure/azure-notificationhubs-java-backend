@@ -2,7 +2,6 @@ package com.windowsazure.messaging.e2e;
 
 import static org.junit.Assert.*;
 
-import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -39,7 +38,7 @@ public class InstallationCrudsE2E {
 	public void BasicCrudScenarioTest() throws Exception{
 		Installation installation = new Installation("installation-id", NotificationPlatform.Adm, "adm-push-channel");
 		hub.CreateOrUpdateInstallation(installation);
-		Thread.sleep(5000);
+		Thread.sleep(3000);
 		
 		installation = hub.GetInstallation(installation.getInstallationId());
 		assertNotNull(installation);
@@ -53,7 +52,7 @@ public class InstallationCrudsE2E {
 		installation.addTag("foo");
 		installation.addTemplate("template1", new InstallationTemplate("{\"data\":{\"key1\":\"value1\"}}"));
 		hub.CreateOrUpdateInstallation(installation);
-		Thread.sleep(5000);
+		Thread.sleep(3000);
 		
 		installation = hub.GetInstallation(installation.getInstallationId());
 		assertEquals("installation-id", installation.getInstallationId());
@@ -72,7 +71,7 @@ public class InstallationCrudsE2E {
 		PartialUpdateOperation addTag = new PartialUpdateOperation(UpdateOperationType.Add, "/tags", "bar");
 		PartialUpdateOperation replaceTemplate = new PartialUpdateOperation(UpdateOperationType.Replace, "/templates/template1", new InstallationTemplate("{\"data\":{\"key2\":\"value2\"}}").toJson());
 		hub.PatchInstallation(installation.getInstallationId(), addChannel, addTag, replaceTemplate);
-		Thread.sleep(5000);
+		Thread.sleep(3000);
 		
 		installation = hub.GetInstallation(installation.getInstallationId());
 		assertNotNull(installation);
@@ -90,7 +89,7 @@ public class InstallationCrudsE2E {
 		assertNull(installation.getSecondaryTiles());
 		
 		hub.DeleteInstallation(installation.getInstallationId());
-		Thread.sleep(5000);
+		Thread.sleep(3000);
 		
 		assertEquals(0, hub.getRegistrationsByTag("$InstallationId:%7B"+ installation.getInstallationId() +"%7D").getRegistrations().size());
 	}	
