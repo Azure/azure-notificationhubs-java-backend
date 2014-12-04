@@ -11,8 +11,6 @@ import org.xml.sax.SAXException;
 public class NotificationHubDescription {
 	private static final String XML_HEADER="<?xml version=\"1.0\" encoding=\"utf-8\"?><entry xmlns=\"http://www.w3.org/2005/Atom\"><content type=\"application/xml\"><NotificationHubDescription xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/netservices/2010/10/servicebus/connect\">"; 
 	private static final String XML_FOOTER="</NotificationHubDescription></content></entry>";
-	private static Digester singleEntryParser;
-	private static Digester collectionParser;
 	private String path;	
 	private AdmCredential admCredential;
 	private ApnsCredential apnsCredential;
@@ -20,12 +18,26 @@ public class NotificationHubDescription {
 	private MpnsCredential mpnsCredential;
 	private GcmCredential gcmCredential;	
 	
-	static{
-		singleEntryParser=new Digester();
-		setupSingleEntryParser(singleEntryParser);	
-		collectionParser=new Digester();
-		setupCollectionParser(collectionParser);		
-	}
+	private static final ThreadLocal<Digester> singleEntryParser;
+	private static final ThreadLocal<Digester> collectionParser;
+	
+	static {
+		singleEntryParser = new ThreadLocal<Digester>(){
+			@Override protected Digester initialValue() {
+				Digester instance = new Digester();
+				setupSingleEntryParser(instance);
+                return instance;
+             }
+		};
+		
+		collectionParser = new ThreadLocal<Digester>(){
+			@Override protected Digester initialValue() {
+				Digester instance = new Digester();
+				setupCollectionParser(instance);
+                return instance;
+             }
+		};
+	}	
 	
 	public NotificationHubDescription(){
 		this(null);
@@ -85,11 +97,11 @@ public class NotificationHubDescription {
 	}	
 		
 	public static NotificationHubDescription parseOne(InputStream content) throws IOException,	SAXException {
-		return singleEntryParser.parse(content);
+		return singleEntryParser.get().parse(content);
 	}
 	
 	public static List<NotificationHubDescription> parseCollection(InputStream content) throws IOException,	SAXException {
-		return collectionParser.parse(content);
+		return collectionParser.get().parse(content);
 	}
 	
 	public String getXml(){

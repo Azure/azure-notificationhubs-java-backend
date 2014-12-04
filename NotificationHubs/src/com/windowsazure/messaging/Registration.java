@@ -23,16 +23,26 @@ public abstract class Registration implements Cloneable {
 	protected String etag;
 	protected Date expirationTime;
 	
-	private static Digester singleRegParser;
-	private static Digester multiRegParser;
+	private static final ThreadLocal<Digester> singleRegParser;
+	private static final ThreadLocal<Digester> multiRegParser;
 	
 	static {
-		singleRegParser = new Digester();
-		addRegistrationRules(singleRegParser);
+		singleRegParser = new ThreadLocal<Digester>(){
+			@Override protected Digester initialValue() {
+				Digester instance = new Digester();
+				addRegistrationRules(instance);
+                return instance;
+             }
+		};
 		
-		multiRegParser = new Digester();
-		addRegistrationRules(multiRegParser);
-		addCollectionRules(multiRegParser);
+		multiRegParser = new ThreadLocal<Digester>(){
+			@Override protected Digester initialValue() {
+				Digester instance = new Digester();
+				addRegistrationRules(instance);
+				addCollectionRules(instance);
+                return instance;
+             }
+		};
 	}
 
 	public Registration() {
@@ -163,7 +173,7 @@ public abstract class Registration implements Cloneable {
 
 	public static Registration parse(InputStream content) throws IOException,
 			SAXException {
-		return singleRegParser.parse(content);
+		return singleRegParser.get().parse(content);
 	}
 
 	private static void addRegistrationRules(Digester digester) {
@@ -219,7 +229,7 @@ public abstract class Registration implements Cloneable {
 
 	public static CollectionResult parseRegistrations(InputStream content)
 			throws IOException, SAXException {
-		return multiRegParser.parse(content);
+		return multiRegParser.get().parse(content);
 	}
 
 	private static void addCollectionRules(Digester digester) {
@@ -296,7 +306,5 @@ public abstract class Registration implements Cloneable {
 		public void setDigester(Digester digester) {
 			this.digester = digester;
 		}
-
 	}
-
 }
