@@ -1,7 +1,6 @@
 package com.windowsazure.messaging;
 import static org.junit.Assert.*;
 
-import java.awt.im.InputSubset;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;

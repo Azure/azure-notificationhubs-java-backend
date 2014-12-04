@@ -2,10 +2,7 @@ package com.windowsazure.messaging;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -13,7 +10,6 @@ import java.util.Set;
 
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.ObjectCreationFactory;
-import org.apache.commons.io.IOUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 

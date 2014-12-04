@@ -18,7 +18,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
-import org.omg.CORBA.BooleanSeqHolder;
 
 public class NamespaceManager {
 	private static final String IFMATCH_HEADER_NAME = "If-Match";
