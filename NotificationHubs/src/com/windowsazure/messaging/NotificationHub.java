@@ -6,6 +6,9 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -376,11 +379,26 @@ public class NotificationHub implements INotificationHub {
 
 	@Override
 	public void sendNotification(Notification notification) {
-		sendNotification(notification, "");
+		scheduleNotification(notification, "", null);
 	}
 
 	@Override
 	public void sendNotification(Notification notification, Set<String> tags) {
+		scheduleNotification(notification, tags, null);
+	}
+
+	@Override
+	public void sendNotification(Notification notification, String tagExpression) {
+		scheduleNotification(notification, tagExpression, null);
+	}
+	
+	@Override
+	public void scheduleNotification(Notification notification,	Date scheduledTime) {
+		scheduleNotification(notification, "", scheduledTime);
+	}
+
+	@Override
+	public void scheduleNotification(Notification notification,	Set<String> tags, Date scheduledTimeUTC) {
 		if (tags.isEmpty())
 			throw new IllegalArgumentException(
 					"tags has to contain at least an element");
@@ -392,16 +410,22 @@ public class NotificationHub implements INotificationHub {
 				exp.append(" || ");
 		}
 
-		sendNotification(notification, exp.toString());
+		scheduleNotification(notification, exp.toString(), scheduledTimeUTC);		
 	}
 
 	@Override
-	public void sendNotification(Notification notification, String tagExpression) {
+	public void scheduleNotification(Notification notification,	String tagExpression, Date scheduledTimeUTC) {
 		HttpPost post = null;
 		try {
-			URI uri = new URI(endpoint + hubPath + "/messages" + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + (scheduledTimeUTC == null ? "/messages" : "/schedulednotifications") + APIVERSION);
 			post = new HttpPost(uri);
 			post.setHeader("Authorization", generateSasToken(uri));
+			
+			if(scheduledTimeUTC != null){
+				DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+				String scheduledTimeHeader = df.format(scheduledTimeUTC);
+				post.setHeader("ServiceBusNotification-ScheduleTime", scheduledTimeHeader);
+			}
 
 			if (tagExpression != null && !"".equals(tagExpression)) {
 				post.setHeader("ServiceBusNotification-Tags", tagExpression);
@@ -429,9 +453,9 @@ public class NotificationHub implements INotificationHub {
 		} finally {
 			if (post != null)
 				post.releaseConnection();
-		}
-	}
-
+		}		
+	}	
+	
 	@Override
 	public CollectionResult getRegistrations() {
 		return getRegistrations(0, null);

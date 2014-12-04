@@ -1,5 +1,6 @@
 package com.windowsazure.messaging;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -8,11 +9,16 @@ import java.util.Set;
  * Interface for the REST wrapper of WIndows Azure Notification Hubs
  */
 public interface INotificationHub {
+	
 	void CreateOrUpdateInstallation(Installation installation);
 	void PatchInstallation(String installationId, PartialUpdateOperation... operations);
 	void PatchInstallation(String installationId, List<PartialUpdateOperation> operations);
 	void DeleteInstallation(String installationId);
 	Installation GetInstallation(String installationId);
+	
+	void scheduleNotification(Notification notification, Date scheduledTime);
+	void scheduleNotification(Notification notification, Set<String> tags, Date scheduledTimeUTC);
+	void scheduleNotification(Notification notification, String tagExpression, Date scheduledTimeUTC);
 	
 	/**
 	 * Create a registrationId, without creating an actual registration. To create use upsert.
@@ -149,6 +155,5 @@ public interface INotificationHub {
 	 * @param notification
 	 * @param tagExpression
 	 */
-	void sendNotification(Notification notification, String tagExpression);
-	
+	void sendNotification(Notification notification, String tagExpression);	
 }

@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -597,6 +598,23 @@ public class RegistrationCrudsE2E {
 		Notification n = Notification.createAdmNotifiation(ADMBODYTEMPLATE);
 		
 		hub.sendNotification(n);
+		
+		Set<String> tags = new HashSet<String>();
+		tags.add("boo");
+		tags.add("foo");
+		
+		hub.sendNotification(n, tags);
+		
+		hub.sendNotification(n, "foo && ! bar");
+	}
+	
+	@Test
+	public void testScheduleAdmNotification() {
+		Notification n = Notification.createAdmNotifiation(ADMBODYTEMPLATE);
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.DATE, 1);		
+		
+		hub.scheduleNotification(n, c.getTime());
 		
 		Set<String> tags = new HashSet<String>();
 		tags.add("boo");
