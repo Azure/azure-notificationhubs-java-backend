@@ -9,6 +9,7 @@ Please send feedback/comments, and pull requests... :)
 
 # New
 
+* Scheduled notifications
 * Installation API support
 * Namespace Manager is introduced to perform CRUDs against Notification Hub(s)
 
