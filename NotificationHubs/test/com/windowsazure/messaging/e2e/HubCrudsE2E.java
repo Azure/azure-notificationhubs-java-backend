@@ -26,6 +26,7 @@ public class HubCrudsE2E {
 		Properties p = new Properties();
 		p.load(this.getClass().getResourceAsStream("e2eSetup.properties"));		
 		connectionString = p.getProperty("connectionstring");
+		assertTrue(connectionString!=null && !connectionString.isEmpty());
 		gcmKey = p.getProperty("gcmkey");
 		admId = p.getProperty("admid");
 		admSecret = p.getProperty("admsecret");

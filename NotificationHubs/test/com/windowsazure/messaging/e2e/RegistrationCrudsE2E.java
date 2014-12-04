@@ -1,9 +1,6 @@
 package com.windowsazure.messaging.e2e;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -13,31 +10,37 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.windowsazure.messaging.AdmCredential;
 import com.windowsazure.messaging.AdmRegistration;
 import com.windowsazure.messaging.AdmTemplateRegistration;
+import com.windowsazure.messaging.ApnsCredential;
 import com.windowsazure.messaging.AppleRegistration;
 import com.windowsazure.messaging.AppleTemplateRegistration;
 import com.windowsazure.messaging.CollectionResult;
+import com.windowsazure.messaging.GcmCredential;
 import com.windowsazure.messaging.GcmRegistration;
 import com.windowsazure.messaging.GcmTemplateRegistration;
+import com.windowsazure.messaging.MpnsCredential;
 import com.windowsazure.messaging.MpnsRegistration;
 import com.windowsazure.messaging.MpnsTemplateRegistration;
+import com.windowsazure.messaging.NamespaceManager;
 import com.windowsazure.messaging.Notification;
 import com.windowsazure.messaging.NotificationHub;
+import com.windowsazure.messaging.NotificationHubDescription;
+import com.windowsazure.messaging.WindowsCredential;
 import com.windowsazure.messaging.WindowsRegistration;
 import com.windowsazure.messaging.WindowsTemplateRegistration;
 
 public class RegistrationCrudsE2E {
-	// hub needs to have credentials for all platforms or send tests will fail
-	
 	
 	private static final String CHANNELURI = "https://bn1.notify.windows.com/?token=AgYAAADYej13M9aml3liD9nlfJw6FEgGXDvYmKDOfOwcS2ekCUm7hIrsJhGqkvU35pmJHFmXVbeUKJawqNHQKCtNJaI4z3uf3Gn04nrdSMUgzFapd%2fXYwzREnjz6%2fk9Pl6cy%2bdI%3d";
 	private static final String CHANNELURI2 = "https://bn1.notify.windows.com/?token=12345ADYej13M9aml3liD9nlfJw6FEgGXDvYmKDOfOwcS2ekCUm7hIrsJhGqkv12345JHFmXVbeUKJawqNHQKCtNJaI4z3uf3Gn04nrdSMUgzFapd%2fXYwzREnjz6%2fk9Pl6cy%2bdI%3d";
-	
 	private static final String WNSBODYTEMPLATE = "<toast><visual><binding template=\"ToastText01\"><text id=\"1\">From any .NET App!</text></binding></visual></toast>";
 	private static final String WNSBODYTEMPLATE2 = "<toast><visual><binding template=\"ToastText01\"><text id=\"1\">From any .NET App! Second take!</text></binding></visual></toast>";
 	private static final String DEVICETOKEN = "ABCDEF";
@@ -57,22 +60,53 @@ public class RegistrationCrudsE2E {
 	private static final String ADMREGID2 = "123456";
 	private static final String ADMBODYTEMPLATE = "{\"data\":{\"key1\":\"$(value1)\"}}";
 	private static final String ADMBODYTEMPLATE2 = "{\"data\":{\"key1\":\"$(value2)\"}}";
-	
-	
+		
 	private NotificationHub hub;
+	private String hubPath;
+	private NamespaceManager namespaceManager;
 
-	/**
-	 * Create a file called e2eSetup.properties with properties: connectionstring and hub, in order to run e2e tests.
-	 * Your hub should have credentials for all platforms or some native sends will fail.
-	 * 
-	 * @throws Exception
-	 */
 	@Before
 	public void setUp() throws Exception {
 		Properties p = new Properties();
-		p.load(this.getClass().getResourceAsStream("e2eSetup.properties"));
+		p.load(this.getClass().getResourceAsStream("e2eSetup.properties"));		
 		
-		hub = new NotificationHub(p.getProperty("connectionstring"), p.getProperty("hub"));
+		String connectionString = p.getProperty("connectionstring");
+		assertTrue(connectionString!=null && !connectionString.isEmpty());
+		
+		String gcmkey = p.getProperty("gcmkey");
+		String admid = p.getProperty("admid");
+		String admsecret = p.getProperty("admsecret");
+		String apnscert = p.getProperty("apnscert");
+		String apnskey = p.getProperty("apnskey");
+		String mpnscert = p.getProperty("mpnscert");
+		String mpnskey = p.getProperty("mpnskey");
+		String winsid = p.getProperty("winsid");
+		String winkey = p.getProperty("winkey");
+		
+		hubPath = "JavaSDK_" + UUID.randomUUID().toString();
+		NotificationHubDescription hubDescription = new NotificationHubDescription(hubPath);
+	 	if(admid!=null && !admid.isEmpty() && admsecret!=null && !admsecret.isEmpty())
+	 		hubDescription.setAdmCredential(new AdmCredential(admid,admsecret));
+	 	if(gcmkey!=null && !gcmkey.isEmpty())
+	 		hubDescription.setGcmCredential(new GcmCredential(gcmkey));
+	 	if(apnscert!=null && !apnscert.isEmpty() && apnskey!=null && !apnskey.isEmpty())
+	 		hubDescription.setApnsCredential(new ApnsCredential(apnscert,apnskey));
+	 	if(mpnscert!=null && !mpnscert.isEmpty() && mpnskey!=null && !mpnskey.isEmpty())
+	 		hubDescription.setMpnsCredential(new MpnsCredential(mpnscert,mpnskey));
+	 	if(winsid!=null && !winsid.isEmpty() && winkey!=null && !winkey.isEmpty())
+	 		hubDescription.setWindowsCredential(new WindowsCredential(winsid,winkey));
+	 	
+	 	namespaceManager = new NamespaceManager(connectionString);
+	 	namespaceManager.createNotificationHub(hubDescription);		
+		Thread.sleep(1000);
+		
+		hub = new NotificationHub(connectionString, hubPath);
+	}
+	
+	@After
+	public void cleanUp() throws Exception {
+		assertNotNull(hubPath);
+		namespaceManager.DeleteNotificationHub(hubPath);
 	}
 	
 	@Test
@@ -440,7 +474,7 @@ public class RegistrationCrudsE2E {
 		CollectionResult allRegs = hub.getRegistrations(1, null);
 		assertNotNull(allRegs);
 		assertNotNull(allRegs.getRegistrations());
-		assertNotNull(allRegs.getContinuationToken());
+		assertNull(allRegs.getContinuationToken());
 		assertEquals(0, allRegs.getRegistrations().size());
 		
 		WindowsTemplateRegistration reg = new WindowsTemplateRegistration(new URI(CHANNELURI), WNSBODYTEMPLATE);

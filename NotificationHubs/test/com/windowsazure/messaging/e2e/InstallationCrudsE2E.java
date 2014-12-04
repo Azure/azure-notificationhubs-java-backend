@@ -19,8 +19,9 @@ public class InstallationCrudsE2E {
 		Properties p = new Properties();
 		p.load(this.getClass().getResourceAsStream("e2eSetup.properties"));		
 		String connectionString = p.getProperty("connectionstring");
-		hubPath = "JavaSDK_" + UUID.randomUUID().toString();	
+		assertTrue(connectionString!=null && !connectionString.isEmpty());
 		
+		hubPath = "JavaSDK_" + UUID.randomUUID().toString();			
 		namespaceManager = new NamespaceManager(connectionString);
 	 	NotificationHubDescription hubDescription = new NotificationHubDescription(hubPath);
 	 	namespaceManager.createNotificationHub(hubDescription);		
@@ -31,6 +32,7 @@ public class InstallationCrudsE2E {
 	
 	@After
 	public void cleanUp() throws Exception {
+		assertNotNull(hubPath);
 		namespaceManager.DeleteNotificationHub(hubPath);
 	}
 	
