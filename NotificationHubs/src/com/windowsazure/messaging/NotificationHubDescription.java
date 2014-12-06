@@ -2,6 +2,7 @@ package com.windowsazure.messaging;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -138,4 +139,9 @@ public class NotificationHubDescription {
 		digester.addSetNext("*/MpnsCredential", "setMpnsCredential", MpnsCredential.class.getName());
 		digester.addSetNext("*/GcmCredential", "setGcmCredential", GcmCredential.class.getName());
 	}
+	
+	
+	
+	
+	
 }
