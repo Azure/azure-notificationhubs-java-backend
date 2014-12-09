@@ -648,15 +648,15 @@ public class RegistrationCrudsE2E {
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DATE, 1);		
 		
-		hub.scheduleNotification(n, c.getTime());
-		
 		Set<String> tags = new HashSet<String>();
 		tags.add("boo");
 		tags.add("foo");
 		
-		hub.sendNotification(n, tags);
+		hub.scheduleNotification(n, c.getTime());		
 		
-		hub.sendNotification(n, "foo && ! bar");
+		hub.scheduleNotification(n, tags, c.getTime());
+		
+		hub.scheduleNotification(n, "foo && ! bar", c.getTime());
 	}
 	
 	@Test
