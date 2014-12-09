@@ -20,6 +20,10 @@ public interface INotificationHub {
 	void scheduleNotification(Notification notification, Set<String> tags, Date scheduledTimeUTC);
 	void scheduleNotification(Notification notification, String tagExpression, Date scheduledTimeUTC);
 	
+	NotificationHubJob submitNotificationHubJob(NotificationHubJob job);
+	NotificationHubJob getNotificationHubJob(String jobId);
+	List<NotificationHubJob> getAllNotificationHubJobs();
+	
 	/**
 	 * Create a registrationId, without creating an actual registration. To create use upsert.
 	 * This method is used when the registration id is stored only on the device.

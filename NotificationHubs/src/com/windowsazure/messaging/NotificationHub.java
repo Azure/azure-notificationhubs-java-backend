@@ -46,9 +46,7 @@ public class NotificationHub implements INotificationHub {
 	private String SasKeyValue;
 
 	private HttpClient httpClient;
-
-	// TODO http mockito unit tests
-
+	
 	public NotificationHub(String connectionString, String hubPath) {
 		this.httpClient = HttpClients.createDefault();
 		this.hubPath = hubPath;
@@ -565,6 +563,76 @@ public class NotificationHub implements INotificationHub {
 		} finally {
 			if (patch != null)
 				patch.releaseConnection();
+		}
+	}
+
+	@Override
+	public NotificationHubJob submitNotificationHubJob(NotificationHubJob job) {
+		HttpPost post = null;
+		try {
+			URI uri = new URI(endpoint + hubPath + "/jobs" + APIVERSION);
+			post = new HttpPost(uri);
+			post.setHeader("Authorization", generateSasToken(uri));
+
+			StringEntity entity = new StringEntity(job.getXml(), ContentType.APPLICATION_ATOM_XML);
+			entity.setContentEncoding("utf-8");
+			post.setEntity(entity);
+			HttpResponse response = httpClient.execute(post);
+
+			if (response.getStatusLine().getStatusCode() != 201) {
+				throw new RuntimeException(getErrorString(response));
+			}
+			
+			return NotificationHubJob.parseOne(response.getEntity().getContent());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (post != null)
+				post.releaseConnection();
+		}
+	}
+
+	@Override
+	public NotificationHubJob getNotificationHubJob(String jobId) {
+		HttpGet get = null;
+		try {
+			URI uri = new URI(endpoint + hubPath + "/jobs/"	+ jobId + APIVERSION);
+			get = new HttpGet(uri);
+			get.setHeader("Authorization", generateSasToken(uri));
+
+			HttpResponse response = httpClient.execute(get);
+
+			if (response.getStatusLine().getStatusCode() != 200)
+				throw new RuntimeException(getErrorString(response));
+
+			return NotificationHubJob.parseOne(response.getEntity().getContent());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (get != null)
+				get.releaseConnection();
+		}
+	}
+
+	@Override
+	public List<NotificationHubJob> getAllNotificationHubJobs() {
+		HttpGet get = null;
+		try {
+			URI uri = new URI(endpoint + hubPath + "/jobs" + APIVERSION);
+			get = new HttpGet(uri);
+			get.setHeader("Authorization", generateSasToken(uri));
+
+			HttpResponse response = httpClient.execute(get);
+
+			if (response.getStatusLine().getStatusCode() != 200)
+				throw new RuntimeException(getErrorString(response));
+
+			return NotificationHubJob.parseCollection(response.getEntity().getContent());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (get != null)
+				get.releaseConnection();
 		}
 	}	
 }

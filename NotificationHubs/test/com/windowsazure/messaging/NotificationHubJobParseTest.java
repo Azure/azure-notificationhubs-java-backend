@@ -36,7 +36,7 @@ public class NotificationHubJobParseTest {
 	}	
 	
 	@Test
-	public void testParseNotificationHubsFeed() throws IOException, SAXException, URISyntaxException {
+	public void testParseNotificationHubsFeed() throws Exception {
 		InputStream inputXml = this.getClass().getResourceAsStream("NotificationHubJobFeed");		
 		List<NotificationHubJob> jobs = NotificationHubJob.parseCollection(inputXml);
 		assertNotNull(jobs);

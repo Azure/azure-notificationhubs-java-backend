@@ -137,10 +137,5 @@ public class NotificationHubDescription {
 		digester.addSetNext("*/WnsCredential", "setWindowsCredential", WindowsCredential.class.getName());
 		digester.addSetNext("*/MpnsCredential", "setMpnsCredential", MpnsCredential.class.getName());
 		digester.addSetNext("*/GcmCredential", "setGcmCredential", GcmCredential.class.getName());
-	}
-	
-	
-	
-	
-	
+	}	
 }

@@ -66,6 +66,10 @@ public class NotificationHubJob {
 	public NotificationHubJobType getJobType() {
 		return jobType;
 	}
+	
+	public void setJobType(NotificationHubJobType jobType) {
+		this.jobType = jobType;
+	}
 
 	public void setJobTypeFromString(String jobType) {
 		this.jobType = Enum.valueOf(NotificationHubJobType.class, jobType);
@@ -165,6 +169,8 @@ public class NotificationHubJob {
 		digester.addCallParam("*/OutputContainerUri", 0);
 		digester.addCallMethod("*/ImportFileUri", "setImportFileUri",1);
 		digester.addCallParam("*/ImportFileUri", 0);
+		digester.addCallMethod("*/Failure", "setFailure",1);
+		digester.addCallParam("*/Failure", 0);
 		digester.addCallMethod("*/CreatedAt", "setCreatedAtFromString",1);
 		digester.addCallParam("*/CreatedAt", 0);
 		digester.addCallMethod("*/UpdatedAt", "setUpdatedAtFromString",1);
