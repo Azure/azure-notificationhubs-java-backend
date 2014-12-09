@@ -431,7 +431,7 @@ public class NotificationHub implements INotificationHub {
 				post.setHeader(header, notification.getHeaders().get(header));
 			}
 
-			post.setEntity(new StringEntity(notification.getBody()));
+			post.setEntity(new StringEntity(notification.getBody(), notification.getContentType()));
 			HttpResponse response = httpClient.execute(post);
 
 			if (response.getStatusLine().getStatusCode() != 201) {

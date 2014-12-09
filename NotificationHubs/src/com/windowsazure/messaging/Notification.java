@@ -20,8 +20,8 @@ public class Notification {
 	/**
 	 * Utility method to set up a native notification for WNS. Sets the
 	 * X-WNS-Type headers based on the body provided. If you want to send raw
-	 * notifications you have to set the X-WNS header after creating this
-	 * notification.
+	 * notifications you have to set the X-WNS header and ContentType after creating this
+	 * notification or use createWindowsRawNotification method
 	 * 
 	 * @param body
 	 * @return
@@ -43,6 +43,22 @@ public class Notification {
 			n.contentType = ContentType.APPLICATION_XML;
 		}
 
+		return n;
+	}
+	
+	/**
+	 * Utility method to set up a native notification for WNS. Sets the
+	 * X-WNS-Type header to "wns/raw" in order of sending of raw notification.
+	 * 
+	 * @param body
+	 * @return
+	 */
+	public static Notification createWindowsRawNotification(String body) {
+		Notification n = new Notification();
+		n.body = body;
+		n.headers.put("ServiceBusNotification-Format", "windows");
+		n.headers.put("X-WNS-Type", "wns/raw");
+		n.contentType = ContentType.APPLICATION_OCTET_STREAM;
 		return n;
 	}
 
@@ -97,8 +113,7 @@ public class Notification {
 	/**
 	 * Utility method to set up a native notification for MPNS. Sets the
 	 * X-WindowsPhone-Target and X-NotificationClass headers based on the body
-	 * provided. If you want to send raw notifications you have to set those
-	 * headers after creating this notification.
+	 * provided. Raw notifications are not supported for MPNS.
 	 * 
 	 * @param body
 	 * @return

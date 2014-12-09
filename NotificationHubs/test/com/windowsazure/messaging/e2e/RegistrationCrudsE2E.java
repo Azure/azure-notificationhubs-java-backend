@@ -41,6 +41,7 @@ public class RegistrationCrudsE2E {
 	
 	private static final String CHANNELURI = "https://bn1.notify.windows.com/?token=AgYAAADYej13M9aml3liD9nlfJw6FEgGXDvYmKDOfOwcS2ekCUm7hIrsJhGqkvU35pmJHFmXVbeUKJawqNHQKCtNJaI4z3uf3Gn04nrdSMUgzFapd%2fXYwzREnjz6%2fk9Pl6cy%2bdI%3d";
 	private static final String CHANNELURI2 = "https://bn1.notify.windows.com/?token=12345ADYej13M9aml3liD9nlfJw6FEgGXDvYmKDOfOwcS2ekCUm7hIrsJhGqkv12345JHFmXVbeUKJawqNHQKCtNJaI4z3uf3Gn04nrdSMUgzFapd%2fXYwzREnjz6%2fk9Pl6cy%2bdI%3d";
+	private static final String WNSRAWNOTIFICATION = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
 	private static final String WNSBODYTEMPLATE = "<toast><visual><binding template=\"ToastText01\"><text id=\"1\">From any .NET App!</text></binding></visual></toast>";
 	private static final String WNSBODYTEMPLATE2 = "<toast><visual><binding template=\"ToastText01\"><text id=\"1\">From any .NET App! Second take!</text></binding></visual></toast>";
 	private static final String DEVICETOKEN = "ABCDEF";
@@ -598,6 +599,21 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
+	public void testSendRawWindowsNotification() {
+		Notification n = Notification.createWindowsRawNotification(WNSRAWNOTIFICATION);
+		
+		hub.sendNotification(n);
+		
+		Set<String> tags = new HashSet<String>();
+		tags.add("boo");
+		tags.add("foo");
+		
+		hub.sendNotification(n, tags);
+		
+		hub.sendNotification(n, "foo && ! bar");
+	}
+	
+	@Test
 	public void testSendAppleNotification() {
 		Notification n = Notification.createAppleNotifiation(APNSBODYTEMPLATE);
 		
@@ -642,7 +658,7 @@ public class RegistrationCrudsE2E {
 		hub.sendNotification(n, "foo && ! bar");
 	}
 	
-	@Test
+	//@Test
 	public void testScheduleAdmNotification() {
 		Notification n = Notification.createAdmNotifiation(ADMBODYTEMPLATE);
 		Calendar c = Calendar.getInstance();
