@@ -9,6 +9,7 @@ Please send feedback/comments, and pull requests... :)
 
 # New
 
+* Baidu PNS support
 * Import/Export jobs
 * Scheduled notifications
 * Installation API support
