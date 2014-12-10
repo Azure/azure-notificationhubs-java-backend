@@ -16,7 +16,7 @@ public final class GcmCredential extends PnsCredential {
 		this.setGoogleApiKey(googleApiKey);
 	}
 	
-		public String getGoogleApiKey() {
+	public String getGoogleApiKey() {
 		return googleApiKey;
 	}
 

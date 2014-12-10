@@ -17,6 +17,7 @@ public class NotificationHubDescription {
 	private WindowsCredential windowsCredential;
 	private MpnsCredential mpnsCredential;
 	private GcmCredential gcmCredential;	
+	private BaiduCredential baiduCredential;
 	
 	private static final ThreadLocal<Digester> singleEntryParser;
 	private static final ThreadLocal<Digester> collectionParser;
@@ -95,6 +96,14 @@ public class NotificationHubDescription {
 	public void setGcmCredential(GcmCredential gcmCredential) {
 		this.gcmCredential = gcmCredential;
 	}	
+	
+	public BaiduCredential getBaiduCredential() {
+		return baiduCredential;
+	}
+
+	public void setBaiduCredential(BaiduCredential baiduCredential) {
+		this.baiduCredential = baiduCredential;
+	}	
 		
 	public static NotificationHubDescription parseOne(InputStream content) throws IOException,	SAXException {
 		return singleEntryParser.get().parse(content);
@@ -112,6 +121,7 @@ public class NotificationHubDescription {
 		if(this.gcmCredential!=null) buf.append(this.gcmCredential.getXml());
 		if(this.mpnsCredential!=null) buf.append(this.mpnsCredential.getXml());
 		if(this.admCredential!=null) buf.append(this.admCredential.getXml());
+		if(this.baiduCredential!=null) buf.append(this.baiduCredential.getXml());
 		buf.append(XML_FOOTER);
 		return buf.toString();
 	}
@@ -131,11 +141,13 @@ public class NotificationHubDescription {
 		digester.addObjectCreate("*/WnsCredential", WindowsCredential.class);
 		digester.addObjectCreate("*/MpnsCredential", MpnsCredential.class);
 		digester.addObjectCreate("*/GcmCredential", GcmCredential.class);
+		digester.addObjectCreate("*/BaiduCredential", BaiduCredential.class);
 		PnsCredential.setupDigister(digester);
 		digester.addSetNext("*/ApnsCredential", "setApnsCredential", ApnsCredential.class.getName());
 		digester.addSetNext("*/AdmCredential", "setAdmCredential", AdmCredential.class.getName());
 		digester.addSetNext("*/WnsCredential", "setWindowsCredential", WindowsCredential.class.getName());
 		digester.addSetNext("*/MpnsCredential", "setMpnsCredential", MpnsCredential.class.getName());
 		digester.addSetNext("*/GcmCredential", "setGcmCredential", GcmCredential.class.getName());
+		digester.addSetNext("*/BaiduCredential", "setBaiduCredential", BaiduCredential.class.getName());
 	}	
 }

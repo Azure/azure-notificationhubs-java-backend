@@ -109,6 +109,22 @@ public class Notification {
 
 		return n;
 	}
+	
+	/**
+	 * Utility method to set up a native notification for Baidu PNS.
+	 * 
+	 * @param body
+	 * @return
+	 */
+	public static Notification createBaiduNotifiation(String body) {
+		Notification n = new Notification();
+		n.body = body;
+		n.contentType = ContentType.APPLICATION_JSON;
+
+		n.headers.put("ServiceBusNotification-Format", "baidu");
+
+		return n;
+	}
 
 	/**
 	 * Utility method to set up a native notification for MPNS. Sets the

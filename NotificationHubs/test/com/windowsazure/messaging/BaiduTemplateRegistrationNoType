@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry a:etag="W/&quot;1&quot;" xmlns="http://www.w3.org/2005/Atom" xmlns:a="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata">
+  <content type="application/xml">
+    <BaiduTemplateRegistrationDescription xmlns="http://schemas.microsoft.com/netservices/2010/10/servicebus/connect" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+      <ETag>1</ETag>
+      <ExpirationTime>2015-03-10T00:56:21.609Z</ExpirationTime>
+      <RegistrationId>8372532420827572008-85883004107185159-4</RegistrationId>
+      <Tags>myTag</Tags>
+      <BaiduUserId>baidu_user</BaiduUserId>
+      <BaiduChannelId>baidu_channel</BaiduChannelId>
+      <BodyTemplate><![CDATA[{"data":{"key1":"$(value1)"}}]]></BodyTemplate>
+      <TemplateName i:nil="true"/>
+    </BaiduTemplateRegistrationDescription>
+  </content>
+</entry>

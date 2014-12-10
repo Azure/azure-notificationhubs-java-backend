@@ -16,26 +16,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.windowsazure.messaging.AdmCredential;
-import com.windowsazure.messaging.AdmRegistration;
-import com.windowsazure.messaging.AdmTemplateRegistration;
-import com.windowsazure.messaging.ApnsCredential;
-import com.windowsazure.messaging.AppleRegistration;
-import com.windowsazure.messaging.AppleTemplateRegistration;
-import com.windowsazure.messaging.CollectionResult;
-import com.windowsazure.messaging.GcmCredential;
-import com.windowsazure.messaging.GcmRegistration;
-import com.windowsazure.messaging.GcmTemplateRegistration;
-import com.windowsazure.messaging.MpnsCredential;
-import com.windowsazure.messaging.MpnsRegistration;
-import com.windowsazure.messaging.MpnsTemplateRegistration;
-import com.windowsazure.messaging.NamespaceManager;
-import com.windowsazure.messaging.Notification;
-import com.windowsazure.messaging.NotificationHub;
-import com.windowsazure.messaging.NotificationHubDescription;
-import com.windowsazure.messaging.WindowsCredential;
-import com.windowsazure.messaging.WindowsRegistration;
-import com.windowsazure.messaging.WindowsTemplateRegistration;
+import com.windowsazure.messaging.*;
 
 public class RegistrationCrudsE2E {
 	
@@ -61,10 +42,27 @@ public class RegistrationCrudsE2E {
 	private static final String ADMREGID2 = "123456";
 	private static final String ADMBODYTEMPLATE = "{\"data\":{\"key1\":\"$(value1)\"}}";
 	private static final String ADMBODYTEMPLATE2 = "{\"data\":{\"key1\":\"$(value2)\"}}";
+	private static final String BAIDUUSER1 = "baidu_user1";
+	private static final String BAIDUCHANNEL1 = "baidu_channel1";
+	private static final String BAIDUBODYTEMPLATE1= "{\"data\":{\"key1\":\"$(value1)\"}}";
+	private static final String BAIDUUSER2 = "baidu_user2";
+	private static final String BAIDUCHANNEL2 = "baidu_channel2";
+	private static final String BAIDUBODYTEMPLATE2= "{\"data\":{\"key2\":\"$(value2)\"}}";
 		
 	private NotificationHub hub;
 	private String hubPath;
 	private NamespaceManager namespaceManager;
+	private String gcmkey;
+	private String admid;
+	private String admsecret;
+	private String apnscert;
+	private String apnskey;
+	private String mpnscert;
+	private String mpnskey;
+	private String winsid;
+	private String winkey; 
+	private String baidukey;
+	private String baidusecret; 
 
 	@Before
 	public void setUp() throws Exception {
@@ -74,15 +72,17 @@ public class RegistrationCrudsE2E {
 		String connectionString = p.getProperty("connectionstring");
 		assertTrue(connectionString!=null && !connectionString.isEmpty());
 		
-		String gcmkey = p.getProperty("gcmkey");
-		String admid = p.getProperty("admid");
-		String admsecret = p.getProperty("admsecret");
-		String apnscert = p.getProperty("apnscert");
-		String apnskey = p.getProperty("apnskey");
-		String mpnscert = p.getProperty("mpnscert");
-		String mpnskey = p.getProperty("mpnskey");
-		String winsid = p.getProperty("winsid");
-		String winkey = p.getProperty("winkey");
+		gcmkey = p.getProperty("gcmkey");
+		admid = p.getProperty("admid");
+		admsecret = p.getProperty("admsecret");
+		apnscert = p.getProperty("apnscert");
+		apnskey = p.getProperty("apnskey");
+		mpnscert = p.getProperty("mpnscert");
+		mpnskey = p.getProperty("mpnskey");
+		winsid = p.getProperty("winsid");
+		winkey = p.getProperty("winkey");
+		baidukey = p.getProperty("baidukey");
+		baidusecret = p.getProperty("baidusecret");
 		
 		hubPath = "JavaSDK_" + UUID.randomUUID().toString();
 		NotificationHubDescription hubDescription = new NotificationHubDescription(hubPath);
@@ -96,6 +96,8 @@ public class RegistrationCrudsE2E {
 	 		hubDescription.setMpnsCredential(new MpnsCredential(mpnscert,mpnskey));
 	 	if(winsid!=null && !winsid.isEmpty() && winkey!=null && !winkey.isEmpty())
 	 		hubDescription.setWindowsCredential(new WindowsCredential(winsid,winkey));
+	 	if(baidukey!=null && !baidukey.isEmpty() && baidusecret!=null && !baidusecret.isEmpty())
+	 		hubDescription.setBaiduCredential(new BaiduCredential(baidukey,baidusecret));
 	 	
 	 	namespaceManager = new NamespaceManager(connectionString);
 	 	namespaceManager.createNotificationHub(hubDescription);		
@@ -582,9 +584,89 @@ public class RegistrationCrudsE2E {
 		hub.deleteRegistration(reg4.getRegistrationId());
 	}
 	
+	public void testCreateAndDeleteBaiduNativeRegistration() throws URISyntaxException {
+		BaiduRegistration reg = new BaiduRegistration(BAIDUUSER1, BAIDUCHANNEL1);
+		reg.getTags().add("myTag");
+		reg.getTags().add("myOtherTag");
+		
+		BaiduRegistration reg2 = (BaiduRegistration) hub.createRegistration(reg);
+		assertNotNull(reg2);
+		assertEquals(BAIDUUSER1, reg2.getBaiduUserId());
+		assertEquals(BAIDUCHANNEL1, reg2.getBaiduChannelId());
+		assertEquals(2, reg2.getTags().size());
+		assertNotNull(reg2.getRegistrationId());
+		assertNotNull(reg2.getEtag());
+		
+		reg2.setBaiduUserId(BAIDUUSER2);
+		reg2.setBaiduChannelId(BAIDUCHANNEL2);
+		reg2.getTags().remove("myTag");
+		
+		BaiduRegistration reg3 = (BaiduRegistration) hub.updateRegistration(reg2);
+		assertNotNull(reg3);
+		assertEquals(BAIDUUSER2, reg3.getBaiduUserId());
+		assertEquals(BAIDUCHANNEL2, reg3.getBaiduChannelId());
+		assertEquals(1, reg3.getTags().size());
+		assertEquals(reg2.getRegistrationId(), reg3.getRegistrationId());
+		assertNotSame(reg2.getEtag(), reg3.getEtag());
+		
+		BaiduRegistration reg4 = (BaiduRegistration) hub.getRegistration(reg3.getRegistrationId());
+		assertNotNull(reg4);
+		assertEquals(BAIDUUSER2, reg4.getBaiduUserId());
+		assertEquals(BAIDUCHANNEL2, reg4.getBaiduChannelId());
+		assertEquals(1, reg4.getTags().size());
+		assertEquals(reg2.getRegistrationId(), reg4.getRegistrationId());
+		assertEquals(reg3.getEtag(), reg4.getEtag());
+		
+		hub.deleteRegistration(reg4.getRegistrationId());
+	}
+		
+	@Test
+	public void testCreateAndDeleteBaiduTemplateRegistration() throws URISyntaxException {
+		BaiduTemplateRegistration reg = new BaiduTemplateRegistration(BAIDUUSER1, BAIDUCHANNEL1, BAIDUBODYTEMPLATE1);
+		reg.getTags().add("myTag");
+		reg.getTags().add("myOtherTag");
+		
+		BaiduTemplateRegistration reg2 = (BaiduTemplateRegistration) hub.createRegistration(reg);
+		assertNotNull(reg2);
+		assertEquals(BAIDUUSER1, reg2.getBaiduUserId());
+		assertEquals(BAIDUCHANNEL1, reg2.getBaiduChannelId());
+		assertEquals(2, reg2.getTags().size());
+		assertEquals(BAIDUBODYTEMPLATE1, reg2.getBodyTemplate());
+		assertNotNull(reg2.getRegistrationId());
+		assertNotNull(reg2.getEtag());
+		
+		reg2.setBaiduUserId(BAIDUUSER2);
+		reg2.setBaiduChannelId(BAIDUCHANNEL2);
+		reg2.setBodyTemplate(BAIDUBODYTEMPLATE2);
+		reg2.getTags().remove("myTag");
+		
+		BaiduTemplateRegistration reg3 = (BaiduTemplateRegistration) hub.updateRegistration(reg2);
+		assertNotNull(reg3);
+		assertEquals(BAIDUUSER2, reg3.getBaiduUserId());
+		assertEquals(BAIDUCHANNEL2, reg3.getBaiduChannelId());
+		assertEquals(1, reg3.getTags().size());
+		assertEquals(BAIDUBODYTEMPLATE2, reg3.getBodyTemplate());
+		assertEquals(reg2.getRegistrationId(), reg3.getRegistrationId());
+		assertNotSame(reg2.getEtag(), reg3.getEtag());
+		
+		BaiduTemplateRegistration reg4 = (BaiduTemplateRegistration) hub.getRegistration(reg3.getRegistrationId());
+		assertNotNull(reg4);
+		assertEquals(BAIDUUSER2, reg4.getBaiduUserId());
+		assertEquals(BAIDUCHANNEL2, reg4.getBaiduChannelId());
+		assertEquals(1, reg4.getTags().size());
+		assertEquals(BAIDUBODYTEMPLATE2, reg4.getBodyTemplate());
+		assertEquals(reg2.getRegistrationId(), reg4.getRegistrationId());
+		assertEquals(reg3.getEtag(), reg4.getEtag());
+		
+		hub.deleteRegistration(reg4.getRegistrationId());
+	}
+	
 
+	// send
 	@Test
 	public void testSendWindowsNotification() {
+		assertTrue(winsid!=null && !winsid.isEmpty() && winkey!=null && !winkey.isEmpty());
+		
 		Notification n = Notification.createWindowsNotification(WNSBODYTEMPLATE);
 		
 		hub.sendNotification(n);
@@ -599,7 +681,27 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
+	public void testScheduleWindowsNotification() {
+		assertTrue(winsid!=null && !winsid.isEmpty() && winkey!=null && !winkey.isEmpty());
+		
+		Notification n = Notification.createWindowsNotification(WNSBODYTEMPLATE);
+		
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.DATE, 1);		
+		
+		Set<String> tags = new HashSet<String>();
+		tags.add("boo");
+		tags.add("foo");
+		
+		hub.scheduleNotification(n, c.getTime());		
+		hub.scheduleNotification(n, tags, c.getTime());		
+		hub.scheduleNotification(n, "foo && ! bar", c.getTime());
+	}
+	
+	@Test
 	public void testSendRawWindowsNotification() {
+		assertTrue(winsid!=null && !winsid.isEmpty() && winkey!=null && !winkey.isEmpty());
+		
 		Notification n = Notification.createWindowsRawNotification(WNSRAWNOTIFICATION);
 		
 		hub.sendNotification(n);
@@ -615,6 +717,8 @@ public class RegistrationCrudsE2E {
 	
 	@Test
 	public void testSendAppleNotification() {
+		
+		assertTrue(apnscert!=null && !apnscert.isEmpty() && apnskey!=null && !apnskey.isEmpty());
 		Notification n = Notification.createAppleNotifiation(APNSBODYTEMPLATE);
 		
 		hub.sendNotification(n);
@@ -629,7 +733,27 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
+	public void testScheduleAppleNotification() {
+		
+		assertTrue(apnscert!=null && !apnscert.isEmpty() && apnskey!=null && !apnskey.isEmpty());
+		Notification n = Notification.createAppleNotifiation(APNSBODYTEMPLATE);
+
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.DATE, 1);		
+		
+		Set<String> tags = new HashSet<String>();
+		tags.add("boo");
+		tags.add("foo");
+		
+		hub.scheduleNotification(n, c.getTime());		
+		hub.scheduleNotification(n, tags, c.getTime());		
+		hub.scheduleNotification(n, "foo && ! bar", c.getTime());
+	}
+	
+	@Test
 	public void testSendGcmNotification() {
+		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
+		
 		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
 		
 		hub.sendNotification(n);
@@ -644,7 +768,27 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
+	public void testScheduleGcmNotification() {
+		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
+		
+		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.DATE, 1);		
+		
+		Set<String> tags = new HashSet<String>();
+		tags.add("boo");
+		tags.add("foo");
+		
+		hub.scheduleNotification(n, c.getTime());		
+		hub.scheduleNotification(n, tags, c.getTime());		
+		hub.scheduleNotification(n, "foo && ! bar", c.getTime());
+	}
+	
+	@Test
 	public void testSendAdmNotification() {
+		assertTrue(admid!=null && !admid.isEmpty() && admsecret!=null && !admsecret.isEmpty());
+		
 		Notification n = Notification.createAdmNotifiation(ADMBODYTEMPLATE);
 		
 		hub.sendNotification(n);
@@ -658,8 +802,10 @@ public class RegistrationCrudsE2E {
 		hub.sendNotification(n, "foo && ! bar");
 	}
 	
-	//@Test
+	@Test
 	public void testScheduleAdmNotification() {
+		assertTrue(admid!=null && !admid.isEmpty() && admsecret!=null && !admsecret.isEmpty());
+		
 		Notification n = Notification.createAdmNotifiation(ADMBODYTEMPLATE);
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DATE, 1);		
@@ -669,14 +815,14 @@ public class RegistrationCrudsE2E {
 		tags.add("foo");
 		
 		hub.scheduleNotification(n, c.getTime());		
-		
-		hub.scheduleNotification(n, tags, c.getTime());
-		
+		hub.scheduleNotification(n, tags, c.getTime());		
 		hub.scheduleNotification(n, "foo && ! bar", c.getTime());
 	}
 	
 	@Test
 	public void testSendMpnsNotification() {
+		assertTrue(mpnscert!=null && !mpnscert.isEmpty() && mpnskey!=null && !mpnskey.isEmpty());
+		
 		Notification n = Notification.createMpnsNotifiation(MPNSBODYTEMPLATE);
 		
 		hub.sendNotification(n);
@@ -688,6 +834,57 @@ public class RegistrationCrudsE2E {
 		hub.sendNotification(n, tags);
 		
 		hub.sendNotification(n, "foo && ! bar");
+	}
+	
+	@Test
+	public void testScheduleMpnsNotification() {
+		assertTrue(mpnscert!=null && !mpnscert.isEmpty() && mpnskey!=null && !mpnskey.isEmpty());
+		
+		Notification n = Notification.createMpnsNotifiation(MPNSBODYTEMPLATE);
+
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.DATE, 1);		
+		
+		Set<String> tags = new HashSet<String>();
+		tags.add("boo");
+		tags.add("foo");
+		
+		hub.scheduleNotification(n, c.getTime());		
+		hub.scheduleNotification(n, tags, c.getTime());		
+		hub.scheduleNotification(n, "foo && ! bar", c.getTime());
+	}
+	
+	public void testSendBaiduNotification() {
+		assertTrue(baidukey!=null && !baidukey.isEmpty() && baidusecret!=null && !baidusecret.isEmpty());
+		
+		Notification n = Notification.createBaiduNotifiation(BAIDUBODYTEMPLATE1);
+		
+		hub.sendNotification(n);
+		
+		Set<String> tags = new HashSet<String>();
+		tags.add("boo");
+		tags.add("foo");
+		
+		hub.sendNotification(n, tags);
+		
+		hub.sendNotification(n, "foo && ! bar");
+	}
+	
+	@Test
+	public void testScheduleBaiduNotification() {
+		assertTrue(baidukey!=null && !baidukey.isEmpty() && baidusecret!=null && !baidusecret.isEmpty());
+		
+		Notification n = Notification.createBaiduNotifiation(BAIDUBODYTEMPLATE1);
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.DATE, 1);		
+		
+		Set<String> tags = new HashSet<String>();
+		tags.add("boo");
+		tags.add("foo");
+		
+		hub.scheduleNotification(n, c.getTime());		
+		hub.scheduleNotification(n, tags, c.getTime());		
+		hub.scheduleNotification(n, "foo && ! bar", c.getTime());
 	}
 	
 	@Test
@@ -707,5 +904,23 @@ public class RegistrationCrudsE2E {
 		
 		hub.sendNotification(n, "foo && ! bar");
 	}
+	
+	@Test
+	public void testScheduleTemplateNotification() {
+		Map<String, String> prop =  new HashMap<String, String>();
+		prop.put("prop1", "v1");
+		prop.put("prop2", "v2");
+		Notification n = Notification.createTemplateNotification(prop);
 
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.DATE, 1);		
+		
+		Set<String> tags = new HashSet<String>();
+		tags.add("boo");
+		tags.add("foo");
+		
+		hub.scheduleNotification(n, c.getTime());		
+		hub.scheduleNotification(n, tags, c.getTime());		
+		hub.scheduleNotification(n, "foo && ! bar", c.getTime());
+	}
 }

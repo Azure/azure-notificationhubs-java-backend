@@ -25,6 +25,9 @@ public class RegistrationParseTest {
 	private static final Date EXPIRATIONTIME = new Date(1409587066778L);
 	private static final Object ADMREGID = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	private static final Object ADMBODYTEMPLATE = "{ \"aps\": { \"alert\": \"$(message)\"} }";
+	private static final Object BAIDUUSER = "baidu_user";
+	private static final Object BAIDUCHANNEL = "baidu_channel";
+	private static final Object BAIDUBODYTEMPLATE = "{\"data\":{\"key1\":\"$(value1)\"}}";
 	
 	@Test
 	public void testParseNativeRegistration1() throws IOException, SAXException, URISyntaxException {
@@ -270,6 +273,33 @@ public class RegistrationParseTest {
 		assertEquals(2, reg.getTags().size());
 		
 		assertEquals(ADMBODYTEMPLATE, reg.getBodyTemplate());
+	}
+	
+	@Test
+	public void testParseBaiduNativeRegistration2() throws IOException, SAXException, URISyntaxException {
+		InputStream xml = this.getClass().getResourceAsStream("BaiduNativeRegistrationType");		
+		BaiduRegistration reg = (BaiduRegistration) BaiduRegistration.parse(xml);		
+		assertNotNull(reg);		
+		assertEquals(BaiduRegistration.class, reg.getClass());		
+		assertEquals(BAIDUUSER, reg.getBaiduUserId());
+		assertEquals(BAIDUCHANNEL, reg.getBaiduChannelId());
+		assertEquals("1", reg.getEtag());
+		assertEquals(REGID, reg.getRegistrationId());
+		assertEquals(2, reg.getTags().size());
+	}
+	
+	@Test
+	public void testParseBaiduTemplateRegistration1() throws IOException, SAXException, URISyntaxException {
+		InputStream xml = this.getClass().getResourceAsStream("BaiduTemplateRegistrationNoType");		
+		BaiduTemplateRegistration reg = (BaiduTemplateRegistration) Registration.parse(xml);		
+		assertNotNull(reg);		
+		assertEquals(BaiduTemplateRegistration.class, reg.getClass());				
+		assertEquals(BAIDUUSER, reg.getBaiduUserId());
+		assertEquals(BAIDUCHANNEL, reg.getBaiduChannelId());
+		assertEquals("1", reg.getEtag());
+		assertEquals(REGID, reg.getRegistrationId());
+		assertEquals(1, reg.getTags().size());		
+		assertEquals(BAIDUBODYTEMPLATE, reg.getBodyTemplate());
 	}
 	
 	@Test
