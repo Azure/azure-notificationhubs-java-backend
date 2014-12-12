@@ -17,8 +17,8 @@ public interface INotificationHub {
 	Installation GetInstallation(String installationId);
 	
 	void scheduleNotification(Notification notification, Date scheduledTime);
-	void scheduleNotification(Notification notification, Set<String> tags, Date scheduledTimeUTC);
-	void scheduleNotification(Notification notification, String tagExpression, Date scheduledTimeUTC);
+	void scheduleNotification(Notification notification, Set<String> tags, Date sheduledTime);
+	void scheduleNotification(Notification notification, String tagExpression, Date sheduledTime);
 	
 	NotificationHubJob submitNotificationHubJob(NotificationHubJob job);
 	NotificationHubJob getNotificationHubJob(String jobId);

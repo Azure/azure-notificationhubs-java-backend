@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -394,7 +395,7 @@ public class NotificationHub implements INotificationHub {
 	}
 
 	@Override
-	public void scheduleNotification(Notification notification,	Set<String> tags, Date scheduledTimeUTC) {
+	public void scheduleNotification(Notification notification,	Set<String> tags, Date sheduledTime) {
 		if (tags.isEmpty())
 			throw new IllegalArgumentException(
 					"tags has to contain at least an element");
@@ -406,20 +407,21 @@ public class NotificationHub implements INotificationHub {
 				exp.append(" || ");
 		}
 
-		scheduleNotification(notification, exp.toString(), scheduledTimeUTC);		
+		scheduleNotification(notification, exp.toString(), sheduledTime);		
 	}
 
 	@Override
-	public void scheduleNotification(Notification notification,	String tagExpression, Date scheduledTimeUTC) {
+	public void scheduleNotification(Notification notification,	String tagExpression, Date sheduledTime) {
 		HttpPost post = null;
 		try {
-			URI uri = new URI(endpoint + hubPath + (scheduledTimeUTC == null ? "/messages" : "/schedulednotifications") + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + (sheduledTime == null ? "/messages" : "/schedulednotifications") + APIVERSION);
 			post = new HttpPost(uri);
 			post.setHeader("Authorization", generateSasToken(uri));
 			
-			if(scheduledTimeUTC != null){
+			if(sheduledTime != null){
 				DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-				String scheduledTimeHeader = df.format(scheduledTimeUTC);
+				df.setTimeZone(TimeZone.getTimeZone("UTC"));
+				String scheduledTimeHeader = df.format(sheduledTime);
 				post.setHeader("ServiceBusNotification-ScheduleTime", scheduledTimeHeader);
 			}
 
