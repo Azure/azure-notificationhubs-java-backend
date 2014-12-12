@@ -223,9 +223,9 @@ This project uses:
 * Not tested for performance. You can plug in your own HttpClient instance if you want to improve connection pooling, adding retry policies and such.
 
 
-[REST APIs]: http://msdn.microsoft.com/en-us/library/windowsazure/dn223264.aspx
+[REST APIs]: http://msdn.microsoft.com/en-us/library/windowsazure/dn223264.aspx/
 [Maven]: http://maven.apache.org/
-[JSON Patch]: https://tools.ietf.org/html/rfc6902
+[JSON Patch]: https://tools.ietf.org/html/rfc6902/
 [Windows Azure Notification Hubs]: http://www.windowsazure.com/en-us/documentation/services/notification-hubs/
 [MSDN documentation]: http://msdn.microsoft.com/en-us/library/windowsazure/jj891130.aspx
 [Windows Azure Notification Hubs Service Page]: http://www.windowsazure.com/en-us/documentation/services/notification-hubs/
