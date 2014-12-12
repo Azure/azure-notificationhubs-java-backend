@@ -27,11 +27,36 @@ To build:
 
 ##Code
 
-Create a client
+### Notification Hub CRUDs
 
-	hub = new NotificationHub("connection string", "hubname");	
+Create a namespace manager:
 
+	NamespaceManager namespaceManager = new NamespaceManager("connection string");
+	
+Create hub:
+	
+	NotificationHubDescription hub = new NotificationHubDescription("hubname");
+	hub.setWindowsCredential(new WindowsCredential("sid","key"));
+	hub = namespaceManager.createNotificationHub(hub);
+	
+Get hub:
+	
+	hub = namespaceManager.getNotificationHub("hubname");
+	
+Update hub:
+
+	hub.setMpnsCredential(new MpnsCredential("mpnscert", "mpnskey"));
+	hub = namespaceManager.updateNotificationHub(hub);
+	
+Delete hub:
+
+	namespaceManager.DeleteNotificationHub("hubname");
+	
 ### Create/Update/Delete Registrations
+
+Create a hub client
+
+	hub = new NotificationHub("connection string", "hubname");
 
 Create Windows registration:
 
@@ -129,7 +154,7 @@ Send template notification:
 		
 	hub.sendNotification(n);
 	
-### Schedule Notifications
+### Schedule Notifications (available for [STANDARD Tire])
 
 The same as regular send but with one additional parameter - scheduledTime which says when notification should be delivered. Service accepts any point of time between now + 5 minutes and now + 7 days.
 
@@ -158,7 +183,7 @@ Need to add something new - just do it:
 	installation.addTemplate("template2", new InstallationTemplate("{\"data\":{\"key2\":\"$(value2)\"}}","tag-for-template2"));
 	hub.CreateOrUpdateInstallation(installation);
 
-For advanced scenarios we have partial update capability which allows to modify only particular properties of the installation object. Basically partial update is subset of JSON Patch operations you can run against Installation object.
+For advanced scenarios we have partial update capability which allows to modify only particular properties of the installation object. Basically partial update is subset of [JSON Patch] operations you can run against Installation object.
 
 	PartialUpdateOperation addChannel = new PartialUpdateOperation(UpdateOperationType.Add, "/pushChannel", "adm-push-channel2");
 	PartialUpdateOperation addTag = new PartialUpdateOperation(UpdateOperationType.Add, "/tags", "bar");
@@ -176,7 +201,45 @@ For the one of several templates:
 	prop.put("value3", "some value");
 	Notification n = Notification.createTemplateNotification(prop);
 	hub.sendNotification(n, "InstallationId:{installation-id} && tag-for-template1");
+
+### Import/Export (available for [STANDARD Tire])
+
+Sometimes it is required to perform bulk operation against registrations. Usually it is integration with another system or just massive fix. It is strongly not recomended to use Get/Update flow if we are talking about thousands of more registrations. Import/Export capability is designed to cover the scenario. Basically it looks like you provide an access to some blob container under your storage account as a source of incoming data and location for output.
+
+Submit export job:
+
+	NotificationHubJob job = new NotificationHubJob();
+	job.setJobType(NotificationHubJobType.ExportRegistrations);
+	job.setOutputContainerUri("container uri with SAS signature");
+	job = hub.submitNotificationHubJob(job);
 	
+Submit import job:
+
+	NotificationHubJob job = new NotificationHubJob();
+	job.setJobType(NotificationHubJobType.ImportCreateRegistrations);
+	job.setImportFileUri("input file uri with SAS signature");
+	job.setOutputContainerUri("container uri with SAS signature");
+	job = hub.submitNotificationHubJob(job);
+	
+Wait utill job is done:
+	
+	while(true){
+		Thread.sleep(1000);
+		job = hub.getNotificationHubJob(job.getJobId());
+		if(job.getJobStatus() == NotificationHubJobStatus.Completed)
+			break;
+	}		
+
+	
+Get all jobs:
+
+	List<NotificationHubJob> jobs = hub.getAllNotificationHubJobs();
+	
+URI with SAS signature
+
+Basically it is URL of some blob file or blob container plus set of parameters like permissions and expiration time plus signature of all these things made using account's SAS key. [Azure Storage Java SDK] has rich capabilities including creation of such kind of URIs. As simple alternative you can take a look at ImportExportE2E test class which has very basic and compact implementation of signing algorithm.
+
+
 ## References:
 
 [MSDN documentation]
@@ -226,6 +289,7 @@ This project uses:
 [REST APIs]: http://msdn.microsoft.com/en-us/library/windowsazure/dn223264.aspx/
 [Maven]: http://maven.apache.org/
 [JSON Patch]: https://tools.ietf.org/html/rfc6902/
+[STANDARD Tire]: http://azure.microsoft.com/en-us/pricing/details/notification-hubs/
 [Windows Azure Notification Hubs]: http://www.windowsazure.com/en-us/documentation/services/notification-hubs/
 [MSDN documentation]: http://msdn.microsoft.com/en-us/library/windowsazure/jj891130.aspx
 [Windows Azure Notification Hubs Service Page]: http://www.windowsazure.com/en-us/documentation/services/notification-hubs/
@@ -234,5 +298,6 @@ This project uses:
 [Send localized breaking news]: http://www.windowsazure.com/en-us/manage/services/notification-hubs/breaking-news-localized-dotnet/
 [Send notifications to authenticated users]: http://www.windowsazure.com/en-us/manage/services/notification-hubs/notify-users/
 [Send cross-platform notifications to authenticated users]: http://www.windowsazure.com/en-us/manage/services/notification-hubs/notify-users-xplat-mobile-services/
+[Azure Storage Java SDK]: https://github.com/Azure/azure-storage-java
 
 
