@@ -118,7 +118,7 @@ Send iOS native:
 	hub.sendNotification(n);
 
 
-Analogous for Android, Windows Phone, and Kindle Fire.
+Analogous for Android, Windows Phone, Kindle Fire and Baidu PNS.
 
 Send template notification:
 
@@ -128,32 +128,35 @@ Send template notification:
 	Notification n = Notification.createTemplateNotification(prop);
 		
 	hub.sendNotification(n);
-
-## Sharded Client
-If your app has more than 5M devices it is usually better to partition the devices across multiple hubs for performance and reliability.
-
-The class ShardedNotificationHubClient implements INotificationHub (and thus looks and feels like a standard NotificationHub class) but under the hood it shards the registrations across multiple hubs.
-
-It is instantiated with an instance of INHConfiguration which provides the information of the hubs to be used. An implementation of this interface is provided and parses a properties file with this format:
-
-	shard_1_connectionstring: {first connection string}
-	shard_1_hubName: {first hub name}
-
-	shard_n_connectionstring: {n-th connection string}
-	shard_n_hubName: {n-th hub name}
 	
-	shardsWithFreeSpace: 2,3
+### Schedule Notifications
 
-The sharded client creates new registrations by randomly selecting shards specified in the *shardsWithFreeSpace* property. This allows to add new shards when the first hubs are full.
-The sharded client then encodes the shard number in the registrationId in a transparent way.
+The same as regular send but with one additional parameter - scheduledTime which says when notification should be delivered. Service accepts any point of time between now + 5 minutes and now + 7 days.
 
-> IMPORTANT: Never change the order of the shards, as all the registration ids and continuationTokens (for queries) will be broken.
-
-Example:
+Schedule Windows native:
 	
-	INHConfiguration configuration = new NHConfigurationFromProperties("/shardConfigurationTest.properties");
-	ShardedNotificationHubClient shardedHub = new ShardedNotificationHubClient(configuration);
-	shardedHub.upsertRegistration(reg);
+	Calendar c = Calendar.getInstance();
+	c.add(Calendar.DATE, 1);	
+	
+	Notification n = Notification.createWindowsNotification("WNS body");
+	
+	hub.scheduleNotification(n, c.getTime());
+	
+### Installation API usage
+
+Installation API is alternative mechanism for registration management. Instead of maintaining 1+ registrations which sometimes is not trivial and may be easily done wrong or inefficient it is now possible to use SINGLE Installation object. Installation contains everything you need: push channel (device token), tags, templates, secondary tiles (for WNS and APNS). You don't need to call Service to get Id anymore - just generate GUID or any other identifier, keep it on device and send to your backend together with push channel (device token). On the backend you should only do single call: CreateOrUpdateInstallation, it is fully idempotent, so feel free to retry if needed.
+
+As example for Amazon KIndle it looks like this:
+
+	Installation installation = new Installation("installation-id", NotificationPlatform.Adm, "adm-push-channel");
+	hub.CreateOrUpdateInstallation(installation);
+
+For advanced scenarios we have partial update capability which allows to modify only particular properties of the installation object. Basically it is subset of Json Patch specification.
+
+	PartialUpdateOperation addChannel = new PartialUpdateOperation(UpdateOperationType.Add, "/pushChannel", "adm-push-channel2");
+	PartialUpdateOperation addTag = new PartialUpdateOperation(UpdateOperationType.Add, "/tags", "bar");
+	PartialUpdateOperation replaceTemplate = new PartialUpdateOperation(UpdateOperationType.Replace, "/templates/template1", new InstallationTemplate("{\"data\":{\"key2\":\"value2\"}}").toJson());
+	hub.PatchInstallation("installation-id", addChannel, addTag, replaceTemplate);
 
 ## References:
 
@@ -171,23 +174,34 @@ Nice tutorials that are easy to translate in Java:
 
 #Dependencies
 
-This project uses HttpClient and a bunch of ApacheCommons libraries.
+This project uses:
+
+* [Apache HttpComponents.]
+* [Apache Commons Codec.]
+* [Apache Commons IO.]
+* [Apache Commons Digester.]
+* [Google Gson.]
 
 #Status
 **Complete**:
 
-* Full implementation of Registration Mgmt and Sends
-* Full E2E coverage (bring your own hub...)
-* Javadocs
+* Hub CRUDs
+* Registration Mgmt
+* Installation Mgmt
+* Regular sends
+* Scheduled sedns
+* Import/Export
+* Supported platforms: APNS (iOS), GCM (Android), WNS (Windows Store apps), MPNS(Windows Phone), ADM (Amazon Kindle Fire), Baidu (Android without Google services) 
 
 **To add**:
 
-* Missing unit tests for NotificationHub class.
+* Async operations via Java NIO
+* Multi-factor authentication support
+* Javadocs for bunch of recently implemented features
 
 **Caveats**:
 
 * Not tested for performance. You can plug in your own HttpClient instance if you want to improve connection pooling, adding retry policies and such.
-* Not Microsoft official Notification Hubs Java SDK.
 
 
 [REST APIs]: http://msdn.microsoft.com/en-us/library/windowsazure/dn223264.aspx
