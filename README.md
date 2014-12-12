@@ -146,18 +146,37 @@ Schedule Windows native:
 
 Installation API is alternative mechanism for registration management. Instead of maintaining 1+ registrations which sometimes is not trivial and may be easily done wrong or inefficient it is now possible to use SINGLE Installation object. Installation contains everything you need: push channel (device token), tags, templates, secondary tiles (for WNS and APNS). You don't need to call Service to get Id anymore - just generate GUID or any other identifier, keep it on device and send to your backend together with push channel (device token). On the backend you should only do single call: CreateOrUpdateInstallation, it is fully idempotent, so feel free to retry if needed.
 
-As example for Amazon KIndle it looks like this:
+As example for Amazon Kindle Fire it looks like this:
 
 	Installation installation = new Installation("installation-id", NotificationPlatform.Adm, "adm-push-channel");
 	hub.CreateOrUpdateInstallation(installation);
+	
+Need to add something new - just do it:
 
-For advanced scenarios we have partial update capability which allows to modify only particular properties of the installation object. Basically it is subset of Json Patch specification.
+	installation.addTag("foo");
+	installation.addTemplate("template1", new InstallationTemplate("{\"data\":{\"key1\":\"$(value1)\"}}","tag-for-template1"));
+	installation.addTemplate("template2", new InstallationTemplate("{\"data\":{\"key2\":\"$(value2)\"}}","tag-for-template2"));
+	hub.CreateOrUpdateInstallation(installation);
+
+For advanced scenarios we have partial update capability which allows to modify only particular properties of the installation object. Basically partial update is subset of JSON Patch operations you can run against Installation object.
 
 	PartialUpdateOperation addChannel = new PartialUpdateOperation(UpdateOperationType.Add, "/pushChannel", "adm-push-channel2");
 	PartialUpdateOperation addTag = new PartialUpdateOperation(UpdateOperationType.Add, "/tags", "bar");
-	PartialUpdateOperation replaceTemplate = new PartialUpdateOperation(UpdateOperationType.Replace, "/templates/template1", new InstallationTemplate("{\"data\":{\"key2\":\"value2\"}}").toJson());
+	PartialUpdateOperation replaceTemplate = new PartialUpdateOperation(UpdateOperationType.Replace, "/templates/template1", new InstallationTemplate("{\"data\":{\"key3\":\"$(value3)\"}}","tag-for-template1")).toJson());
 	hub.PatchInstallation("installation-id", addChannel, addTag, replaceTemplate);
-
+	
+Send flow for Installations is the same as for Registrations. We've just introduced an option to target notification to the particular Installation - just use tag "InstallationId:{desired-id}". For case above it would look like this:
+	
+	Notification n = Notification.createWindowsNotification("WNS body");
+	hub.sendNotification(n, "InstallationId:{installation-id}");
+	
+For the one of several templates:
+	
+	Map<String, String> prop =  new HashMap<String, String>();
+	prop.put("value3", "some value");
+	Notification n = Notification.createTemplateNotification(prop);
+	hub.sendNotification(n, "InstallationId:{installation-id} && tag-for-template1");
+	
 ## References:
 
 [MSDN documentation]
@@ -176,11 +195,11 @@ Nice tutorials that are easy to translate in Java:
 
 This project uses:
 
-* [Apache HttpComponents.]
-* [Apache Commons Codec.]
-* [Apache Commons IO.]
-* [Apache Commons Digester.]
-* [Google Gson.]
+* Apache HttpComponents.
+* Apache Commons Codec.
+* Apache Commons IO.]
+* Apache Commons Digester.
+* Google Gson.
 
 #Status
 **Complete**:
@@ -206,7 +225,7 @@ This project uses:
 
 [REST APIs]: http://msdn.microsoft.com/en-us/library/windowsazure/dn223264.aspx
 [Maven]: http://maven.apache.org/
-
+[JSON Patch]: https://tools.ietf.org/html/rfc6902
 [Windows Azure Notification Hubs]: http://www.windowsazure.com/en-us/documentation/services/notification-hubs/
 [MSDN documentation]: http://msdn.microsoft.com/en-us/library/windowsazure/jj891130.aspx
 [Windows Azure Notification Hubs Service Page]: http://www.windowsazure.com/en-us/documentation/services/notification-hubs/
