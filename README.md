@@ -190,6 +190,12 @@ For advanced scenarios we have partial update capability which allows to modify 
 	PartialUpdateOperation replaceTemplate = new PartialUpdateOperation(UpdateOperationType.Replace, "/templates/template1", new InstallationTemplate("{\"data\":{\"key3\":\"$(value3)\"}}","tag-for-template1")).toJson());
 	hub.PatchInstallation("installation-id", addChannel, addTag, replaceTemplate);
 	
+Delete Installation:
+
+	hub.DeleteInstallation(installation.getInstallationId());
+	
+Keep in mind that CreateOrUpdate, Patch and Delete are eventually consistent with Get. In fact operation just goes to the system queue during the call and will be executed in background. Moreover Get is not designed for main runtime scenario but just for debug and troubleshooting purposes, it is tightly throttled by the service.
+	
 Send flow for Installations is the same as for Registrations. We've just introduced an option to target notification to the particular Installation - just use tag "InstallationId:{desired-id}". For case above it would look like this:
 	
 	Notification n = Notification.createWindowsNotification("WNS body");
