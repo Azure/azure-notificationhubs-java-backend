@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.http.concurrent.FutureCallback;
+
 
 /**
  * Interface for the REST wrapper of WIndows Azure Notification Hubs
@@ -23,6 +25,17 @@ public interface INotificationHub {
 	NotificationHubJob submitNotificationHubJob(NotificationHubJob job);
 	NotificationHubJob getNotificationHubJob(String jobId);
 	List<NotificationHubJob> getAllNotificationHubJobs();
+	
+	void createRegistrationIdAsync(FutureCallback<String> callback);
+	void createRegistrationAsync(Registration registration, FutureCallback<Registration> callback);
+	void updateRegistrationAsync(Registration registration, FutureCallback<Registration> callback);
+	void upsertRegistrationAsync(Registration registration, FutureCallback<Registration> callback);
+	void deleteRegistrationAsync(Registration registration, FutureCallback<Object> callback);
+	void deleteRegistrationAsync(String registrationId, FutureCallback<Object> callback);
+	void getRegistrationAsync(String registrationId, FutureCallback<Registration> callback);
+	void getRegistrationsByChannelAsync(String channel, int top, String continuationToken, FutureCallback<CollectionResult> callback);
+	void getRegistrationsByTagAsync(String tag, int top, String continuationToken, FutureCallback<CollectionResult> callback);
+	void getRegistrationsAsync(int top, String continuationToken, FutureCallback<CollectionResult> callback);	
 	
 	/**
 	 * Create a registrationId, without creating an actual registration. To create use upsert.
