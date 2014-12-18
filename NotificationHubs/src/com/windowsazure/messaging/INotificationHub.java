@@ -12,11 +12,11 @@ import org.apache.http.concurrent.FutureCallback;
  */
 public interface INotificationHub {
 	
-	void CreateOrUpdateInstallation(Installation installation);
-	void PatchInstallation(String installationId, PartialUpdateOperation... operations);
-	void PatchInstallation(String installationId, List<PartialUpdateOperation> operations);
-	void DeleteInstallation(String installationId);
-	Installation GetInstallation(String installationId);
+	void createOrUpdateInstallation(Installation installation);
+	void patchInstallation(String installationId, PartialUpdateOperation... operations);
+	void patchInstallation(String installationId, List<PartialUpdateOperation> operations);
+	void deleteInstallation(String installationId);
+	Installation getInstallation(String installationId);
 	
 	void scheduleNotification(Notification notification, Date scheduledTime);
 	void scheduleNotification(Notification notification, Set<String> tags, Date sheduledTime);
@@ -35,7 +35,28 @@ public interface INotificationHub {
 	void getRegistrationAsync(String registrationId, FutureCallback<Registration> callback);
 	void getRegistrationsByChannelAsync(String channel, int top, String continuationToken, FutureCallback<CollectionResult> callback);
 	void getRegistrationsByTagAsync(String tag, int top, String continuationToken, FutureCallback<CollectionResult> callback);
+	void getRegistrationsByTagAsync(String tag,	FutureCallback<CollectionResult> callback);
+	void getRegistrationsByChannelAsync(String channel,	FutureCallback<CollectionResult> callback);
 	void getRegistrationsAsync(int top, String continuationToken, FutureCallback<CollectionResult> callback);	
+		
+	void scheduleNotificationAsync(Notification notification, String tagExpression, Date sheduledTime, FutureCallback<Object> callback);
+	void sendNotificationAsync(Notification notification, FutureCallback<Object> callback);
+	void sendNotificationAsync(Notification notification, Set<String> tags,	FutureCallback<Object> callback);
+	void sendNotificationAsync(Notification notification, String tagExpression,	FutureCallback<Object> callback);
+	void scheduleNotificationAsync(Notification notification, Date scheduledTime, FutureCallback<Object> callback);
+	void scheduleNotificationAsync(Notification notification, Set<String> tags,	Date sheduledTime, FutureCallback<Object> callback);	
+	void sendNotification(Notification notification, String tagExpression);
+		
+	void createOrUpdateInstallationAsync(Installation installation,	FutureCallback<Object> callback);
+	void patchInstallationAsync(String installationId,	List<PartialUpdateOperation> operations, FutureCallback<Object> callback);
+	void patchInstallationAsync(String installationId,	FutureCallback<Object> callback, PartialUpdateOperation... operations);
+	void deleteInstallationAsync(String installationId,	FutureCallback<Object> callback);
+	void getInstallationAsync(String installationId, FutureCallback<Installation> callback);
+		
+	void submitNotificationHubJobAsync(NotificationHubJob job,	FutureCallback<NotificationHubJob> callback);
+	void getNotificationHubJobAsync(String jobId, FutureCallback<NotificationHubJob> callback);
+	void getAllNotificationHubJobsAsync(FutureCallback<List<NotificationHubJob>> callback);	
+	
 	
 	/**
 	 * Create a registrationId, without creating an actual registration. To create use upsert.
@@ -171,6 +192,5 @@ public interface INotificationHub {
 	 * 
 	 * @param notification
 	 * @param tagExpression
-	 */
-	void sendNotification(Notification notification, String tagExpression);	
+	 */	
 }
