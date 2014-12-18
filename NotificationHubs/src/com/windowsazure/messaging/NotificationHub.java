@@ -30,8 +30,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.apache.http.impl.nio.client.HttpAsyncClients;
 
 /**
  * 
@@ -40,14 +38,13 @@ import org.apache.http.impl.nio.client.HttpAsyncClients;
  */
 public class NotificationHub implements INotificationHub {
 	
-	private static CloseableHttpAsyncClient httpAsyncClient;
+	
 	private static final String APIVERSION = "?api-version=2014-09";
 	private static final String CONTENT_LOCATION_HEADER = "Location";
 	private String endpoint;
 	private String hubPath;
 	private String SasKeyName;
 	private String SasKeyValue;
-
 	
 	public NotificationHub(String connectionString, String hubPath) {
 		this.hubPath = hubPath;
@@ -68,31 +65,6 @@ public class NotificationHub implements INotificationHub {
 		}
 	}
 	
-	private static CloseableHttpAsyncClient getHttpAsyncClient() {
-	  if(httpAsyncClient == null) {
-	     synchronized(NotificationHub.class) {
-	       if(httpAsyncClient == null) {
-	    	   CloseableHttpAsyncClient client = HttpAsyncClients.createDefault();
-	    	   client.start();
-	    	   httpAsyncClient = client;	    	   
-	       }
-	     }
-	  }
-		  
-	  return httpAsyncClient;
-	}
-	
-	public static void setHttpAsyncClient(CloseableHttpAsyncClient httpAsyncClient) {
-		synchronized(NotificationHub.class) {
-			if(httpAsyncClient == null) {
-				NotificationHub.httpAsyncClient = httpAsyncClient;
-			}
-			else{
-				throw new RuntimeException("HttpAsyncClient was already set before or default one is being used.");
-			}
-		}
-	}
-
 	@Override
 	public void createRegistrationAsync(Registration registration, final FutureCallback<Registration> callback){
 		try {
@@ -104,7 +76,7 @@ public class NotificationHub implements INotificationHub {
 			entity.setContentEncoding("utf-8");
 			post.setEntity(entity);
 			
-			getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
+			HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		if (response.getStatusLine().getStatusCode() != 200) {
@@ -147,7 +119,7 @@ public class NotificationHub implements INotificationHub {
 			final HttpPost post = new HttpPost(uri);
 			post.setHeader("Authorization", generateSasToken(uri));
 			
-			getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
+			HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		if (response.getStatusLine().getStatusCode() != 201) {
@@ -197,7 +169,7 @@ public class NotificationHub implements INotificationHub {
 			put.setHeader("If-Match", registration.getEtag() == null ? "*"	: "W/\"" + registration.getEtag() + "\"");
 			put.setEntity(new StringEntity(registration.getXml(), ContentType.APPLICATION_ATOM_XML));
 			
-			getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
+			HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		if (response.getStatusLine().getStatusCode() != 200) {
@@ -241,7 +213,7 @@ public class NotificationHub implements INotificationHub {
 			put.setHeader("Authorization", generateSasToken(uri));
 			put.setEntity(new StringEntity(registration.getXml(), ContentType.APPLICATION_ATOM_XML));
 			
-			getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
+			HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		if (response.getStatusLine().getStatusCode() != 200) {
@@ -285,7 +257,7 @@ public class NotificationHub implements INotificationHub {
 			delete.setHeader("Authorization", generateSasToken(uri));
 			delete.setHeader("If-Match", registration.getEtag() == null ? "*" : "W/\"" + registration.getEtag() + "\"");
 			
-			getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
+			HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		if (response.getStatusLine().getStatusCode() != 200 && 
@@ -330,7 +302,7 @@ public class NotificationHub implements INotificationHub {
 			delete.setHeader("Authorization", generateSasToken(uri));
 			delete.setHeader("If-Match", "*");
 			
-			getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
+			HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		if (response.getStatusLine().getStatusCode() != 200 && 
@@ -374,7 +346,7 @@ public class NotificationHub implements INotificationHub {
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
 			
-			getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
+			HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		if (response.getStatusLine().getStatusCode() != 200) {
@@ -505,7 +477,7 @@ public class NotificationHub implements INotificationHub {
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
 			
-			getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
+			HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		if (response.getStatusLine().getStatusCode() != 200) {
@@ -635,7 +607,7 @@ public class NotificationHub implements INotificationHub {
 
 			post.setEntity(new StringEntity(notification.getBody(), notification.getContentType()));
 			
-			getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
+			HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		if (response.getStatusLine().getStatusCode() != 201) {
@@ -685,7 +657,7 @@ public class NotificationHub implements INotificationHub {
 			entity.setContentEncoding("utf-8");
 			put.setEntity(entity);
 			
-			getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
+			HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		if (response.getStatusLine().getStatusCode() != 200) {
@@ -755,7 +727,7 @@ public class NotificationHub implements INotificationHub {
 			entity.setContentEncoding("utf-8");
 			patch.setEntity(entity);
 			
-			getHttpAsyncClient().execute(patch, new FutureCallback<HttpResponse>() {
+			HttpClientManager.getHttpAsyncClient().execute(patch, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		if (response.getStatusLine().getStatusCode() != 200) {
@@ -791,7 +763,7 @@ public class NotificationHub implements INotificationHub {
 			final HttpDelete delete = new HttpDelete(uri);
 			delete.setHeader("Authorization", generateSasToken(uri));
 			
-			getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
+			HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		if (response.getStatusLine().getStatusCode() != 204) {
@@ -834,7 +806,7 @@ public class NotificationHub implements INotificationHub {
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
 			
-			getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
+			HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		if (response.getStatusLine().getStatusCode() != 200) {
@@ -881,7 +853,7 @@ public class NotificationHub implements INotificationHub {
 			entity.setContentEncoding("utf-8");
 			post.setEntity(entity);
 			
-			getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
+			HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		if (response.getStatusLine().getStatusCode() != 201) {
@@ -924,7 +896,7 @@ public class NotificationHub implements INotificationHub {
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
 			
-			getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
+			HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		if (response.getStatusLine().getStatusCode() != 200) {
@@ -967,7 +939,7 @@ public class NotificationHub implements INotificationHub {
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
 			
-			getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
+			HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		if (response.getStatusLine().getStatusCode() != 200) {
