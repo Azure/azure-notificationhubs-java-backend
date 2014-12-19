@@ -236,7 +236,6 @@ Wait utill job is done:
 		if(job.getJobStatus() == NotificationHubJobStatus.Completed)
 			break;
 	}		
-
 	
 Get all jobs:
 
@@ -290,7 +289,7 @@ This project uses:
 
 **Caveats**:
 
-* Not tested for performance. You can plug in your own HttpClient instance if you want to improve connection pooling, adding retry policies and such.
+* Not tested for performance. You can put your own HttpAsyncClient instance to the HttpClientManager if you want to improve connection pooling, adding retry policies and such.
 
 
 [REST APIs]: http://msdn.microsoft.com/en-us/library/windowsazure/dn223264.aspx/
