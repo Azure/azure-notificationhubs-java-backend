@@ -9,6 +9,7 @@ Please send feedback/comments, and pull requests... :)
 
 # New
 
+* Async operations via Java NIO
 * Baidu PNS support
 * Import/Export jobs
 * Scheduled notifications
@@ -50,7 +51,7 @@ Update hub:
 	
 Delete hub:
 
-	namespaceManager.DeleteNotificationHub("hubname");
+	namespaceManager.deleteNotificationHub("hubname");
 	
 ### Create/Update/Delete Registrations
 
@@ -174,25 +175,25 @@ Installation API is alternative mechanism for registration management. Instead o
 As example for Amazon Kindle Fire it looks like this:
 
 	Installation installation = new Installation("installation-id", NotificationPlatform.Adm, "adm-push-channel");
-	hub.CreateOrUpdateInstallation(installation);
+	hub.createOrUpdateInstallation(installation);
 	
 Need to add something new - just do it:
 
 	installation.addTag("foo");
 	installation.addTemplate("template1", new InstallationTemplate("{\"data\":{\"key1\":\"$(value1)\"}}","tag-for-template1"));
 	installation.addTemplate("template2", new InstallationTemplate("{\"data\":{\"key2\":\"$(value2)\"}}","tag-for-template2"));
-	hub.CreateOrUpdateInstallation(installation);
+	hub.createOrUpdateInstallation(installation);
 
 For advanced scenarios we have partial update capability which allows to modify only particular properties of the installation object. Basically partial update is subset of [JSON Patch] operations you can run against Installation object.
 
 	PartialUpdateOperation addChannel = new PartialUpdateOperation(UpdateOperationType.Add, "/pushChannel", "adm-push-channel2");
 	PartialUpdateOperation addTag = new PartialUpdateOperation(UpdateOperationType.Add, "/tags", "bar");
 	PartialUpdateOperation replaceTemplate = new PartialUpdateOperation(UpdateOperationType.Replace, "/templates/template1", new InstallationTemplate("{\"data\":{\"key3\":\"$(value3)\"}}","tag-for-template1")).toJson());
-	hub.PatchInstallation("installation-id", addChannel, addTag, replaceTemplate);
+	hub.patchInstallation("installation-id", addChannel, addTag, replaceTemplate);
 	
 Delete Installation:
 
-	hub.DeleteInstallation(installation.getInstallationId());
+	hub.deleteInstallation(installation.getInstallationId());
 	
 Keep in mind that CreateOrUpdate, Patch and Delete are eventually consistent with Get. In fact operation just goes to the system queue during the call and will be executed in background. Moreover Get is not designed for main runtime scenario but just for debug and troubleshooting purposes, it is tightly throttled by the service.
 	
@@ -279,11 +280,11 @@ This project uses:
 * Regular sends
 * Scheduled sedns
 * Import/Export
+* Async operations via Java NIO
 * Supported platforms: APNS (iOS), GCM (Android), WNS (Windows Store apps), MPNS(Windows Phone), ADM (Amazon Kindle Fire), Baidu (Android without Google services) 
 
 **To add**:
 
-* Async operations via Java NIO
 * Multi-factor authentication support
 * Javadocs for bunch of recently implemented features
 
