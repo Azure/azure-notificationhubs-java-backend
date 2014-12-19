@@ -56,7 +56,7 @@ public class ImportExportE2E {
 	@After
 	public void cleanUp() throws Exception {
 		assertNotNull(hubPath);
-		namespaceManager.DeleteNotificationHub(hubPath);
+		namespaceManager.deleteNotificationHub(hubPath);
 	}
 	
 	public static String createSasSignedUrl(String accountName, String accountKey, String containerName, String fileName, String permissions, Date expirationTimeUtc) throws Exception {

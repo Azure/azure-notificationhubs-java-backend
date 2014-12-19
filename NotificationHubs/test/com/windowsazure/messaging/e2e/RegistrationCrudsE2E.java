@@ -109,7 +109,7 @@ public class RegistrationCrudsE2E {
 	@After
 	public void cleanUp() throws Exception {
 		assertNotNull(hubPath);
-		namespaceManager.DeleteNotificationHub(hubPath);
+		namespaceManager.deleteNotificationHub(hubPath);
 	}
 	
 	@Test
