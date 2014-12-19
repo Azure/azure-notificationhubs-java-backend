@@ -81,7 +81,7 @@ public class HubCrudsE2E {
 		assertTrue(found);
 		
 		// Delete
-		nsm.DeleteNotificationHub(hubPath);		
+		nsm.deleteNotificationHub(hubPath);		
 		Thread.sleep(1000);
 		hubs = nsm.getNotificationHubs();
 		found = false;
@@ -127,7 +127,7 @@ public class HubCrudsE2E {
 		assertTrue(found);
 		
 		// Delete
-		nsm.DeleteNotificationHub(hubPath);		
+		nsm.deleteNotificationHub(hubPath);		
 		Thread.sleep(1000);
 		hubs = nsm.getNotificationHubs();
 		found = false;
@@ -173,7 +173,7 @@ public class HubCrudsE2E {
 		assertTrue(found);
 		
 		// Delete
-		nsm.DeleteNotificationHub(hubPath);		
+		nsm.deleteNotificationHub(hubPath);		
 		Thread.sleep(1000);
 		hubs = nsm.getNotificationHubs();
 		found = false;
@@ -219,7 +219,7 @@ public class HubCrudsE2E {
 		assertTrue(found);
 		
 		// Delete
-		nsm.DeleteNotificationHub(hubPath);		
+		nsm.deleteNotificationHub(hubPath);		
 		Thread.sleep(1000);
 		hubs = nsm.getNotificationHubs();
 		found = false;
@@ -265,7 +265,7 @@ public class HubCrudsE2E {
 		assertTrue(found);
 		
 		// Delete
-		nsm.DeleteNotificationHub(hubPath);		
+		nsm.deleteNotificationHub(hubPath);		
 		Thread.sleep(1000);
 		hubs = nsm.getNotificationHubs();
 		found = false;
@@ -311,7 +311,7 @@ public class HubCrudsE2E {
 		assertTrue(found);
 		
 		// Delete
-		nsm.DeleteNotificationHub(hubPath);		
+		nsm.deleteNotificationHub(hubPath);		
 		Thread.sleep(1000);
 		hubs = nsm.getNotificationHubs();
 		found = false;
@@ -354,6 +354,6 @@ public class HubCrudsE2E {
 		assertEquals(admid, hub.getAdmCredential().getClientId());
 		assertEquals(admsecret, hub.getAdmCredential().getClientSecret());
 		
-		nsm.DeleteNotificationHub(hubPath);		
+		nsm.deleteNotificationHub(hubPath);		
 	}
 }

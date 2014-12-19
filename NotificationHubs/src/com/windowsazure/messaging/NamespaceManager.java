@@ -11,13 +11,12 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClients;
 
 public class NamespaceManager {
 	private static final String IFMATCH_HEADER_NAME = "If-Match";
@@ -28,10 +27,8 @@ public class NamespaceManager {
 	private String endpoint;
 	private String SasKeyName;
 	private String SasKeyValue;
-	private HttpClient httpClient;
 
 	public NamespaceManager(String connectionString) {
-		this.httpClient = HttpClients.createDefault();
 		String[] parts = connectionString.split(";");
 		if (parts.length != 3)
 			throw new RuntimeException("Error parsing connection string: "
@@ -48,78 +45,112 @@ public class NamespaceManager {
 		}
 	}
 	
-	public NotificationHubDescription getNotificationHub(String hubPath){
-		HttpGet get = null;
+	public void getNotificationHubAsync(String hubPath, final FutureCallback<NotificationHubDescription> callback){
 		try {
 			URI uri = new URI(endpoint + hubPath + APIVERSION);
-			get = new HttpGet(uri);
+			final HttpGet get = new HttpGet(uri);
 			get.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
-			HttpResponse response = httpClient.execute(get);
-
-			if (response.getStatusLine().getStatusCode() != 200)
-				throw new RuntimeException(getErrorString(response));
-
-			return NotificationHubDescription.parseOne(response.getEntity().getContent());
+			
+			HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
+		        public void completed(final HttpResponse response) {
+		        	try{
+		        		if (response.getStatusLine().getStatusCode() != 200) {
+		        			callback.failed(new RuntimeException(getErrorString(response)));
+		        			return;
+		    			}		    			
+		    			
+						callback.completed(NotificationHubDescription.parseOne(response.getEntity().getContent()));
+		        	} catch (Exception e) {
+		        		callback.failed(e);	        		
+		        	} finally {
+		        		get.releaseConnection();
+		    		}
+		        }
+		        public void failed(final Exception ex) {
+		        	get.releaseConnection();
+		        	callback.failed(ex);
+		        }
+		        public void cancelled() {
+		        	get.releaseConnection();
+		        	callback.cancelled();
+		        }
+			});			
 		} catch (Exception e) {
 			throw new RuntimeException(e);
-		} finally {
-			if (get != null)
-				get.releaseConnection();
-		}
+		} 
+	}
+	
+	public NotificationHubDescription getNotificationHub(String hubPath){
+		SyncCallback<NotificationHubDescription> callback = new SyncCallback<NotificationHubDescription>();
+		getNotificationHubAsync(hubPath, callback);
+		return callback.getResult();
+	}
+	
+	public void getNotificationHubsAsync(final FutureCallback<List<NotificationHubDescription>> callback){
+		try {
+			URI uri = new URI(endpoint + HUBS_COLLECTION_PATH + APIVERSION + SKIP_TOP_PARAM);
+			final HttpGet get = new HttpGet(uri);
+			get.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
+			
+			HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
+		        public void completed(final HttpResponse response) {
+		        	try{
+		        		if (response.getStatusLine().getStatusCode() != 200) {
+		        			callback.failed(new RuntimeException(getErrorString(response)));
+		        			return;
+		    			}		    			
+		    			
+						callback.completed(NotificationHubDescription.parseCollection(response.getEntity().getContent()));
+		        	} catch (Exception e) {
+		        		callback.failed(e);	        		
+		        	} finally {
+		        		get.releaseConnection();
+		    		}
+		        }
+		        public void failed(final Exception ex) {
+		        	get.releaseConnection();
+		        	callback.failed(ex);
+		        }
+		        public void cancelled() {
+		        	get.releaseConnection();
+		        	callback.cancelled();
+		        }
+			});			
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} 
 	}
 	
 	public List<NotificationHubDescription> getNotificationHubs(){
-		HttpGet get = null;
-		try {
-			URI uri = new URI(endpoint + HUBS_COLLECTION_PATH + APIVERSION + SKIP_TOP_PARAM);
-			get = new HttpGet(uri);
-			get.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
-			HttpResponse response = httpClient.execute(get);
-
-			if (response.getStatusLine().getStatusCode() != 200)
-				throw new RuntimeException(getErrorString(response));
-
-			return NotificationHubDescription.parseCollection(response.getEntity().getContent());
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		} finally {
-			if (get != null)
-				get.releaseConnection();
-		}
+		SyncCallback<List<NotificationHubDescription>> callback = new SyncCallback<List<NotificationHubDescription>>();
+		getNotificationHubsAsync(callback);
+		return callback.getResult();
+	}
+	
+	public void createNotificationHubAsync(NotificationHubDescription hubDescription, final FutureCallback<NotificationHubDescription> callback){
+		createOrUpdateNotificationHubAsync(hubDescription, false, callback);
 	}
 	
 	public NotificationHubDescription createNotificationHub(NotificationHubDescription hubDescription){
-		return createOrUpdateNotificationHub(hubDescription, false);
+		SyncCallback<NotificationHubDescription> callback = new SyncCallback<NotificationHubDescription>();
+		createNotificationHubAsync(hubDescription, callback);
+		return callback.getResult();
+	}
+	
+	public void updateNotificationHubAsync(NotificationHubDescription hubDescription, FutureCallback<NotificationHubDescription> callback){
+		createOrUpdateNotificationHubAsync(hubDescription, true, callback);
 	}
 	
 	public NotificationHubDescription updateNotificationHub(NotificationHubDescription hubDescription){
-		return createOrUpdateNotificationHub(hubDescription, true);
+		SyncCallback<NotificationHubDescription> callback = new SyncCallback<NotificationHubDescription>();
+		updateNotificationHubAsync(hubDescription, callback);
+		return callback.getResult();
 	}
 	
-	public void DeleteNotificationHub(String hubPath){
-		HttpDelete delete = null;
-		try {
-			URI uri = new URI(endpoint + hubPath + APIVERSION);
-			delete = new HttpDelete(uri);
-			delete.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
-			HttpResponse response = httpClient.execute(delete);
-
-			if (response.getStatusLine().getStatusCode() != 200 && 
-					response.getStatusLine().getStatusCode() != 404)
-				throw new RuntimeException(getErrorString(response));
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		} finally {
-			if (delete != null)
-				delete.releaseConnection();
-		}
-	}	 
-	
-	private NotificationHubDescription createOrUpdateNotificationHub(NotificationHubDescription hubDescription, boolean isUpdate){
-		HttpPut put = null;
+	private void createOrUpdateNotificationHubAsync(NotificationHubDescription hubDescription, final boolean isUpdate, final FutureCallback<NotificationHubDescription> callback){
 		try {
 			URI uri = new URI(endpoint + hubDescription.getPath() + APIVERSION);
-			put = new HttpPut(uri);
+			final HttpPut put = new HttpPut(uri);
 			put.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
 			if(isUpdate){
 				put.setHeader(IFMATCH_HEADER_NAME, "*");
@@ -128,21 +159,77 @@ public class NamespaceManager {
 			StringEntity entity = new StringEntity(hubDescription.getXml(), ContentType.APPLICATION_ATOM_XML);
 			entity.setContentEncoding("utf-8");
 			put.setEntity(entity);
-			HttpResponse response = httpClient.execute(put);
-
-			if (response.getStatusLine().getStatusCode() != (isUpdate ? 200 : 201)) {
-				throw new RuntimeException(getErrorString(response));
-			}
 			
-			return NotificationHubDescription.parseOne(response.getEntity().getContent());
+			HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
+		        public void completed(final HttpResponse response) {
+		        	try{
+		        		if (response.getStatusLine().getStatusCode() != (isUpdate ? 200 : 201)) {
+		        			callback.failed(new RuntimeException(getErrorString(response)));
+		        			return;
+		    			}		    			
+		    			
+						callback.completed(NotificationHubDescription.parseOne(response.getEntity().getContent()));
+		        	} catch (Exception e) {
+		        		callback.failed(e);	        		
+		        	} finally {
+		        		put.releaseConnection();
+		    		}
+		        }
+		        public void failed(final Exception ex) {
+		        	put.releaseConnection();
+		        	callback.failed(ex);
+		        }
+		        public void cancelled() {
+		        	put.releaseConnection();
+		        	callback.cancelled();
+		        }
+			});			
 		} catch (Exception e) {
 			throw new RuntimeException(e);
-		} finally {
-			if (put != null)
-				put.releaseConnection();
-		}
-	}
+		} 
+	}	
 	
+	public void deleteNotificationHubAsync(String hubPath, final FutureCallback<Object> callback){
+		try {
+			URI uri = new URI(endpoint + hubPath + APIVERSION);
+			final HttpDelete delete = new HttpDelete(uri);
+			delete.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
+			
+			HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
+		        public void completed(final HttpResponse response) {
+		        	try{
+		        		if (response.getStatusLine().getStatusCode() != 200 && response.getStatusLine().getStatusCode() != 404) {
+		        			callback.failed(new RuntimeException(getErrorString(response)));
+		        			return;
+		    			}		    			
+		    			
+						callback.completed(null);
+		        	} catch (Exception e) {
+		        		callback.failed(e);	        		
+		        	} finally {
+		        		delete.releaseConnection();
+		    		}
+		        }
+		        public void failed(final Exception ex) {
+		        	delete.releaseConnection();
+		        	callback.failed(ex);
+		        }
+		        public void cancelled() {
+		        	delete.releaseConnection();
+		        	callback.cancelled();
+		        }
+			});			
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} 
+	}	
+	
+	public void deleteNotificationHub(String hubPath){
+		SyncCallback<Object> callback = new SyncCallback<Object>();
+		deleteNotificationHubAsync(hubPath, callback);
+		callback.getResult();
+	}	 
+		
 	private String generateSasToken(URI uri) {
 		String targetUri;
 		try {
