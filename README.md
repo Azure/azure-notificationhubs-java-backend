@@ -107,16 +107,13 @@ Get all registrations in hub:
 	
 	hub.getRegistrations();
 
-
 Get registrations with tag:
 
 	hub.getRegistrationsByTag("myTag");
 
-
 Get registrations by channel:
 
 	hub.getRegistrationsByChannel("devicetoken");
-
 
 ### Send Notifications
 
@@ -143,7 +140,6 @@ Send iOS native:
 	Notification n = Notification.createAppleNotifiation("APNS body");
 	hub.sendNotification(n);
 
-
 Analogous for Android, Windows Phone, Kindle Fire and Baidu PNS.
 
 Send template notification:
@@ -154,23 +150,10 @@ Send template notification:
 	Notification n = Notification.createTemplateNotification(prop);
 		
 	hub.sendNotification(n);
-	
-### Schedule Notifications (available for [STANDARD Tire])
 
-The same as regular send but with one additional parameter - scheduledTime which says when notification should be delivered. Service accepts any point of time between now + 5 minutes and now + 7 days.
-
-Schedule Windows native:
-	
-	Calendar c = Calendar.getInstance();
-	c.add(Calendar.DATE, 1);	
-	
-	Notification n = Notification.createWindowsNotification("WNS body");
-	
-	hub.scheduleNotification(n, c.getTime());
-	
 ### Installation API usage
 
-Installation API is alternative mechanism for registration management. Instead of maintaining 1+ registrations which sometimes is not trivial and may be easily done wrong or inefficient it is now possible to use SINGLE Installation object. Installation contains everything you need: push channel (device token), tags, templates, secondary tiles (for WNS and APNS). You don't need to call Service to get Id anymore - just generate GUID or any other identifier, keep it on device and send to your backend together with push channel (device token). On the backend you should only do single call: CreateOrUpdateInstallation, it is fully idempotent, so feel free to retry if needed.
+Installation API is alternative mechanism for registration management. Instead of maintaining multiple registrations which is not trivial and may be easily done wrongly or inefficiently, it is now possible to use SINGLE Installation object. Installation contains everything you need: push channel (device token), tags, templates, secondary tiles (for WNS and APNS). You don't need to call Service to get Id anymore - just generate GUID or any other identifier, keep it on device and send to your backend together with push channel (device token). On the backend you should only do single call: CreateOrUpdateInstallation, it is fully idempotent, so feel free to retry if needed.
 
 As example for Amazon Kindle Fire it looks like this:
 
@@ -202,16 +185,29 @@ Send flow for Installations is the same as for Registrations. We've just introdu
 	Notification n = Notification.createWindowsNotification("WNS body");
 	hub.sendNotification(n, "InstallationId:{installation-id}");
 	
-For the one of several templates:
+For one of several templates:
 	
 	Map<String, String> prop =  new HashMap<String, String>();
 	prop.put("value3", "some value");
 	Notification n = Notification.createTemplateNotification(prop);
 	hub.sendNotification(n, "InstallationId:{installation-id} && tag-for-template1");
 
-### Import/Export (available for [STANDARD Tire])
+### Schedule Notifications (available for [STANDARD Tier])
 
-Sometimes it is required to perform bulk operation against registrations. Usually it is integration with another system or just massive fix. It is strongly not recomended to use Get/Update flow if we are talking about thousands of more registrations. Import/Export capability is designed to cover the scenario. Basically it looks like you provide an access to some blob container under your storage account as a source of incoming data and location for output.
+The same as regular send but with one additional parameter - scheduledTime which says when notification should be delivered. Service accepts any point of time between now + 5 minutes and now + 7 days.
+
+Schedule Windows native:
+	
+	Calendar c = Calendar.getInstance();
+	c.add(Calendar.DATE, 1);	
+	
+	Notification n = Notification.createWindowsNotification("WNS body");
+	
+	hub.scheduleNotification(n, c.getTime());
+	
+### Import/Export (available for [STANDARD Tier])
+
+Sometimes it is required to perform bulk operation against registrations. Usually it is for integration with another system or just a massive fix to say update the tags. It is strongly not recomended to use Get/Update flow if we are talking about thousands of registrations. Import/Export capability is designed to cover the scenario. Basically you provide an access to some blob container under your storage account as a source of incoming data and location for output.
 
 Submit export job:
 
@@ -228,7 +224,7 @@ Submit import job:
 	job.setOutputContainerUri("container uri with SAS signature");
 	job = hub.submitNotificationHubJob(job);
 	
-Wait utill job is done:
+Wait until job is done:
 	
 	while(true){
 		Thread.sleep(1000);
@@ -244,7 +240,6 @@ Get all jobs:
 URI with SAS signature
 
 Basically it is URL of some blob file or blob container plus set of parameters like permissions and expiration time plus signature of all these things made using account's SAS key. [Azure Storage Java SDK] has rich capabilities including creation of such kind of URIs. As simple alternative you can take a look at ImportExportE2E test class which has very basic and compact implementation of signing algorithm.
-
 
 ## References:
 
@@ -295,7 +290,7 @@ This project uses:
 [REST APIs]: http://msdn.microsoft.com/en-us/library/windowsazure/dn223264.aspx/
 [Maven]: http://maven.apache.org/
 [JSON Patch]: https://tools.ietf.org/html/rfc6902/
-[STANDARD Tire]: http://azure.microsoft.com/en-us/pricing/details/notification-hubs/
+[STANDARD Tier]: http://azure.microsoft.com/en-us/pricing/details/notification-hubs/
 [Windows Azure Notification Hubs]: http://www.windowsazure.com/en-us/documentation/services/notification-hubs/
 [MSDN documentation]: http://msdn.microsoft.com/en-us/library/windowsazure/jj891130.aspx
 [Windows Azure Notification Hubs Service Page]: http://www.windowsazure.com/en-us/documentation/services/notification-hubs/
