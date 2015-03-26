@@ -5,7 +5,10 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -38,7 +41,7 @@ public class InstallationParseTest {
 		assertNotNull(installation.getTemplates());
 		assertEquals("<?xml version=\"1.0\" encoding=\"utf-8\"?>", installation.getTemplates().get("template1").getBody());
 		Date expiration = installation.getExpirationTime();
-		assertTrue(expiration.toString().equalsIgnoreCase("Wed Nov 26 15:34:01 PST 2014"));
+		assertTrue(createPSTDateString(expiration.toString()).equalsIgnoreCase("Wed Nov 26 15:34:01 PST 2014"));
 				
 		String expectedResultJson = IOUtils.toString(this.getClass().getResourceAsStream("InstallationWnsFullNoSpaces"));	
 		String  actualResultJson = installation.toJson();
@@ -54,6 +57,22 @@ public class InstallationParseTest {
 		String expectedResultJson = IOUtils.toString(this.getClass().getResourceAsStream("PartialUpdatesNoSpaces"));	
 		String  actualResultJson = PartialUpdateOperation.toJson(add,remove,replace);
 		assertEquals(expectedResultJson, actualResultJson);	
+	}
+	
+	public String createPSTDateString(String dateString) {
+
+		DateFormat formatter = new SimpleDateFormat
+            ("EEE MMM dd HH:mm:ss zzz yyyy");
+        Date inputDate = new Date();
+        try{
+        	inputDate = (Date)formatter.parse(dateString);
+        } catch (Exception e) {
+        	System.out.println("Error while parsing date");
+        	return "";
+        }
+        TimeZone pst = TimeZone.getTimeZone("PST");
+        formatter.setTimeZone(pst);
+        return formatter.format(inputDate);
 	}
 	
 }
