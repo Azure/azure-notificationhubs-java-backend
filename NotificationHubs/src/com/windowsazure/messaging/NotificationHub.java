@@ -561,7 +561,7 @@ public class NotificationHub implements INotificationHub {
 	}
 	
 	@Override
-	public void scheduleNotificationAsync(Notification notification, Set<String> tags, Date sheduledTime, FutureCallback<Object> callback) {
+	public void scheduleNotificationAsync(Notification notification, Set<String> tags, Date scheduledTime, FutureCallback<Object> callback) {
 		if (tags.isEmpty())
 			throw new IllegalArgumentException(
 					"tags has to contain at least an element");
@@ -573,27 +573,27 @@ public class NotificationHub implements INotificationHub {
 				exp.append(" || ");
 		}
 
-		scheduleNotificationAsync(notification, exp.toString(), sheduledTime, callback);		
+		scheduleNotificationAsync(notification, exp.toString(), scheduledTime, callback);
 	}
 
 	@Override
-	public void scheduleNotification(Notification notification,	Set<String> tags, Date sheduledTime) {
+	public void scheduleNotification(Notification notification,	Set<String> tags, Date scheduledTime) {
 		SyncCallback<Object> callback = new SyncCallback<Object>();
-		scheduleNotificationAsync(notification, tags, sheduledTime, callback);
+		scheduleNotificationAsync(notification, tags, scheduledTime, callback);
 		callback.getResult();		
 	}
 
 	@Override
-	public void scheduleNotificationAsync(Notification notification, String tagExpression, Date sheduledTime, final FutureCallback<Object> callback){
+	public void scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime, final FutureCallback<Object> callback){
 		try {
-			URI uri = new URI(endpoint + hubPath + (sheduledTime == null ? "/messages" : "/schedulednotifications") + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + (scheduledTime == null ? "/messages" : "/schedulednotifications") + APIVERSION);
 			final HttpPost post = new HttpPost(uri);
 			post.setHeader("Authorization", generateSasToken(uri));
 			
-			if(sheduledTime != null){
+			if(scheduledTime != null){
 				DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 				df.setTimeZone(TimeZone.getTimeZone("UTC"));
-				String scheduledTimeHeader = df.format(sheduledTime);
+				String scheduledTimeHeader = df.format(scheduledTime);
 				post.setHeader("ServiceBusNotification-ScheduleTime", scheduledTimeHeader);
 			}
 
@@ -640,9 +640,9 @@ public class NotificationHub implements INotificationHub {
 	}
 	
 	@Override
-	public void scheduleNotification(Notification notification,	String tagExpression, Date sheduledTime) {
+	public void scheduleNotification(Notification notification,	String tagExpression, Date scheduledTime) {
 		SyncCallback<Object> callback = new SyncCallback<Object>();
-		scheduleNotificationAsync(notification, tagExpression, sheduledTime, callback);
+		scheduleNotificationAsync(notification, tagExpression, scheduledTime, callback);
 		callback.getResult();
 	}	
 	
