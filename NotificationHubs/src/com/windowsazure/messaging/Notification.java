@@ -1,8 +1,7 @@
 package com.windowsazure.messaging;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import org.apache.http.entity.ContentType;
 
@@ -62,21 +61,47 @@ public class Notification {
 		return n;
 	}
 
-	/**
-	 * Utility method to set up a native notification for APNs.
-	 * 
-	 * @param body
-	 * @return
-	 */
-	public static Notification createAppleNotifiation(String body) {
-		Notification n = new Notification();
-		n.body = body;
-		n.contentType = ContentType.APPLICATION_JSON;
+    /**
+     * Utility method to set up a native notification for APNs.
+     * An expiry Date of 1 day is set by default.
+     * @param body
+     * @return
+     */
+    public static Notification createAppleNotifiation(String body) {
 
-		n.headers.put("ServiceBusNotification-Format", "apple");
+        Date now = new Date();
+        Date tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+        return createAppleNotification(body, tomorrow);
 
-		return n;
-	}
+    }
+
+    /**
+     * Utility method to set up a native notification for APNs.
+     * Enables to set the expiry date of the notification for the APNs QoS.
+     * @param body
+     * @param expiry - the expiration date of this notification.
+     *               a null value will be interpreted as 0 seconds.
+     * @return
+     */
+    public static Notification createAppleNotification(String body, Date expiry) {
+        Notification n = new Notification();
+        n.body = body;
+        n.contentType = ContentType.APPLICATION_JSON;
+
+        n.headers.put("ServiceBusNotification-Format", "apple");
+
+        if(expiry != null){
+            SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
+            formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+            String expiryString = formatter.format(expiry.getTime());
+
+            n.headers.put("ServiceBusNotification-Apns-Expiry", expiryString);
+        }
+
+        return n;
+    }
+
+	
 
 	/**
 	 * Utility method to set up a native notification for GCM.
