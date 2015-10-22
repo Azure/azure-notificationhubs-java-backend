@@ -101,8 +101,6 @@ public class Notification {
         return n;
     }
 
-	
-
 	/**
 	 * Utility method to set up a native notification for GCM.
 	 * 
