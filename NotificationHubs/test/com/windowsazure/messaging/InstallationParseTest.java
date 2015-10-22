@@ -38,6 +38,7 @@ public class InstallationParseTest {
 		assertNotNull(installation.getTemplates());
 		assertEquals("<?xml version=\"1.0\" encoding=\"utf-8\"?>", installation.getTemplates().get("template1").getBody());
 		Date expiration = installation.getExpirationTime();
+		TimeZone.setDefault(TimeZone.getTimeZone("PST"));
 		assertTrue(expiration.toString().equalsIgnoreCase("Wed Nov 26 15:34:01 PST 2014"));
 				
 		String expectedResultJson = IOUtils.toString(this.getClass().getResourceAsStream("InstallationWnsFullNoSpaces"));	
