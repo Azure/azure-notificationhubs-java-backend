@@ -22,7 +22,7 @@ public class HttpClientManager {
 		
 	public static void setHttpAsyncClient(CloseableHttpAsyncClient httpAsyncClient) {
 		synchronized(HttpClientManager.class) {
-			if(httpAsyncClient == null) {
+			if(HttpClientManager.httpAsyncClient == null) {
 				HttpClientManager.httpAsyncClient = httpAsyncClient;
 			}
 			else{
