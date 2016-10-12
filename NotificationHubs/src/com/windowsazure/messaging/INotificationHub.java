@@ -18,9 +18,9 @@ public interface INotificationHub {
 	void deleteInstallation(String installationId);
 	Installation getInstallation(String installationId);
 	
-	void scheduleNotification(Notification notification, Date scheduledTime);
-	void scheduleNotification(Notification notification, Set<String> tags, Date sheduledTime);
-	void scheduleNotification(Notification notification, String tagExpression, Date sheduledTime);
+	NotificationOutcome scheduleNotification(Notification notification, Date scheduledTime);
+	NotificationOutcome scheduleNotification(Notification notification, Set<String> tags, Date sheduledTime);
+	NotificationOutcome scheduleNotification(Notification notification, String tagExpression, Date sheduledTime);
 	
 	NotificationHubJob submitNotificationHubJob(NotificationHubJob job);
 	NotificationHubJob getNotificationHubJob(String jobId);
@@ -39,13 +39,13 @@ public interface INotificationHub {
 	void getRegistrationsByChannelAsync(String channel,	FutureCallback<CollectionResult> callback);
 	void getRegistrationsAsync(int top, String continuationToken, FutureCallback<CollectionResult> callback);	
 		
-	void scheduleNotificationAsync(Notification notification, String tagExpression, Date sheduledTime, FutureCallback<Object> callback);
-	void sendNotificationAsync(Notification notification, FutureCallback<Object> callback);
-	void sendNotificationAsync(Notification notification, Set<String> tags,	FutureCallback<Object> callback);
-	void sendNotificationAsync(Notification notification, String tagExpression,	FutureCallback<Object> callback);
-	void scheduleNotificationAsync(Notification notification, Date scheduledTime, FutureCallback<Object> callback);
-	void scheduleNotificationAsync(Notification notification, Set<String> tags,	Date sheduledTime, FutureCallback<Object> callback);	
-	void sendNotification(Notification notification, String tagExpression);
+	void scheduleNotificationAsync(Notification notification, String tagExpression, Date sheduledTime, FutureCallback<NotificationOutcome> callback);
+	void sendNotificationAsync(Notification notification, FutureCallback<NotificationOutcome> callback);
+	void sendNotificationAsync(Notification notification, Set<String> tags,	FutureCallback<NotificationOutcome> callback);
+	void sendNotificationAsync(Notification notification, String tagExpression,	FutureCallback<NotificationOutcome> callback);
+	void scheduleNotificationAsync(Notification notification, Date scheduledTime, FutureCallback<NotificationOutcome> callback);
+	void scheduleNotificationAsync(Notification notification, Set<String> tags,	Date sheduledTime, FutureCallback<NotificationOutcome> callback);	
+	NotificationOutcome sendNotification(Notification notification, String tagExpression);
 		
 	void createOrUpdateInstallationAsync(Installation installation,	FutureCallback<Object> callback);
 	void patchInstallationAsync(String installationId,	List<PartialUpdateOperation> operations, FutureCallback<Object> callback);
@@ -177,7 +177,7 @@ public interface INotificationHub {
 	 * 
 	 * @param notification
 	 */
-	void sendNotification(Notification notification);
+	NotificationOutcome sendNotification(Notification notification);
 	
 	/**
 	 * Sends a notifications to all eligible registrations with at least one of the specified tags
@@ -185,7 +185,7 @@ public interface INotificationHub {
 	 * @param notification
 	 * @param tags
 	 */
-	void sendNotification(Notification notification, Set<String> tags);
+	NotificationOutcome sendNotification(Notification notification, Set<String> tags);
 	
 	/**
 	 * Sends a notifications to all eligible registrations that satisfy the provided tag expression

@@ -750,6 +750,35 @@ public class RegistrationCrudsE2E {
 		hub.scheduleNotification(n, "foo && ! bar", c.getTime());
 	}
 	
+	
+	@Test
+	public void testNotificationOutcomeOnSend() {
+		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
+		
+		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+		NotificationOutcome o = hub.sendNotification(n);
+		
+		assertNotNull(o);
+		assertNotNull(o.getTrackingId());
+		assertNotNull(o.getNotificationId());
+	}
+	
+	@Test
+	public void testNotificationOutcomeOnSchedule() {
+		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
+		
+		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.DATE, 1);		
+		NotificationOutcome o = hub.scheduleNotification(n, c.getTime());
+		
+		assertNotNull(o);
+		assertNotNull(o.getTrackingId());
+		assertNotNull(o.getNotificationId());
+	}
+	
+	
+	
 	@Test
 	public void testSendGcmNotification() {
 		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
