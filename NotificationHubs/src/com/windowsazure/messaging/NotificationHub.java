@@ -1003,8 +1003,7 @@ public class NotificationHub implements INotificationHub {
 					.toLowerCase();
 
 			long expiresOnDate = System.currentTimeMillis();
-			int expiresInMins = 60; // 1 hour
-			expiresOnDate += expiresInMins * 60 * 1000;
+			expiresOnDate += SdkGlobalSettings.getAuthorizationTokenExpirationInMinutes() * 60 * 1000;
 			long expires = expiresOnDate / 1000;
 			String toSign = targetUri + "\n" + expires;
 
