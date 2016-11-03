@@ -719,7 +719,7 @@ public class RegistrationCrudsE2E {
 	public void testSendAppleNotification() {
 		
 		assertTrue(apnscert!=null && !apnscert.isEmpty() && apnskey!=null && !apnskey.isEmpty());
-		Notification n = Notification.createAppleNotifiation(APNSBODYTEMPLATE);
+		Notification n = Notification.createAppleNotification(APNSBODYTEMPLATE);
 		
 		hub.sendNotification(n);
 		
@@ -736,7 +736,7 @@ public class RegistrationCrudsE2E {
 	public void testScheduleAppleNotification() {
 		
 		assertTrue(apnscert!=null && !apnscert.isEmpty() && apnskey!=null && !apnskey.isEmpty());
-		Notification n = Notification.createAppleNotifiation(APNSBODYTEMPLATE);
+		Notification n = Notification.createAppleNotification(APNSBODYTEMPLATE);
 
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DATE, 1);		
@@ -783,7 +783,7 @@ public class RegistrationCrudsE2E {
 	public void testSendGcmNotification() {
 		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
 		
-		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+		Notification n = Notification.createGcmNotification(GCMBODYTEMPLATE);
 		
 		hub.sendNotification(n);
 		
@@ -800,7 +800,7 @@ public class RegistrationCrudsE2E {
 	public void testScheduleGcmNotification() {
 		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
 		
-		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+		Notification n = Notification.createGcmNotification(GCMBODYTEMPLATE);
 
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DATE, 1);		
@@ -818,7 +818,7 @@ public class RegistrationCrudsE2E {
 	public void testSendAdmNotification() {
 		assertTrue(admid!=null && !admid.isEmpty() && admsecret!=null && !admsecret.isEmpty());
 		
-		Notification n = Notification.createAdmNotifiation(ADMBODYTEMPLATE);
+		Notification n = Notification.createAdmNotification(ADMBODYTEMPLATE);
 		
 		hub.sendNotification(n);
 		
@@ -835,7 +835,7 @@ public class RegistrationCrudsE2E {
 	public void testScheduleAdmNotification() {
 		assertTrue(admid!=null && !admid.isEmpty() && admsecret!=null && !admsecret.isEmpty());
 		
-		Notification n = Notification.createAdmNotifiation(ADMBODYTEMPLATE);
+		Notification n = Notification.createAdmNotification(ADMBODYTEMPLATE);
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DATE, 1);		
 		
@@ -852,7 +852,7 @@ public class RegistrationCrudsE2E {
 	public void testSendMpnsNotification() {
 		assertTrue(mpnscert!=null && !mpnscert.isEmpty() && mpnskey!=null && !mpnskey.isEmpty());
 		
-		Notification n = Notification.createMpnsNotifiation(MPNSBODYTEMPLATE);
+		Notification n = Notification.createMpnsNotification(MPNSBODYTEMPLATE);
 		
 		hub.sendNotification(n);
 		
@@ -869,7 +869,7 @@ public class RegistrationCrudsE2E {
 	public void testScheduleMpnsNotification() {
 		assertTrue(mpnscert!=null && !mpnscert.isEmpty() && mpnskey!=null && !mpnskey.isEmpty());
 		
-		Notification n = Notification.createMpnsNotifiation(MPNSBODYTEMPLATE);
+		Notification n = Notification.createMpnsNotification(MPNSBODYTEMPLATE);
 
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DATE, 1);		
@@ -886,7 +886,7 @@ public class RegistrationCrudsE2E {
 	public void testSendBaiduNotification() {
 		assertTrue(baidukey!=null && !baidukey.isEmpty() && baidusecret!=null && !baidusecret.isEmpty());
 		
-		Notification n = Notification.createBaiduNotifiation(BAIDUBODYTEMPLATE1);
+		Notification n = Notification.createBaiduNotification(BAIDUBODYTEMPLATE1);
 		
 		hub.sendNotification(n);
 		
@@ -903,7 +903,7 @@ public class RegistrationCrudsE2E {
 	public void testScheduleBaiduNotification() {
 		assertTrue(baidukey!=null && !baidukey.isEmpty() && baidusecret!=null && !baidusecret.isEmpty());
 		
-		Notification n = Notification.createBaiduNotifiation(BAIDUBODYTEMPLATE1);
+		Notification n = Notification.createBaiduNotification(BAIDUBODYTEMPLATE1);
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DATE, 1);		
 		
