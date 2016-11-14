@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.commons.io.IOUtils;
@@ -28,7 +30,8 @@ public class InstallationParseTest {
 	}
 	
 	@Test
-	public void InstallationWnsFull() throws IOException, SAXException, URISyntaxException {
+	public void InstallationWnsFull() throws IOException, SAXException, URISyntaxException, ParseException {
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
 		InputStream inputJson = this.getClass().getResourceAsStream("InstallationWnsFull");		
 		Installation installation = Installation.fromJson(inputJson);
 		assertNotNull(installation);
@@ -38,7 +41,8 @@ public class InstallationParseTest {
 		assertNotNull(installation.getTemplates());
 		assertEquals("<?xml version=\"1.0\" encoding=\"utf-8\"?>", installation.getTemplates().get("template1").getBody());
 		Date expiration = installation.getExpirationTime();
-		assertTrue(expiration.toString().equalsIgnoreCase("Wed Nov 26 15:34:01 PST 2014"));
+		assertTrue(expiration.toString().equals(sdf.parse("Wed Nov 26 15:34:01 PST 2014").toString()));
+                
 				
 		String expectedResultJson = IOUtils.toString(this.getClass().getResourceAsStream("InstallationWnsFullNoSpaces"));	
 		String  actualResultJson = installation.toJson();
