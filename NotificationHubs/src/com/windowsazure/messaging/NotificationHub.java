@@ -562,7 +562,7 @@ public class NotificationHub implements INotificationHub {
 	}
 	
 	@Override
-	public void scheduleNotificationAsync(Notification notification, Set<String> tags, Date sheduledTime, FutureCallback<NotificationOutcome> callback) {
+	public void scheduleNotificationAsync(Notification notification, Set<String> tags, Date scheduledTime, FutureCallback<NotificationOutcome> callback) {
 		if (tags.isEmpty())
 			throw new IllegalArgumentException(
 					"tags has to contain at least an element");
@@ -574,29 +574,29 @@ public class NotificationHub implements INotificationHub {
 				exp.append(" || ");
 		}
 
-		scheduleNotificationAsync(notification, exp.toString(), sheduledTime, callback);		
+		scheduleNotificationAsync(notification, exp.toString(), scheduledTime, callback);
 	}
 
 	@Override
-	public NotificationOutcome scheduleNotification(Notification notification,	Set<String> tags, Date sheduledTime) {
+	public NotificationOutcome scheduleNotification(Notification notification,	Set<String> tags, Date scheduledTime) {
 		SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
-		scheduleNotificationAsync(notification, tags, sheduledTime, callback);
+		scheduleNotificationAsync(notification, tags, scheduledTime, callback);
 		return callback.getResult();		
 	}
 
 	@Override
-	public void scheduleNotificationAsync(Notification notification, String tagExpression, Date sheduledTime, final FutureCallback<NotificationOutcome> callback){
+	public void scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime, final FutureCallback<NotificationOutcome> callback){
 		try {
-			URI uri = new URI(endpoint + hubPath + (sheduledTime == null ? "/messages" : "/schedulednotifications") + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + (scheduledTime == null ? "/messages" : "/schedulednotifications") + APIVERSION);
 			final HttpPost post = new HttpPost(uri);
 			final String trackingId = java.util.UUID.randomUUID().toString();
 			post.setHeader("Authorization", generateSasToken(uri));
 			post.setHeader(TRACKING_ID_HEADER, trackingId);
 			
-			if(sheduledTime != null){
+			if(scheduledTime != null){
 				DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 				df.setTimeZone(TimeZone.getTimeZone("UTC"));
-				String scheduledTimeHeader = df.format(sheduledTime);
+				String scheduledTimeHeader = df.format(scheduledTime);
 				post.setHeader("ServiceBusNotification-ScheduleTime", scheduledTimeHeader);
 			}
 
@@ -652,9 +652,9 @@ public class NotificationHub implements INotificationHub {
 	}
 	
 	@Override
-	public NotificationOutcome scheduleNotification(Notification notification,	String tagExpression, Date sheduledTime) {
+	public NotificationOutcome scheduleNotification(Notification notification,	String tagExpression, Date scheduledTime) {
 		SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
-		scheduleNotificationAsync(notification, tagExpression, sheduledTime, callback);
+		scheduleNotificationAsync(notification, tagExpression, scheduledTime, callback);
 		return callback.getResult();
 	}	
 	

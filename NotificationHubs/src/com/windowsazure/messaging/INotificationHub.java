@@ -19,8 +19,9 @@ public interface INotificationHub {
 	Installation getInstallation(String installationId);
 	
 	NotificationOutcome scheduleNotification(Notification notification, Date scheduledTime);
-	NotificationOutcome scheduleNotification(Notification notification, Set<String> tags, Date sheduledTime);
-	NotificationOutcome scheduleNotification(Notification notification, String tagExpression, Date sheduledTime);
+	NotificationOutcome scheduleNotification(Notification notification, Set<String> tags, Date scheduledTime);
+	NotificationOutcome scheduleNotification(Notification notification, String tagExpression, Date scheduledTime);
+
 	
 	NotificationHubJob submitNotificationHubJob(NotificationHubJob job);
 	NotificationHubJob getNotificationHubJob(String jobId);
@@ -38,14 +39,15 @@ public interface INotificationHub {
 	void getRegistrationsByTagAsync(String tag,	FutureCallback<CollectionResult> callback);
 	void getRegistrationsByChannelAsync(String channel,	FutureCallback<CollectionResult> callback);
 	void getRegistrationsAsync(int top, String continuationToken, FutureCallback<CollectionResult> callback);	
-		
-	void scheduleNotificationAsync(Notification notification, String tagExpression, Date sheduledTime, FutureCallback<NotificationOutcome> callback);
+
+	void scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime, FutureCallback<NotificationOutcome> callback);
 	void sendNotificationAsync(Notification notification, FutureCallback<NotificationOutcome> callback);
 	void sendNotificationAsync(Notification notification, Set<String> tags,	FutureCallback<NotificationOutcome> callback);
 	void sendNotificationAsync(Notification notification, String tagExpression,	FutureCallback<NotificationOutcome> callback);
 	void scheduleNotificationAsync(Notification notification, Date scheduledTime, FutureCallback<NotificationOutcome> callback);
-	void scheduleNotificationAsync(Notification notification, Set<String> tags,	Date sheduledTime, FutureCallback<NotificationOutcome> callback);	
+	void scheduleNotificationAsync(Notification notification, Set<String> tags,	Date scheduledTime, FutureCallback<NotificationOutcome> callback);	
 	NotificationOutcome sendNotification(Notification notification, String tagExpression);
+
 		
 	void createOrUpdateInstallationAsync(Installation installation,	FutureCallback<Object> callback);
 	void patchInstallationAsync(String installationId,	List<PartialUpdateOperation> operations, FutureCallback<Object> callback);
