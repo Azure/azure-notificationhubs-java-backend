@@ -116,8 +116,8 @@ public class MpnsTemplateRegistration extends MpnsRegistration {
 				buf.append(key).append("</Header><Value>");
 				buf.append(headers.get(key)).append("</Value></MpnsHeader>");
 			}
+			buf.append("</MpnsHeaders>");
 		}
-		buf.append("</MpnsHeaders>");
 		return buf.toString();
 	}
 }
