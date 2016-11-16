@@ -6,18 +6,22 @@ import org.apache.http.concurrent.FutureCallback;
 
 public class SyncCallback<T> implements FutureCallback<T> {
 	private T result;
-	private RuntimeException exception;
+	private RuntimeException runtimeException;
+	private NotificationHubsException nhException; 
 	private CountDownLatch waitLatch = new CountDownLatch(1);
 	    
-    public T getResult() { 
+    public T getResult() throws NotificationHubsException { 
     	try {
-			waitLatch.await();
+    		this.waitLatch.await();
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
     	
-    	if(this.exception != null)	
-    		throw exception;
+    	if(this.runtimeException != null)	
+    		throw this.runtimeException;
+    	
+    	if(this.nhException !=null )
+    		throw this.nhException;
     	
     	return result; 
     }
@@ -25,18 +29,25 @@ public class SyncCallback<T> implements FutureCallback<T> {
 	@Override
 	public void completed(T result) {
 		this.result = result;
-		waitLatch.countDown();
+		this.waitLatch.countDown();
     }
 	
 	@Override
     public void failed(final Exception ex) {
-        exception = new RuntimeException(ex);
-        waitLatch.countDown();
+		if(ex instanceof NotificationHubsException){
+			this.nhException=(NotificationHubsException)ex;
+		}
+		else{
+			this.runtimeException = new RuntimeException(ex);
+		}
+		
+		this.waitLatch.countDown();
     }
+	
     
 	@Override
     public void cancelled() {
-        exception = new RuntimeException("Operation was cancelled.");      
-        waitLatch.countDown();  
+		runtimeException = new RuntimeException("Operation was cancelled.");      
+		this.waitLatch.countDown();  
     }
 }

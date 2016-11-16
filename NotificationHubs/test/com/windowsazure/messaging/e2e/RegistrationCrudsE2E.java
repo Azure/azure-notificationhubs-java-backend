@@ -109,18 +109,18 @@ public class RegistrationCrudsE2E {
 	@After
 	public void cleanUp() throws Exception {
 		assertNotNull(hubPath);
-		namespaceManager.deleteNotificationHub(hubPath);
+		namespaceManager.deleteNotificationHub(hubPath);	
 	}
 	
 	@Test
-	public void testCreateRegistrationId() {
+	public void testCreateRegistrationId() throws NotificationHubsException {
 		String id = hub.createRegistrationId();
 		
 		assertNotNull(id);
 	}
 	
 	@Test
-	public void testCreateRegistrationIdAndUpsert() throws URISyntaxException {
+	public void testCreateRegistrationIdAndUpsert() throws URISyntaxException, NotificationHubsException {
 		String id = hub.createRegistrationId();
 		assertNotNull(id);
 		
@@ -143,7 +143,7 @@ public class RegistrationCrudsE2E {
 
 	// create + update + get + delete
 	@Test
-	public void testCreateAndDeleteNativeRegistration() throws URISyntaxException {
+	public void testCreateAndDeleteNativeRegistration() throws URISyntaxException, NotificationHubsException {
 		WindowsRegistration reg = new WindowsRegistration(new URI(CHANNELURI));
 		reg.getTags().add("myTag");
 		reg.getTags().add("myOtherTag");
@@ -176,7 +176,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testCreateAndDeleteTemplateRegistration() throws URISyntaxException {
+	public void testCreateAndDeleteTemplateRegistration() throws URISyntaxException, NotificationHubsException {
 		WindowsTemplateRegistration reg = new WindowsTemplateRegistration(new URI(CHANNELURI), WNSBODYTEMPLATE);
 		reg.getHeaders().put("X-WNS-Type", "wns/toast");
 		reg.getTags().add("myTag");
@@ -215,7 +215,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testCreateAndDeleteAppleNativeRegistration() throws URISyntaxException {
+	public void testCreateAndDeleteAppleNativeRegistration() throws URISyntaxException, NotificationHubsException {
 		AppleRegistration reg = new AppleRegistration(DEVICETOKEN);
 		reg.getTags().add("myTag");
 		reg.getTags().add("myOtherTag");
@@ -248,7 +248,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testCreateAndDeleteAppleTemplateRegistration() throws URISyntaxException {
+	public void testCreateAndDeleteAppleTemplateRegistration() throws URISyntaxException, NotificationHubsException {
 		AppleTemplateRegistration reg = new AppleTemplateRegistration(DEVICETOKEN, APNSBODYTEMPLATE);
 		reg.getTags().add("myTag");
 		reg.getTags().add("myOtherTag");
@@ -288,7 +288,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testCreateAndDeleteGcmNativeRegistration() throws URISyntaxException {
+	public void testCreateAndDeleteGcmNativeRegistration() throws URISyntaxException, NotificationHubsException {
 		GcmRegistration reg = new GcmRegistration(GCMREGID);
 		reg.getTags().add("myTag");
 		reg.getTags().add("myOtherTag");
@@ -321,7 +321,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testCreateAndDeleteGcmTemplateRegistration() throws URISyntaxException {
+	public void testCreateAndDeleteGcmTemplateRegistration() throws URISyntaxException, NotificationHubsException {
 		GcmTemplateRegistration reg = new GcmTemplateRegistration(GCMREGID, GCMBODYTEMPLATE);
 		reg.getTags().add("myTag");
 		reg.getTags().add("myOtherTag");
@@ -358,7 +358,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testCreateAndDeleteAdmNativeRegistration() throws URISyntaxException {
+	public void testCreateAndDeleteAdmNativeRegistration() throws URISyntaxException, NotificationHubsException {
 		AdmRegistration reg = new AdmRegistration(ADMREGID);
 		reg.getTags().add("myTag");
 		reg.getTags().add("myOtherTag");
@@ -391,7 +391,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testCreateAndDeleteAdmTemplateRegistration() throws URISyntaxException {
+	public void testCreateAndDeleteAdmTemplateRegistration() throws URISyntaxException, NotificationHubsException {
 		AdmTemplateRegistration reg = new AdmTemplateRegistration(ADMREGID, ADMBODYTEMPLATE);
 		reg.getTags().add("myTag");
 		reg.getTags().add("myOtherTag");
@@ -428,7 +428,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testGetAllRegistration() throws URISyntaxException {
+	public void testGetAllRegistration() throws URISyntaxException, NotificationHubsException {
 		WindowsTemplateRegistration reg = new WindowsTemplateRegistration(new URI(CHANNELURI), WNSBODYTEMPLATE);
 		reg.getHeaders().put("X-WNS-Type", "wns/toast");
 		reg.getTags().add("myTag");
@@ -473,7 +473,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testGetAllRegistrationTopANdContinuation() throws URISyntaxException {
+	public void testGetAllRegistrationTopANdContinuation() throws URISyntaxException, NotificationHubsException {
 		CollectionResult allRegs = hub.getRegistrations(1, null);
 		assertNotNull(allRegs);
 		assertNotNull(allRegs.getRegistrations());
@@ -512,7 +512,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testCreateAndDeleteMpnsNativeRegistration() throws URISyntaxException {
+	public void testCreateAndDeleteMpnsNativeRegistration() throws URISyntaxException, NotificationHubsException {
 		MpnsRegistration reg = new MpnsRegistration(new URI(MPNSCHANNELURI));
 		reg.getTags().add("myTag");
 		reg.getTags().add("myOtherTag");
@@ -545,7 +545,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testCreateAndDeleteMpnsTemplateRegistration() throws URISyntaxException {
+	public void testCreateAndDeleteMpnsTemplateRegistration() throws URISyntaxException, NotificationHubsException {
 		MpnsTemplateRegistration reg = new MpnsTemplateRegistration(new URI(MPNSCHANNELURI), MPNSBODYTEMPLATE);
 		reg.getHeaders().put("X-WindowsPhone-Target", "toast");
 		reg.getHeaders().put("X-NotificationClass", "2");
@@ -584,7 +584,7 @@ public class RegistrationCrudsE2E {
 		hub.deleteRegistration(reg4.getRegistrationId());
 	}
 	
-	public void testCreateAndDeleteBaiduNativeRegistration() throws URISyntaxException {
+	public void testCreateAndDeleteBaiduNativeRegistration() throws URISyntaxException, NotificationHubsException {
 		BaiduRegistration reg = new BaiduRegistration(BAIDUUSER1, BAIDUCHANNEL1);
 		reg.getTags().add("myTag");
 		reg.getTags().add("myOtherTag");
@@ -621,7 +621,7 @@ public class RegistrationCrudsE2E {
 	}
 		
 	@Test
-	public void testCreateAndDeleteBaiduTemplateRegistration() throws URISyntaxException {
+	public void testCreateAndDeleteBaiduTemplateRegistration() throws URISyntaxException, NotificationHubsException {
 		BaiduTemplateRegistration reg = new BaiduTemplateRegistration(BAIDUUSER1, BAIDUCHANNEL1, BAIDUBODYTEMPLATE1);
 		reg.getTags().add("myTag");
 		reg.getTags().add("myOtherTag");
@@ -664,7 +664,7 @@ public class RegistrationCrudsE2E {
 
 	// send
 	@Test
-	public void testSendWindowsNotification() {
+	public void testSendWindowsNotification() throws NotificationHubsException{
 		assertTrue(winsid!=null && !winsid.isEmpty() && winkey!=null && !winkey.isEmpty());
 		
 		Notification n = Notification.createWindowsNotification(WNSBODYTEMPLATE);
@@ -681,7 +681,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testScheduleWindowsNotification() {
+	public void testScheduleWindowsNotification()  throws NotificationHubsException{
 		assertTrue(winsid!=null && !winsid.isEmpty() && winkey!=null && !winkey.isEmpty());
 		
 		Notification n = Notification.createWindowsNotification(WNSBODYTEMPLATE);
@@ -699,7 +699,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testSendRawWindowsNotification() {
+	public void testSendRawWindowsNotification()  throws NotificationHubsException{
 		assertTrue(winsid!=null && !winsid.isEmpty() && winkey!=null && !winkey.isEmpty());
 		
 		Notification n = Notification.createWindowsRawNotification(WNSRAWNOTIFICATION);
@@ -716,7 +716,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testSendAppleNotification() {
+	public void testSendAppleNotification()  throws NotificationHubsException{
 		
 		assertTrue(apnscert!=null && !apnscert.isEmpty() && apnskey!=null && !apnskey.isEmpty());
 		Notification n = Notification.createAppleNotifiation(APNSBODYTEMPLATE);
@@ -733,7 +733,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testScheduleAppleNotification() {
+	public void testScheduleAppleNotification()  throws NotificationHubsException{
 		
 		assertTrue(apnscert!=null && !apnscert.isEmpty() && apnskey!=null && !apnskey.isEmpty());
 		Notification n = Notification.createAppleNotifiation(APNSBODYTEMPLATE);
@@ -752,9 +752,9 @@ public class RegistrationCrudsE2E {
 	
 	
 	@Test
-	public void testNotificationOutcomeOnSend() {
+	public void testNotificationOutcomeOnSend()  throws NotificationHubsException{
 		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
-		
+		SdkGlobalSettings.setAuthorizationTokenExpirationInMinutes(-5);
 		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
 		NotificationOutcome o = hub.sendNotification(n);
 		
@@ -764,7 +764,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testNotificationOutcomeOnSchedule() {
+	public void testNotificationOutcomeOnSchedule()  throws NotificationHubsException{
 		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
 		
 		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
@@ -780,7 +780,7 @@ public class RegistrationCrudsE2E {
 	
 	
 	@Test
-	public void testSendGcmNotification() {
+	public void testSendGcmNotification()  throws NotificationHubsException{
 		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
 		
 		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
@@ -797,7 +797,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testScheduleGcmNotification() {
+	public void testScheduleGcmNotification()  throws NotificationHubsException{
 		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
 		
 		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
@@ -815,7 +815,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testSendAdmNotification() {
+	public void testSendAdmNotification()  throws NotificationHubsException{
 		assertTrue(admid!=null && !admid.isEmpty() && admsecret!=null && !admsecret.isEmpty());
 		
 		Notification n = Notification.createAdmNotifiation(ADMBODYTEMPLATE);
@@ -832,7 +832,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testScheduleAdmNotification() {
+	public void testScheduleAdmNotification()  throws NotificationHubsException{
 		assertTrue(admid!=null && !admid.isEmpty() && admsecret!=null && !admsecret.isEmpty());
 		
 		Notification n = Notification.createAdmNotifiation(ADMBODYTEMPLATE);
@@ -849,7 +849,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testSendMpnsNotification() {
+	public void testSendMpnsNotification()  throws NotificationHubsException{
 		assertTrue(mpnscert!=null && !mpnscert.isEmpty() && mpnskey!=null && !mpnskey.isEmpty());
 		
 		Notification n = Notification.createMpnsNotifiation(MPNSBODYTEMPLATE);
@@ -866,7 +866,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testScheduleMpnsNotification() {
+	public void testScheduleMpnsNotification()  throws NotificationHubsException{
 		assertTrue(mpnscert!=null && !mpnscert.isEmpty() && mpnskey!=null && !mpnskey.isEmpty());
 		
 		Notification n = Notification.createMpnsNotifiation(MPNSBODYTEMPLATE);
@@ -883,7 +883,7 @@ public class RegistrationCrudsE2E {
 		hub.scheduleNotification(n, "foo && ! bar", c.getTime());
 	}
 	
-	public void testSendBaiduNotification() {
+	public void testSendBaiduNotification()  throws NotificationHubsException{
 		assertTrue(baidukey!=null && !baidukey.isEmpty() && baidusecret!=null && !baidusecret.isEmpty());
 		
 		Notification n = Notification.createBaiduNotifiation(BAIDUBODYTEMPLATE1);
@@ -900,7 +900,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testScheduleBaiduNotification() {
+	public void testScheduleBaiduNotification()  throws NotificationHubsException{
 		assertTrue(baidukey!=null && !baidukey.isEmpty() && baidusecret!=null && !baidusecret.isEmpty());
 		
 		Notification n = Notification.createBaiduNotifiation(BAIDUBODYTEMPLATE1);
@@ -917,7 +917,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testSendTemplateNotification() {
+	public void testSendTemplateNotification()  throws NotificationHubsException{
 		Map<String, String> prop =  new HashMap<String, String>();
 		prop.put("prop1", "v1");
 		prop.put("prop2", "v2");
@@ -935,7 +935,7 @@ public class RegistrationCrudsE2E {
 	}
 	
 	@Test
-	public void testScheduleTemplateNotification() {
+	public void testScheduleTemplateNotification()  throws NotificationHubsException{
 		Map<String, String> prop =  new HashMap<String, String>();
 		prop.put("prop1", "v1");
 		prop.put("prop2", "v2");

@@ -54,8 +54,9 @@ public class NamespaceManager {
 			HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
-		        		if (response.getStatusLine().getStatusCode() != 200) {
-		        			callback.failed(new RuntimeException(getErrorString(response)));
+		        		int httpStatusCode = response.getStatusLine().getStatusCode();
+		        		if (httpStatusCode != 200) {
+		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
 		        			return;
 		    			}		    			
 		    			
@@ -80,7 +81,7 @@ public class NamespaceManager {
 		} 
 	}
 	
-	public NotificationHubDescription getNotificationHub(String hubPath){
+	public NotificationHubDescription getNotificationHub(String hubPath) throws NotificationHubsException{
 		SyncCallback<NotificationHubDescription> callback = new SyncCallback<NotificationHubDescription>();
 		getNotificationHubAsync(hubPath, callback);
 		return callback.getResult();
@@ -95,10 +96,11 @@ public class NamespaceManager {
 			HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
-		        		if (response.getStatusLine().getStatusCode() != 200) {
-		        			callback.failed(new RuntimeException(getErrorString(response)));
+		        		int httpStatusCode = response.getStatusLine().getStatusCode();
+		        		if (httpStatusCode != 200) {
+		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
 		        			return;
-		    			}		    			
+		    			}			    			
 		    			
 						callback.completed(NotificationHubDescription.parseCollection(response.getEntity().getContent()));
 		        	} catch (Exception e) {
@@ -121,7 +123,7 @@ public class NamespaceManager {
 		} 
 	}
 	
-	public List<NotificationHubDescription> getNotificationHubs(){
+	public List<NotificationHubDescription> getNotificationHubs() throws NotificationHubsException{
 		SyncCallback<List<NotificationHubDescription>> callback = new SyncCallback<List<NotificationHubDescription>>();
 		getNotificationHubsAsync(callback);
 		return callback.getResult();
@@ -131,7 +133,7 @@ public class NamespaceManager {
 		createOrUpdateNotificationHubAsync(hubDescription, false, callback);
 	}
 	
-	public NotificationHubDescription createNotificationHub(NotificationHubDescription hubDescription){
+	public NotificationHubDescription createNotificationHub(NotificationHubDescription hubDescription) throws NotificationHubsException{
 		SyncCallback<NotificationHubDescription> callback = new SyncCallback<NotificationHubDescription>();
 		createNotificationHubAsync(hubDescription, callback);
 		return callback.getResult();
@@ -141,7 +143,7 @@ public class NamespaceManager {
 		createOrUpdateNotificationHubAsync(hubDescription, true, callback);
 	}
 	
-	public NotificationHubDescription updateNotificationHub(NotificationHubDescription hubDescription){
+	public NotificationHubDescription updateNotificationHub(NotificationHubDescription hubDescription) throws NotificationHubsException{
 		SyncCallback<NotificationHubDescription> callback = new SyncCallback<NotificationHubDescription>();
 		updateNotificationHubAsync(hubDescription, callback);
 		return callback.getResult();
@@ -163,8 +165,9 @@ public class NamespaceManager {
 			HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
-		        		if (response.getStatusLine().getStatusCode() != (isUpdate ? 200 : 201)) {
-		        			callback.failed(new RuntimeException(getErrorString(response)));
+		        		int httpStatusCode = response.getStatusLine().getStatusCode();
+		        		if (httpStatusCode != (isUpdate ? 200 : 201)) {
+		        			callback.failed(new NotificationHubsException(getErrorString(response) ,httpStatusCode));
 		        			return;
 		    			}		    			
 		    			
@@ -198,8 +201,9 @@ public class NamespaceManager {
 			HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
-		        		if (response.getStatusLine().getStatusCode() != 200 && response.getStatusLine().getStatusCode() != 404) {
-		        			callback.failed(new RuntimeException(getErrorString(response)));
+		        		int httpStatusCode = response.getStatusLine().getStatusCode();
+		        		if (httpStatusCode != 200 && httpStatusCode != 404) {
+		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
 		        			return;
 		    			}		    			
 		    			
@@ -224,7 +228,7 @@ public class NamespaceManager {
 		} 
 	}	
 	
-	public void deleteNotificationHub(String hubPath){
+	public void deleteNotificationHub(String hubPath) throws NotificationHubsException{
 		SyncCallback<Object> callback = new SyncCallback<Object>();
 		deleteNotificationHubAsync(hubPath, callback);
 		callback.getResult();
@@ -238,6 +242,7 @@ public class NamespaceManager {
 					.toLowerCase();
 
 			long expiresOnDate = System.currentTimeMillis();
+			long dif=SdkGlobalSettings.getAuthorizationTokenExpirationInMinutes() * 60 * 1000;
 			expiresOnDate += SdkGlobalSettings.getAuthorizationTokenExpirationInMinutes() * 60 * 1000;
 			long expires = expiresOnDate / 1000;
 			String toSign = targetUri + "\n" + expires;

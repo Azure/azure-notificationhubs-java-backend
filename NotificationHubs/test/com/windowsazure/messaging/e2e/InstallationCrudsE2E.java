@@ -82,8 +82,8 @@ public class InstallationCrudsE2E {
 		assertEquals("adm-push-channel2", installation.getPushChannel());
 		assertNotNull(installation.getTags());
 		assertEquals(2, installation.getTags().size());
-		assertTrue(installation.getTags().get(0).equalsIgnoreCase("foo"));
-		assertTrue(installation.getTags().get(1).equalsIgnoreCase("bar"));
+ 		assertTrue(installation.getTags().contains("foo"));
+ 		assertTrue(installation.getTags().contains("bar"));
 		assertNotNull(installation.getTemplates());
 		assertEquals(1, installation.getTemplates().size());
 		assertTrue(installation.getTemplates().get("template1").getBody().equalsIgnoreCase("{\"data\":{\"key2\":\"value2\"}}"));
