@@ -20,6 +20,10 @@ public final class GcmCredential extends PnsCredential {
 		return googleApiKey;
 	}
 
+   	public void setgoogleApiKey(String googleApiKey) {
+        	this.googleApiKey = googleApiKey; // fix for reflection that's calling 'setgoogleApiKey' instead of 'setGoogleApiKey'.
+    	}
+
 	public void setGoogleApiKey(String googleApiKey) {
 		this.googleApiKey = googleApiKey;
 	}	
