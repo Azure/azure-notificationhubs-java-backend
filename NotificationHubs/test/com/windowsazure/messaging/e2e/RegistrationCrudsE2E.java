@@ -777,6 +777,21 @@ public class RegistrationCrudsE2E {
 		assertNotNull(o.getNotificationId());
 	}
 	
+	@Test
+	public void testCancelScheduledNotification()  throws NotificationHubsException{
+		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
+		
+		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.DATE, 1);		
+		NotificationOutcome o = hub.scheduleNotification(n, c.getTime());
+		
+		assertNotNull(o);
+		assertNotNull(o.getTrackingId());
+		assertNotNull(o.getNotificationId());
+		
+		hub.cancelScheduledNotification(o.getNotificationId());
+	}
 	
 	
 	@Test

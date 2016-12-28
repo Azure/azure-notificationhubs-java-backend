@@ -633,6 +633,50 @@ public class NotificationHub implements INotificationHub {
 	}	
 	
 	@Override
+	public void cancelScheduledNotification(String notificationId) throws NotificationHubsException{
+		SyncCallback<Object> callback = new SyncCallback<Object>();
+		cancelScheduledNotificationAsync(notificationId, callback);
+		callback.getResult();
+	}
+
+	@Override
+	public void cancelScheduledNotificationAsync(String notificationId,	final FutureCallback<Object> callback) {
+		try {
+			URI uri = new URI(endpoint + hubPath + "/schedulednotifications/" + notificationId + APIVERSION);
+			final HttpDelete delete = new HttpDelete(uri);
+			delete.setHeader("Authorization", generateSasToken(uri));
+								
+			HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
+				public void completed(final HttpResponse response) {
+		        	try{
+		        		int httpStatusCode = response.getStatusLine().getStatusCode();
+		        		if (httpStatusCode != 200 && httpStatusCode!=404) {
+		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
+		        			return;
+		    			}		    			
+		    			
+						callback.completed(null);
+		        	} catch (Exception e) {
+		        		callback.failed(e);	        		
+		        	} finally {
+		        		delete.releaseConnection();
+		    		}
+		        }
+		        public void failed(final Exception ex) {
+		        	delete.releaseConnection();
+		        	callback.failed(ex);
+		        }
+		        public void cancelled() {
+		        	delete.releaseConnection();
+		        	callback.cancelled();
+		        }
+			});			
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}		
+	}
+	
+	@Override
 	public void createOrUpdateInstallationAsync(Installation installation, final FutureCallback<Object> callback){
 		try {
 			URI uri = new URI(endpoint + hubPath + "/installations/" + installation.getInstallationId() + APIVERSION);
@@ -1010,5 +1054,5 @@ public class NotificationHub implements INotificationHub {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-	}
+	}	
 }

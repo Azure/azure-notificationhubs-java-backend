@@ -22,6 +22,7 @@ public interface INotificationHub {
 	NotificationOutcome scheduleNotification(Notification notification, Set<String> tags, Date scheduledTime) throws NotificationHubsException;
 	NotificationOutcome scheduleNotification(Notification notification, String tagExpression, Date scheduledTime) throws NotificationHubsException;
 
+	void cancelScheduledNotification(String notificationId) throws NotificationHubsException;
 	
 	NotificationHubJob submitNotificationHubJob(NotificationHubJob job) throws NotificationHubsException;
 	NotificationHubJob getNotificationHubJob(String jobId) throws NotificationHubsException;
@@ -46,9 +47,8 @@ public interface INotificationHub {
 	void sendNotificationAsync(Notification notification, String tagExpression,	FutureCallback<NotificationOutcome> callback);
 	void scheduleNotificationAsync(Notification notification, Date scheduledTime, FutureCallback<NotificationOutcome> callback);
 	void scheduleNotificationAsync(Notification notification, Set<String> tags,	Date scheduledTime, FutureCallback<NotificationOutcome> callback);	
-	NotificationOutcome sendNotification(Notification notification, String tagExpression) throws NotificationHubsException;
-
-		
+	void cancelScheduledNotificationAsync(String notificationId, FutureCallback<Object> callback);
+			
 	void createOrUpdateInstallationAsync(Installation installation,	FutureCallback<Object> callback);
 	void patchInstallationAsync(String installationId,	List<PartialUpdateOperation> operations, FutureCallback<Object> callback);
 	void patchInstallationAsync(String installationId,	FutureCallback<Object> callback, PartialUpdateOperation... operations);
@@ -195,4 +195,5 @@ public interface INotificationHub {
 	 * @param notification
 	 * @param tagExpression
 	 */	
+	NotificationOutcome sendNotification(Notification notification, String tagExpression) throws NotificationHubsException;
 }
