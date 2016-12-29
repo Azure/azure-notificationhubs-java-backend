@@ -21,6 +21,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -30,7 +31,10 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.*;
+import org.apache.http.entity.mime.content.StringBody;
 
+import com.google.gson.GsonBuilder;
 /**
  * 
  * Class implementing the INotificationHub interface.
@@ -39,13 +43,13 @@ import org.apache.http.entity.StringEntity;
 public class NotificationHub implements INotificationHub {
 	
 	
-	private static final String APIVERSION = "?api-version=2014-09";
+	private static final String APIVERSION = "?api-version=2015-04";
 	private static final String CONTENT_LOCATION_HEADER = "Location";
 	private static final String TRACKING_ID_HEADER = "TrackingId";
 	private String endpoint;
 	private String hubPath;
 	private String SasKeyName;
-	private String SasKeyValue;
+	private String SasKeyValue;	
 	
 	public NotificationHub(String connectionString, String hubPath) {
 		this.hubPath = hubPath;
@@ -1054,5 +1058,154 @@ public class NotificationHub implements INotificationHub {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	public NotificationOutcome sendDirectNotification(Notification notification, String deviceHandle)	throws NotificationHubsException {
+		SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
+		sendDirectNotificationAsync(notification, deviceHandle, callback);
+		return callback.getResult();	
+	}
+
+	@Override
+	public NotificationOutcome sendDirectNotification(Notification notification, List<String> deviceHandles) throws NotificationHubsException {
+		SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
+		sendDirectNotificationAsync(notification, deviceHandles, callback);
+		return callback.getResult();
+	}
+
+	@Override
+	public void sendDirectNotificationAsync(Notification notification,
+			String deviceHandle, final FutureCallback<NotificationOutcome> callback) {
+		try {
+			URI uri = new URI(endpoint + hubPath + "/messages" + APIVERSION + "&direct");
+			final HttpPost post = new HttpPost(uri);
+			final String trackingId = java.util.UUID.randomUUID().toString();
+			post.setHeader("ServiceBusNotification-DeviceHandle", deviceHandle);
+			post.setHeader("Authorization", generateSasToken(uri));
+			post.setHeader(TRACKING_ID_HEADER, trackingId);			
+			
+			for (String header : notification.getHeaders().keySet()) {
+				post.setHeader(header, notification.getHeaders().get(header));
+			}
+
+			post.setEntity(new StringEntity(notification.getBody(), notification.getContentType()));
+			
+			HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
+		        public void completed(final HttpResponse response) {
+		        	try{
+		        		int httpStatusCode = response.getStatusLine().getStatusCode();		        		
+		        		if (httpStatusCode != 201) {
+		    				String msg = "";
+		    				if (response.getEntity() != null&& response.getEntity().getContent() != null) {
+		    					msg = IOUtils.toString(response.getEntity().getContent());
+		    				}
+		    				callback.failed(new NotificationHubsException("Error: " + response.getStatusLine()	+ " body: " + msg, httpStatusCode));
+		    				return;
+		    			}
+		        		
+		        		String notificationId = null;
+		        		Header locationHeader = response.getFirstHeader(CONTENT_LOCATION_HEADER);		        		
+		        		if(locationHeader != null){
+		        			URI location = new URI(locationHeader.getValue());
+		        			String[] segments = location.getPath().split("/");
+		        			notificationId = segments[segments.length-1];
+		        		}
+		        		
+						callback.completed(new NotificationOutcome(trackingId, notificationId));
+		        	} catch (Exception e) {
+		        		callback.failed(e);	        		
+		        	} finally {
+		        		post.releaseConnection();
+		    		}
+		        }
+		        public void failed(final Exception ex) {
+		        	post.releaseConnection();
+		        	callback.failed(ex);
+		        }
+		        public void cancelled() {
+		        	post.releaseConnection();
+		        	callback.cancelled();
+		        }
+			});			
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} 
+	}
+
+	@Override
+	public void sendDirectNotificationAsync(Notification notification, List<String> deviceHandles, final FutureCallback<NotificationOutcome> callback) {
+		try {
+			URI uri = new URI(endpoint + hubPath + "/messages/$batch" + APIVERSION + "&direct");
+			final HttpPost post = new HttpPost(uri);
+			final String trackingId = java.util.UUID.randomUUID().toString();
+			post.setHeader("Authorization", generateSasToken(uri));
+			post.setHeader(TRACKING_ID_HEADER, trackingId);			
+			
+			for (String header : notification.getHeaders().keySet()) {
+				post.setHeader(header, notification.getHeaders().get(header));
+			}
+								
+			FormBodyPart notificationPart = FormBodyPartBuilder.create()
+			        .setName("notification")
+			        .addField("Content-Disposition", "inline; name=notification")
+			        .setBody(new StringBody(notification.getBody(), notification.getContentType()))
+			        .build();
+
+			String deviceHandlesJson = new GsonBuilder().disableHtmlEscaping().create().toJson(deviceHandles);
+			FormBodyPart devicesPart = FormBodyPartBuilder.create()
+			        .setName("devices")
+			        .addField("Content-Disposition", "inline; name=devices")
+			        .setBody(new StringBody(deviceHandlesJson, ContentType.APPLICATION_JSON))
+			        .build();
+
+			HttpEntity entity = MultipartEntityBuilder.create()
+					.addPart(notificationPart)
+					.addPart(devicesPart)
+			    	.build();
+			
+			post.setEntity(entity);
+			
+			HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
+		        public void completed(final HttpResponse response) {
+		        	try{
+		        		int httpStatusCode = response.getStatusLine().getStatusCode();		        		
+		        		if (httpStatusCode != 201) {
+		    				String msg = "";
+		    				if (response.getEntity() != null&& response.getEntity().getContent() != null) {
+		    					msg = IOUtils.toString(response.getEntity().getContent());
+		    				}
+		    				callback.failed(new NotificationHubsException("Error: " + response.getStatusLine()	+ " body: " + msg, httpStatusCode));
+		    				return;
+		    			}
+		        		
+		        		String notificationId = null;
+		        		Header locationHeader = response.getFirstHeader(CONTENT_LOCATION_HEADER);		        		
+		        		if(locationHeader != null){
+		        			URI location = new URI(locationHeader.getValue());
+		        			String[] segments = location.getPath().split("/");
+		        			notificationId = segments[segments.length-1];
+		        		}
+		        		
+						callback.completed(new NotificationOutcome(trackingId, notificationId));
+		        	} catch (Exception e) {
+		        		callback.failed(e);	        		
+		        	} finally {
+		        		post.releaseConnection();
+		    		}
+		        }
+		        public void failed(final Exception ex) {
+		        	post.releaseConnection();
+		        	callback.failed(ex);
+		        }
+		        public void cancelled() {
+		        	post.releaseConnection();
+		        	callback.cancelled();
+		        }
+			});			
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} 
+		
 	}	
 }

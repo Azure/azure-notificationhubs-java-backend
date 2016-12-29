@@ -242,7 +242,6 @@ public class NamespaceManager {
 					.toLowerCase();
 
 			long expiresOnDate = System.currentTimeMillis();
-			long dif=SdkGlobalSettings.getAuthorizationTokenExpirationInMinutes() * 60 * 1000;
 			expiresOnDate += SdkGlobalSettings.getAuthorizationTokenExpirationInMinutes() * 60 * 1000;
 			long expires = expiresOnDate / 1000;
 			String toSign = targetUri + "\n" + expires;

@@ -21,7 +21,8 @@ public interface INotificationHub {
 	NotificationOutcome scheduleNotification(Notification notification, Date scheduledTime) throws NotificationHubsException;
 	NotificationOutcome scheduleNotification(Notification notification, Set<String> tags, Date scheduledTime) throws NotificationHubsException;
 	NotificationOutcome scheduleNotification(Notification notification, String tagExpression, Date scheduledTime) throws NotificationHubsException;
-
+	NotificationOutcome sendDirectNotification(Notification notification, String deviceHandle) throws NotificationHubsException;
+	NotificationOutcome sendDirectNotification(Notification notification, List<String> deviceHandles) throws NotificationHubsException;	
 	void cancelScheduledNotification(String notificationId) throws NotificationHubsException;
 	
 	NotificationHubJob submitNotificationHubJob(NotificationHubJob job) throws NotificationHubsException;
@@ -41,12 +42,14 @@ public interface INotificationHub {
 	void getRegistrationsByChannelAsync(String channel,	FutureCallback<CollectionResult> callback);
 	void getRegistrationsAsync(int top, String continuationToken, FutureCallback<CollectionResult> callback);	
 
-	void scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime, FutureCallback<NotificationOutcome> callback);
 	void sendNotificationAsync(Notification notification, FutureCallback<NotificationOutcome> callback);
 	void sendNotificationAsync(Notification notification, Set<String> tags,	FutureCallback<NotificationOutcome> callback);
 	void sendNotificationAsync(Notification notification, String tagExpression,	FutureCallback<NotificationOutcome> callback);
+	void sendDirectNotificationAsync(Notification notification, String deviceHandle, FutureCallback<NotificationOutcome> callback);
+	void sendDirectNotificationAsync(Notification notification, List<String> deviceHandles, FutureCallback<NotificationOutcome> callback);	
 	void scheduleNotificationAsync(Notification notification, Date scheduledTime, FutureCallback<NotificationOutcome> callback);
 	void scheduleNotificationAsync(Notification notification, Set<String> tags,	Date scheduledTime, FutureCallback<NotificationOutcome> callback);	
+	void scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime, FutureCallback<NotificationOutcome> callback);
 	void cancelScheduledNotificationAsync(String notificationId, FutureCallback<Object> callback);
 			
 	void createOrUpdateInstallationAsync(Installation installation,	FutureCallback<Object> callback);

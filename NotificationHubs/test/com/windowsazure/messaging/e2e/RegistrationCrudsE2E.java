@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -750,11 +751,9 @@ public class RegistrationCrudsE2E {
 		hub.scheduleNotification(n, "foo && ! bar", c.getTime());
 	}
 	
-	
 	@Test
 	public void testNotificationOutcomeOnSend()  throws NotificationHubsException{
 		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
-		SdkGlobalSettings.setAuthorizationTokenExpirationInMinutes(-5);
 		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
 		NotificationOutcome o = hub.sendNotification(n);
 		
@@ -791,6 +790,28 @@ public class RegistrationCrudsE2E {
 		assertNotNull(o.getNotificationId());
 		
 		hub.cancelScheduledNotification(o.getNotificationId());
+	}
+	
+	@Test
+	public void testSendDirectNotification()  throws NotificationHubsException{
+		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
+		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+		NotificationOutcome o = hub.sendDirectNotification(n, GCMREGID);
+		
+		assertNotNull(o);
+		assertNotNull(o.getTrackingId());
+		assertNotNull(o.getNotificationId());
+	}
+	
+	@Test
+	public void testSendBatchDirectNotification()  throws NotificationHubsException{
+		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
+		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+		NotificationOutcome o = hub.sendDirectNotification(n, Arrays.asList(GCMREGID,GCMREGID2));
+		
+		assertNotNull(o);
+		assertNotNull(o.getTrackingId());
+		assertNotNull(o.getNotificationId());
 	}
 	
 	
