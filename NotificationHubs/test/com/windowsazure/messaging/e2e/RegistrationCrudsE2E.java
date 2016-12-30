@@ -814,6 +814,23 @@ public class RegistrationCrudsE2E {
 		assertNotNull(o.getNotificationId());
 	}
 	
+	@Test
+	public void testGetNotificationTelemetry()  throws NotificationHubsException, InterruptedException{
+		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
+		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+		NotificationOutcome o = hub.sendDirectNotification(n, Arrays.asList(GCMREGID,GCMREGID2));
+		
+		assertNotNull(o);
+		assertNotNull(o.getTrackingId());
+		assertNotNull(o.getNotificationId());
+		
+		Thread.sleep(3000);
+		NotificationTelemetry t = hub.getNotificationTelemetry(o.getNotificationId());
+		assertNotNull(t);
+		assertNotNull(t.getGcmOutcomeCounts());
+		assertTrue(t.getGcmOutcomeCounts().containsKey("BadChannel"));
+		assertTrue(t.getGcmOutcomeCounts().get("BadChannel")==2);
+	}	
 	
 	@Test
 	public void testSendGcmNotification()  throws NotificationHubsException{

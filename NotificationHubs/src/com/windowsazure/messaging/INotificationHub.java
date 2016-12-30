@@ -29,6 +29,8 @@ public interface INotificationHub {
 	NotificationHubJob getNotificationHubJob(String jobId) throws NotificationHubsException;
 	List<NotificationHubJob> getAllNotificationHubJobs() throws NotificationHubsException;
 	
+	NotificationTelemetry getNotificationTelemetry(String notificationId) throws NotificationHubsException;
+	
 	void createRegistrationIdAsync(FutureCallback<String> callback);
 	void createRegistrationAsync(Registration registration, FutureCallback<Registration> callback);
 	void updateRegistrationAsync(Registration registration, FutureCallback<Registration> callback);
@@ -61,6 +63,8 @@ public interface INotificationHub {
 	void submitNotificationHubJobAsync(NotificationHubJob job,	FutureCallback<NotificationHubJob> callback);
 	void getNotificationHubJobAsync(String jobId, FutureCallback<NotificationHubJob> callback);
 	void getAllNotificationHubJobsAsync(FutureCallback<List<NotificationHubJob>> callback);	
+	
+	void getNotificationTelemetryAsync(String notificationId, FutureCallback<NotificationTelemetry> callback);
 	
 	
 	/**
