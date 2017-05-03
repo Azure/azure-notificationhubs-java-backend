@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class InstallationParseTest {
 	
 	@Test
 	public void InstallationWnsFull() throws IOException, SAXException, URISyntaxException, ParseException {
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
 		InputStream inputJson = this.getClass().getResourceAsStream("InstallationWnsFull");		
 		Installation installation = Installation.fromJson(inputJson);
 		assertNotNull(installation);
