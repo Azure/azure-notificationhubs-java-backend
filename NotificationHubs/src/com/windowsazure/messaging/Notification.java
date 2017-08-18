@@ -67,7 +67,7 @@ public class Notification {
      * @param body
      * @return
      */
-    public static Notification createAppleNotifiation(String body) {
+    public static Notification createAppleNotification(String body) {
 
         Date now = new Date();
         Date tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
@@ -102,12 +102,28 @@ public class Notification {
     }
 
 	/**
+	 * Utility method to set up a native notification for APNs.
+	 * Allows setting the APNS Headers - as per the new APNs protocol.
+	 * @param body
+	 * @param headers - APNs headers
+	 * @return
+	 */
+	public static Notification createAppleNotification(String body, Map<String, String> headers) {
+		Notification n = new Notification();
+		n.body = body;
+		n.contentType = ContentType.APPLICATION_JSON;
+		n.headers = headers;
+		n.headers.put("ServiceBusNotification-Format", "apple");
+		return n;
+	}
+
+	/**
 	 * Utility method to set up a native notification for GCM.
 	 * 
 	 * @param body
 	 * @return
 	 */
-	public static Notification createGcmNotifiation(String body) {
+	public static Notification createGcmNotification(String body) {
 		Notification n = new Notification();
 		n.body = body;
 		n.contentType = ContentType.APPLICATION_JSON;
@@ -123,7 +139,7 @@ public class Notification {
 	 * @param body
 	 * @return
 	 */
-	public static Notification createAdmNotifiation(String body) {
+	public static Notification createAdmNotification(String body) {
 		Notification n = new Notification();
 		n.body = body;
 		n.contentType = ContentType.APPLICATION_JSON;
@@ -139,7 +155,7 @@ public class Notification {
 	 * @param body
 	 * @return
 	 */
-	public static Notification createBaiduNotifiation(String body) {
+	public static Notification createBaiduNotification(String body) {
 		Notification n = new Notification();
 		n.body = body;
 		n.contentType = ContentType.APPLICATION_JSON;
@@ -157,7 +173,7 @@ public class Notification {
 	 * @param body
 	 * @return
 	 */
-	public static Notification createMpnsNotifiation(String body) {
+	public static Notification createMpnsNotification(String body) {
 		Notification n = new Notification();
 		n.body = body;
 
