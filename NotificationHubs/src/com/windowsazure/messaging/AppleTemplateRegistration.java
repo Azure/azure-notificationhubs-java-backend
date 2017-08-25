@@ -1,5 +1,9 @@
 package com.windowsazure.messaging;
 
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Class representing a registration for template notifications for devices using APNs.
  *
@@ -30,6 +34,13 @@ public class AppleTemplateRegistration extends AppleRegistration {
 		super(deviceToken);
 		this.bodyTemplate = bodyTemplate;
 	}
+
+	public AppleTemplateRegistration(String deviceToken, String bodyTemplate, Map<String, String> headers) {
+		super(deviceToken);
+		this.bodyTemplate = bodyTemplate;
+		this.headers = headers;
+	}
+
 
 	public String getBodyTemplate() {
 		return bodyTemplate;

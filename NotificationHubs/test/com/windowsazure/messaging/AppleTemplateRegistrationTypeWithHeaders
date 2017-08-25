@@ -7,6 +7,7 @@
         	<RegistrationId>8372532420827572008-85883004107185159-4</RegistrationId>
             <Tags>myTag, myOtherTag</Tags>
             <DeviceToken>ABCDEFGHIJKLMNOPQRSTUVWXYZ</DeviceToken>
+            <BodyTemplate><![CDATA[{ "aps": { "alert": "$(message)"} }]]></BodyTemplate>
             <ApnsHeaders>
                 <ApnsHeader>
                     <Header>apns-expiration</Header>

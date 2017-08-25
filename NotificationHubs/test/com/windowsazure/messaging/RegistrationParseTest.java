@@ -173,19 +173,6 @@ public class RegistrationParseTest {
 	}
 
 	@Test
-	public void testParseAppleTemplateRegistrationWithHeaders() throws IOException, SAXException, URISyntaxException {
-		InputStream xml = this.getClass().getResourceAsStream("AppleTemplateRegistrationTypeWithHeaders");
-
-		AppleTemplateRegistration reg = (AppleTemplateRegistration) Registration.parse(xml);
-
-		assertNotNull(reg);
-
-		assertEquals(AppleTemplateRegistration.class, reg.getClass());
-
-		assertEquals(2, reg.getHeaders().size());
-	}
-	
-	@Test
 	public void testParseGcmNativeRegistration2() throws IOException, SAXException, URISyntaxException {
 		InputStream xml = this.getClass().getResourceAsStream("GcmNativeRegistrationType");
 		
