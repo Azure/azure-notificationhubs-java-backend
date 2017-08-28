@@ -3,8 +3,28 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.windowsazure</groupId>
 	<artifactId>NotificationHubs</artifactId>
-	<version>0.0.4</version>
+	<version>0.0.5</version>
 	<name>Windows Azure Notification Hubs - Java REST wrapper</name>
+	<description>This package contains the JAVA SDK for Azure Notification Hubs.</description>
+	<url>https://github.com/Azure/azure-sdk-for-java</url>
+	<licenses>
+		<license>
+			<name>The MIT License (MIT)</name>
+			<url>http://opensource.org/licenses/MIT</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<scm>
+		<url>scm:git:https://github.com/Azure/azure-sdk-for-java</url>
+		<connection>scm:git:git@github.com:Azure/azure-sdk-for-java.git</connection>
+		<tag>HEAD</tag>
+	</scm>
+	<developers>
+		<developer>
+			<id>microsoft</id>
+			<name>Microsoft</name>
+		</developer>
+	</developers>	
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<testSourceDirectory>test</testSourceDirectory>
@@ -29,7 +49,7 @@
 	</build>
 
 	<dependencies>
-	    <dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.11</version>
@@ -46,19 +66,19 @@
 			<version>3.2</version>
 		</dependency>
 		<dependency>
-  		<groupId>org.apache.httpcomponents</groupId>
-  			<artifactId>httpasyncclient</artifactId>
-  			<version>4.0.2</version>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpasyncclient</artifactId>
+			<version>4.0.2</version>
 		</dependency>
 		<dependency>
-    		<groupId>org.apache.httpcomponents</groupId>
-    		<artifactId>httpmime</artifactId>
-    		<version>4.5.2</version>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpmime</artifactId>
+			<version>4.5.2</version>
 		</dependency>
 		<dependency>
-    		<groupId>org.apache.httpcomponents</groupId>
-    		<artifactId>httpcore</artifactId>
-    		<version>4.4.5</version>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
+			<version>4.4.5</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -66,9 +86,9 @@
 			<version>2.4</version>
 		</dependency>
 		<dependency>
-    		<groupId>com.google.code.gson</groupId>
-    		<artifactId>gson</artifactId>
-    		<version>2.3.1</version>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.3.1</version>
 		</dependency>
 	</dependencies>
 </project>
