@@ -17,16 +17,16 @@ Please send feedback/comments, and pull requests... :)
 * Namespace Manager is introduced to perform CRUDs against Notification Hub(s)
 
 
-#Use
+# Use
 
-##Compile and build
+## Compile and build
 Use [Maven].
 
 To build:
 
 	mvn package
 
-##Code
+## Code
 
 ### Notification Hub CRUDs
 
@@ -255,7 +255,7 @@ Nice tutorials that are easy to translate in Java:
 * [Send notifications to authenticated users]
 * [Send cross-platform notifications to authenticated users]
 
-#Dependencies
+# Dependencies
 
 This project uses:
 
@@ -265,7 +265,7 @@ This project uses:
 * Apache Commons Digester.
 * Google Gson.
 
-#Status
+# Status
 **Complete**:
 
 * Hub CRUDs
