@@ -23,6 +23,7 @@ public class NotificationTelemetry {
 	private Map<String, Integer> mpnsOutcomeCounts;
 	private Map<String, Integer> wnsOutcomeCounts;
 	private Map<String, Integer> gcmOutcomeCounts;
+	private Map<String, Integer> fcmOutcomeCounts;
 	private Map<String, Integer> admOutcomeCounts;
 	private Map<String, Integer> baiduOutcomeCounts;
 	private String pnsErrorDetailsUri;	
@@ -155,6 +156,14 @@ public class NotificationTelemetry {
 		this.gcmOutcomeCounts = gcmOutcomeCounts;
 	}
 
+	public Map<String, Integer> getFcmOutcomeCounts() {
+		return fcmOutcomeCounts;
+	}
+
+	public void setFcmOutcomeCounts(Map<String, Integer> fcmOutcomeCounts) {
+		this.fcmOutcomeCounts = fcmOutcomeCounts;
+	}
+
 	public Map<String, Integer> getBaiduOutcomeCounts() {
 		return baiduOutcomeCounts;
 	}
@@ -223,6 +232,12 @@ public class NotificationTelemetry {
 		digester.addCallParam("*/Name", 0);
 		digester.addCallParam("*/Count", 1);
 		digester.addSetNext("*/GcmOutcomeCounts", "setGcmOutcomeCounts", Map.class.getName());
+
+		digester.addObjectCreate("*/FcmOutcomeCounts", HashMap.class);		
+		digester.addCallMethod("*/Outcome", "put",2, new Class[]{String.class, Integer.class} );
+		digester.addCallParam("*/Name", 0);
+		digester.addCallParam("*/Count", 1);
+		digester.addSetNext("*/FcmOutcomeCounts", "setFcmOutcomeCounts", Map.class.getName());
 		
 		digester.addObjectCreate("*/AdmOutcomeCounts", HashMap.class);		
 		digester.addCallMethod("*/Outcome", "put",2, new Class[]{String.class, Integer.class} );
