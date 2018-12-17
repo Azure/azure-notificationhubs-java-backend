@@ -191,6 +191,10 @@ public abstract class Registration implements Cloneable {
 				GcmRegistration.class);
 		digester.addObjectCreate("*/GcmTemplateRegistrationDescription",
 				GcmTemplateRegistration.class);
+		digester.addObjectCreate("*/FcmRegistrationDescription",
+				FcmRegistration.class);
+		digester.addObjectCreate("*/FcmTemplateRegistrationDescription",
+				FcmTemplateRegistration.class);
 		digester.addObjectCreate("*/MpnsRegistrationDescription",
 				MpnsRegistration.class);
 		digester.addObjectCreate("*/MpnsTemplateRegistrationDescription",
@@ -213,6 +217,8 @@ public abstract class Registration implements Cloneable {
 		digester.addCallParam("*/DeviceToken", 0);
 		digester.addCallMethod("*/GcmRegistrationId", "setGcmRegistrationId", 1);
 		digester.addCallParam("*/GcmRegistrationId", 0);
+		digester.addCallMethod("*/FcmRegistrationId", "setFcmRegistrationId", 1);
+		digester.addCallParam("*/FcmRegistrationId", 0);
 		digester.addCallMethod("*/Tags", "setTagsFromString", 1);
 		digester.addCallParam("*/Tags", 0);
 		digester.addCallMethod("*/BodyTemplate", "setBodyTemplate", 1);
@@ -249,6 +255,8 @@ public abstract class Registration implements Cloneable {
 		digester.addSetNext("*/AppleTemplateRegistrationDescription", "addRegistration");
 		digester.addSetNext("*/GcmRegistrationDescription", "addRegistration");
 		digester.addSetNext("*/GcmTemplateRegistrationDescription", "addRegistration");
+		digester.addSetNext("*/FcmRegistrationDescription", "addRegistration");
+		digester.addSetNext("*/FcmTemplateRegistrationDescription", "addRegistration");
 		digester.addSetNext("*/MpnsRegistrationDescription", "addRegistration");
 		digester.addSetNext("*/MpnsTemplateRegistrationDescription", "addRegistration");
 		digester.addSetNext("*/AdmRegistrationDescription", "addRegistration");
@@ -286,6 +294,14 @@ public abstract class Registration implements Cloneable {
 			if ("GcmTemplateRegistrationDescription".equals(attributes
 					.getValue("i:type"))) {
 				return new GcmTemplateRegistration();
+			}
+			if ("FcmRegistrationDescription".equals(attributes
+					.getValue("i:type"))) {
+				return new FcmRegistration();
+			}
+			if ("FcmTemplateRegistrationDescription".equals(attributes
+					.getValue("i:type"))) {
+				return new FcmTemplateRegistration();
 			}
 			if ("MpnsRegistrationDescription".equals(attributes
 					.getValue("i:type"))) {
