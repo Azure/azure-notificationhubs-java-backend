@@ -1,5 +1,10 @@
 package com.windowsazure.messaging;
 
+/**
+ * @deprecated use {@link #FcmTemplateRegistration()} instead.
+ */
+ 
+@Deprecated
 public class GcmTemplateRegistration extends GcmRegistration {
 	private static final String GCM_TEMPLATE_REGISTRATION1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><entry xmlns=\"http://www.w3.org/2005/Atom\"><content type=\"application/xml\"><GcmTemplateRegistrationDescription xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/netservices/2010/10/servicebus/connect\">";
 	private static final String GCM_TEMPLATE_REGISTRATION2 = "<GcmRegistrationId>";

@@ -4,19 +4,14 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @deprecated use {@link #FcmCredential()} instead.
- */
- 
-@Deprecated
-public final class GcmCredential extends PnsCredential {	
+public final class FcmCredential extends PnsCredential {	
 	private String googleApiKey;
 	
-	public GcmCredential(){
+	public FcmCredential(){
 		this(null);
 	}
 		
-	public GcmCredential(String googleApiKey){
+	public FcmCredential(String googleApiKey){
 		super();
 		this.setGoogleApiKey(googleApiKey);
 	}
@@ -25,10 +20,6 @@ public final class GcmCredential extends PnsCredential {
 		return googleApiKey;
 	}
 
-   	public void setgoogleApiKey(String googleApiKey) {
-        	this.googleApiKey = googleApiKey; // fix for reflection that's calling 'setgoogleApiKey' instead of 'setGoogleApiKey'.
-    	}
-
 	public void setGoogleApiKey(String googleApiKey) {
 		this.googleApiKey = googleApiKey;
 	}	
@@ -36,12 +27,12 @@ public final class GcmCredential extends PnsCredential {
 	@Override
 	public List<SimpleEntry<String, String>> getProperties() {
 		ArrayList<SimpleEntry<String, String>> result = new ArrayList<SimpleEntry<String, String>>();
-		result.add(new SimpleEntry<String, String>("GoogleApiKey",getGoogleApiKey()));
+		result.add(new SimpleEntry<String, String>("GoogleApiKey", getGoogleApiKey()));
 		return result;
 	}
 
 	@Override
 	public String getRootTagName() {
-		return "GcmCredential";
+		return "GcmCredential"; // TODO rename to FcmCredential when new version of backend will be released
 	}
 }
