@@ -103,7 +103,7 @@ public class Notification {
 
 	/**
 	 * Utility method to set up a native notification for GCM.
-	 * @deprecated use {@link #createFcmNotifiation()} instead.
+	 * @deprecated use {@link #createFcmNotifiation(String)} instead.
 	 * 
 	 * @param body
 	 * @return

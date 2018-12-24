@@ -90,7 +90,8 @@ public interface INotificationHub {
 	 * @param registration A registration object containing the description of the registration to update.
 	 * The registration id has to be populated.
 	 * 
-	 * @throws Runtime exception if the registration already exists
+	 * @throws NotificationHubsException 
+	 * runtime exception if the registration already exists
 	 * 
 	 * @return the updated registration containing the read-only parameters (registrationid, etag, and expiration time).
 	 */

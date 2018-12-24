@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @deprecated use {@link #FcmCredential()} instead.
+ * @deprecated use {@link com.windowsazure.messaging.FcmCredential#FcmCredential()} instead.
  */
  
 @Deprecated
