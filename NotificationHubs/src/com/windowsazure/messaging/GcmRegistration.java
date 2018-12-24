@@ -2,7 +2,7 @@ package com.windowsazure.messaging;
 
 /**
  * Class representing a native registration for devices using GCM.
- * @deprecated use {@link #FcmRegistration()} instead.
+ * @deprecated use {@link com.windowsazure.messaging.FcmRegistration#FcmRegistration()} instead.
  */
  
 @Deprecated

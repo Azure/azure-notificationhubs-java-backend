@@ -1,7 +1,7 @@
 package com.windowsazure.messaging;
 
 /**
- * @deprecated use {@link #FcmTemplateRegistration()} instead.
+ * @deprecated use {@link com.windowsazure.messaging.FcmTemplateRegistration#FcmTemplateRegistration()} instead.
  */
  
 @Deprecated
