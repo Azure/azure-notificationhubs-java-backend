@@ -103,10 +103,12 @@ public class Notification {
 
 	/**
 	 * Utility method to set up a native notification for GCM.
+	 * @deprecated use {@link #createFcmNotifiation(String)} instead.
 	 * 
 	 * @param body
 	 * @return
 	 */
+	@Deprecated
 	public static Notification createGcmNotifiation(String body) {
 		Notification n = new Notification();
 		n.body = body;
@@ -115,6 +117,20 @@ public class Notification {
 		n.headers.put("ServiceBusNotification-Format", "gcm");
 
 		return n;
+	}
+
+	/**
+	 * Utility method to set up a native notification for FCM.
+	 * 
+	 * @param body
+	 * @return
+	 */
+	public static Notification createFcmNotifiation(String body) {
+		Notification n = new Notification();
+		n.body = body;
+		n.contentType = ContentType.APPLICATION_JSON;
+ 		n.headers.put("ServiceBusNotification-Format", "gcm"); // TODO replace with "fcm" when new version of backend will be released
+ 		return n;
 	}
 	
 	/**

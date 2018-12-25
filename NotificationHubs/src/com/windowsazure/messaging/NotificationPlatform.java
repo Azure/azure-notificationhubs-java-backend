@@ -11,6 +11,8 @@ public enum NotificationPlatform {
 	Mpns,
 	@SerializedName("gcm")
 	Gcm,
+	@SerializedName("fcm")
+	Fcm,
 	@SerializedName("adm")
 	Adm,
 }
