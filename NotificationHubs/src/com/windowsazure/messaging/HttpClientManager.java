@@ -45,22 +45,33 @@ public class HttpClientManager {
         synchronized (HttpClientManager.class) {
             if (HttpClientManager.httpAsyncClient == null) {
                 HttpClientManager.httpAsyncClient = httpAsyncClient;
-            }
-            else {
+            } else {
                 throw new RuntimeException("HttpAsyncClient was already set before or default one is being used.");
             }
         }
     }
 
     public static void setConnectionRequestTimeout(int timeout) {
-        ConnectionRequestTimeout = timeout;
+        if (HttpClientManager.httpAsyncClient == null) {
+            ConnectionRequestTimeout = timeout;
+        } else {
+            throw new RuntimeException("Set timeout preference only before setting HttpAsyncClient or using default one.");
+        }
     }
 
     public static void setConnectTimeout(int timeout) {
-        ConnectionTimeout = timeout;
+        if (HttpClientManager.httpAsyncClient == null) {
+            ConnectionTimeout = timeout;
+        } else {
+            throw new RuntimeException("Set timeout preference only before setting HttpAsyncClient or using default one.");
+        }
     }
 
     public static void setSocketTimeout(int timeout) {
-        SocketTimeout = timeout;
+        if (HttpClientManager.httpAsyncClient == null) {
+            SocketTimeout = timeout;
+        } else {
+            throw new RuntimeException("Set timeout preference only before setting HttpAsyncClient or using default one.");
+        }
     }
 }
