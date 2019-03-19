@@ -305,11 +305,11 @@ Basically it is URL of some blob file or blob container plus set of parameters l
 
 This project uses:
 
-* Apache HttpComponents.
-* Apache Commons Codec.
-* Apache Commons IO.]
-* Apache Commons Digester.
-* Google Gson.
+* Apache HttpComponents
+* Apache Commons Codec
+* Apache Commons IO
+* Apache Commons Digester
+* Google Gson
 
 ## Status
 
@@ -322,7 +322,13 @@ This project uses:
 * Scheduled sedns
 * Import/Export
 * Async operations via Java NIO
-* Supported platforms: APNS (iOS), GCM and FCM (Android), WNS (Windows Store apps), MPNS(Windows Phone), ADM (Amazon Kindle Fire), Baidu (Android without Google services) 
+* Supported platforms: 
+	- APNS (iOS)
+	- GCM and FCM (Android)
+	- WNS (Windows Store apps)
+	- MPNS(Windows Phone) 
+	- ADM (Amazon Kindle Fire)
+	- Baidu (Android without Google services) 
 
 ### **To add**
 
