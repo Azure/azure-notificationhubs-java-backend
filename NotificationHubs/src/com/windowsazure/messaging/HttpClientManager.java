@@ -10,34 +10,39 @@ public class HttpClientManager {
 
     // A timeout value of zero is interpreted as an infinite timeout.
     // A negative value is interpreted as undefined (system default).
+    // https://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/org/apache/http/client/config/RequestConfig.html#getConnectionRequestTimeout()
 
     // The timeout in milliseconds used when requesting a connection from the connection manager.
-    private static int ConnectionRequestTimeout = -1;
+    private static int connectionRequestTimeout = -1;
 
     // The timeout in milliseconds until a connection is established.
-    private static int ConnectionTimeout = -1;
+    private static int connectionTimeout = -1;
 
     // The socket timeout in milliseconds, which is the timeout for waiting for data or,
     // put differently, a maximum period inactivity between two consecutive data packets.
-    private static int SocketTimeout = -1;
+    private static int socketTimeout = -1;
 
-    public static CloseableHttpAsyncClient getHttpAsyncClient() {
-        if (httpAsyncClient == null) {
-            synchronized (HttpClientManager.class) {
-                if (httpAsyncClient == null) {
-                    RequestConfig config = RequestConfig.custom()
-                            .setConnectionRequestTimeout(ConnectionRequestTimeout)
-                            .setConnectTimeout(ConnectionTimeout)
-                            .setSocketTimeout(SocketTimeout)
-                            .build();
-                    CloseableHttpAsyncClient client = HttpAsyncClientBuilder.create()
-                            .setDefaultRequestConfig(config)
-                            .build();
-                    client.start();
-                    httpAsyncClient = client;
-                }
+    public static CloseableHttpAsyncClient initializeHttpAsyncClient() {
+        synchronized (HttpClientManager.class) {
+            if (httpAsyncClient == null) {
+                RequestConfig config = RequestConfig.custom()
+                        .setConnectionRequestTimeout(connectionRequestTimeout)
+                        .setConnectTimeout(connectionTimeout)
+                        .setSocketTimeout(socketTimeout)
+                        .build();
+                CloseableHttpAsyncClient client = HttpAsyncClientBuilder.create()
+                        .setDefaultRequestConfig(config)
+                        .build();
+                client.start();
+                httpAsyncClient = client;
+            } else {
+                throw new RuntimeException("initializeHttpAsyncClient cannot be called twice or after setHttpAsyncClient.");
             }
         }
+        return httpAsyncClient;
+    }
+
+    public static CloseableHttpAsyncClient getHttpAsyncClient() {
         return httpAsyncClient;
     }
 
@@ -46,32 +51,36 @@ public class HttpClientManager {
             if (HttpClientManager.httpAsyncClient == null) {
                 HttpClientManager.httpAsyncClient = httpAsyncClient;
             } else {
-                throw new RuntimeException("HttpAsyncClient was already set before or default one is being used.");
+                throw new RuntimeException("Cannot setHttpAsyncClient after having previously set, or after default already initialized.");
             }
         }
     }
 
+    // Sets the timeout in milliseconds used when requesting a connection from the connection manager.
     public static void setConnectionRequestTimeout(int timeout) {
         if (HttpClientManager.httpAsyncClient == null) {
-            ConnectionRequestTimeout = timeout;
+            connectionRequestTimeout = timeout;
         } else {
-            throw new RuntimeException("Set timeout preference only before setting HttpAsyncClient or using default one.");
+            throw new RuntimeException("Set timeout preference only before initializeHttpAsyncClient.");
         }
     }
 
+    // Sets the timeout in milliseconds until a connection is established.
     public static void setConnectTimeout(int timeout) {
         if (HttpClientManager.httpAsyncClient == null) {
-            ConnectionTimeout = timeout;
+            connectionTimeout = timeout;
         } else {
-            throw new RuntimeException("Set timeout preference only before setting HttpAsyncClient or using default one.");
+            throw new RuntimeException("Set timeout preference only before initializeHttpAsyncClient.");
         }
     }
 
+    // Sets the timeout in milliseconds for waiting for data or,
+    // put differently, a maximum period inactivity between two consecutive data packets.
     public static void setSocketTimeout(int timeout) {
         if (HttpClientManager.httpAsyncClient == null) {
-            SocketTimeout = timeout;
+            socketTimeout = timeout;
         } else {
-            throw new RuntimeException("Set timeout preference only before setting HttpAsyncClient or using default one.");
+            throw new RuntimeException("Set timeout preference only before initializeHttpAsyncClient.");
         }
     }
 }
