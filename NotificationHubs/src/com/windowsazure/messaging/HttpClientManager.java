@@ -22,7 +22,7 @@ public class HttpClientManager {
     // put differently, a maximum period inactivity between two consecutive data packets.
     private static int socketTimeout = -1;
 
-    public static CloseableHttpAsyncClient initializeHttpAsyncClient() {
+    private static void initializeHttpAsyncClient() {
         synchronized (HttpClientManager.class) {
             if (httpAsyncClient == null) {
                 RequestConfig config = RequestConfig.custom()
@@ -35,14 +35,14 @@ public class HttpClientManager {
                         .build();
                 client.start();
                 httpAsyncClient = client;
-            } else {
-                throw new RuntimeException("initializeHttpAsyncClient cannot be called twice or after setHttpAsyncClient.");
             }
         }
-        return httpAsyncClient;
     }
 
     public static CloseableHttpAsyncClient getHttpAsyncClient() {
+        if (httpAsyncClient == null) {
+            initializeHttpAsyncClient();
+        }
         return httpAsyncClient;
     }
 
@@ -51,7 +51,7 @@ public class HttpClientManager {
             if (HttpClientManager.httpAsyncClient == null) {
                 HttpClientManager.httpAsyncClient = httpAsyncClient;
             } else {
-                throw new RuntimeException("Cannot setHttpAsyncClient after having previously set, or after default already initialized.");
+                throw new RuntimeException("Cannot setHttpAsyncClient after having previously set, or after default already initialized from earlier call to getHttpAsyncClient.");
             }
         }
     }
@@ -61,7 +61,7 @@ public class HttpClientManager {
         if (HttpClientManager.httpAsyncClient == null) {
             connectionRequestTimeout = timeout;
         } else {
-            throw new RuntimeException("Set timeout preference only before initializeHttpAsyncClient.");
+            throw new RuntimeException("Cannot setConnectionRequestTimeout after previously setting httpAsyncClient, or after default already initialized from earlier call to getHttpAsyncClient.");
         }
     }
 
@@ -70,7 +70,7 @@ public class HttpClientManager {
         if (HttpClientManager.httpAsyncClient == null) {
             connectionTimeout = timeout;
         } else {
-            throw new RuntimeException("Set timeout preference only before initializeHttpAsyncClient.");
+            throw new RuntimeException("Cannot setConnectTimeout after previously setting httpAsyncClient, or after default already initialized from earlier call to getHttpAsyncClient.");
         }
     }
 
@@ -80,7 +80,7 @@ public class HttpClientManager {
         if (HttpClientManager.httpAsyncClient == null) {
             socketTimeout = timeout;
         } else {
-            throw new RuntimeException("Set timeout preference only before initializeHttpAsyncClient.");
+            throw new RuntimeException("Cannot setSocketTimeout after previously setting httpAsyncClient, or after default already initialized from earlier call to getHttpAsyncClient.");
         }
     }
 }
