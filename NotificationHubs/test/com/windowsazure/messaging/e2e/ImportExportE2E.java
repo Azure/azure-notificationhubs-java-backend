@@ -50,7 +50,7 @@ public class ImportExportE2E {
 	 	namespaceManager.createNotificationHub(hubDescription);		
 		Thread.sleep(1000);
 		
-		hub = new NotificationHub(connectionString, hubPath);
+		hub = new NotificationHub(connectionString, hubPath, new RetryOptions());
 	}
 	
 	@After

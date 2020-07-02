@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
@@ -35,6 +36,13 @@ import org.apache.http.entity.mime.*;
 import org.apache.http.entity.mime.content.StringBody;
 
 import com.google.gson.GsonBuilder;
+
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoSink;
+
+import static com.windowsazure.messaging.RetryUtil.getRetryPolicy;
+import static com.windowsazure.messaging.RetryUtil.withRetry;
+
 /**
  * 
  * Class implementing the INotificationHub interface.
@@ -45,12 +53,14 @@ public class NotificationHub implements INotificationHub {
 	private static final String APIVERSION = "?api-version=2015-04";
 	private static final String CONTENT_LOCATION_HEADER = "Location";
 	private static final String TRACKING_ID_HEADER = "TrackingId";
+    private final RetryOptions retryOptions;
+    private final RetryPolicy retryPolicy;
 	private String endpoint;
 	private String hubPath;
 	private String SasKeyName;
 	private String SasKeyValue;	
 	
-	public NotificationHub(String connectionString, String hubPath) {
+	public NotificationHub(String connectionString, String hubPath, RetryOptions retryOptions) {
 		this.hubPath = hubPath;
 
 		String[] parts = connectionString.split(";");
@@ -67,6 +77,9 @@ public class NotificationHub implements INotificationHub {
 				this.SasKeyValue = parts[i].substring(16);
 			}
 		}
+		
+		this.retryOptions = Objects.requireNonNull(retryOptions, "'retryOptions' cannot be null.");
+		this.retryPolicy = getRetryPolicy(retryOptions);
 	}
 	
 	@Override
@@ -584,18 +597,39 @@ public class NotificationHub implements INotificationHub {
 				post.setHeader(header, notification.getHeaders().get(header));
 			}
 
-			post.setEntity(new StringEntity(notification.getBody(), notification.getContentType()));
+			post.setEntity(new StringEntity(notification.getBody(), notification.getContentType()));			
 			
-			HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
+			Mono<NotificationOutcome> mono = nonBlockingHttpCallWithMono(post, trackingId, callback);			
+			withRetry(mono, retryOptions.getTryTimeout(), retryPolicy);			
+		
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} 
+	}	
+	
+	public Mono<NotificationOutcome> nonBlockingHttpCallWithMono(HttpPost post, final String trackingId, final FutureCallback<NotificationOutcome> callback) {
+		
+		return Mono.create(sink -> {
+	    	
+	    	HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();		        		
+		        		int httpStatusCode = response.getStatusLine().getStatusCode();
+		        		
 		        		if (httpStatusCode != 201) {
 		    				String msg = "";
 		    				if (response.getEntity() != null&& response.getEntity().getContent() != null) {
 		    					msg = IOUtils.toString(response.getEntity().getContent());
-		    				}
+		    				}		    				
+		    				
+			        		if (httpStatusCode == 429) {
+			        		 	callback.failed(new QuotaExceededException("Error: " + response.getStatusLine()	+ " body: " + msg, httpStatusCode));
+			        			sink.error(new QuotaExceededException("Error: " + response.getStatusLine()	+ " body: " + msg, httpStatusCode));        
+			        		}
+		    				
 		    				callback.failed(new NotificationHubsException("Error: " + response.getStatusLine()	+ " body: " + msg, httpStatusCode));
+			        		sink.error(new NotificationHubsException("Error: " + response.getStatusLine()	+ " body: " + msg, httpStatusCode));
+			        		
 		    				return;
 		    			}
 		        		
@@ -608,8 +642,10 @@ public class NotificationHub implements INotificationHub {
 		        		}
 		        		
 						callback.completed(new NotificationOutcome(trackingId, notificationId));
+						sink.success(new NotificationOutcome(trackingId, notificationId));
 		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
+		        		callback.failed(e);
+			        	sink.error(e);        		
 		        	} finally {
 		        		post.releaseConnection();
 		    		}
@@ -617,17 +653,17 @@ public class NotificationHub implements INotificationHub {
 		        public void failed(final Exception ex) {
 		        	post.releaseConnection();
 		        	callback.failed(ex);
+		        	sink.error(ex);
 		        }
 		        public void cancelled() {
 		        	post.releaseConnection();
 		        	callback.cancelled();
+		        	sink.error(new RuntimeException("Operation was cancelled."));
 		        }
-			});			
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		} 
-	}
-	
+			});
+	    });
+	}	
+
 	@Override
 	public NotificationOutcome scheduleNotification(Notification notification,	String tagExpression, Date scheduledTime)  throws NotificationHubsException{
 		SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();

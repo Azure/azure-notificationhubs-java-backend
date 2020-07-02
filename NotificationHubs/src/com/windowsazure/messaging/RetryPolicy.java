@@ -1,0 +1,123 @@
+package com.windowsazure.messaging;
+
+import java.time.Duration;
+import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeoutException;
+
+/**
+ * An abstract representation of a policy to govern retrying of messaging operations.
+ */
+public abstract class RetryPolicy {
+    static final long NANOS_PER_SECOND = 1000_000_000L;
+
+    private static final double JITTER_FACTOR = 0.08;
+
+    private final RetryOptions retryOptions;
+    private final Duration baseJitter;
+
+    /**
+     * Creates an instance with the given retry options. If {@link RetryOptions#getMaxDelay()}, {@link
+     * RetryOptions#getDelay()}, or {@link RetryOptions#getMaxRetries()} is equal to {@link Duration#ZERO} or
+     * zero, requests failing with a retriable exception will not be retried.
+     *
+     * @param retryOptions The options to set on this retry policy.
+     * @throws NullPointerException if {@code retryOptions} is {@code null}.
+     */
+    protected RetryPolicy(RetryOptions retryOptions) {
+        Objects.requireNonNull(retryOptions, "'retryOptions' cannot be null.");
+
+        this.retryOptions = retryOptions;
+
+        // 1 second = 1.0 * 10^9 nanoseconds.
+        final double jitterInNanos = retryOptions.getDelay().getSeconds() * JITTER_FACTOR * NANOS_PER_SECOND;
+        baseJitter = Duration.ofNanos((long) jitterInNanos);
+    }
+
+    /**
+     * Gets the set of options used to configure this retry policy.
+     *
+     * @return The set of options used to configure this retry policy.
+     */
+    protected RetryOptions getRetryOptions() {
+        return retryOptions;
+    }
+
+    /**
+     * Gets the maximum number of retry attempts.
+     *
+     * @return The maximum number of retry attempts.
+     */
+    public int getMaxRetries() {
+        return retryOptions.getMaxRetries();
+    }
+
+    /**
+     * Calculates the amount of time to delay before the next retry attempt.
+     *
+     * @param lastException The last exception that was observed for the operation to be retried.
+     * @param retryCount The number of attempts that have been made, including the initial attempt before any retries.
+     * @return The amount of time to delay before retrying the associated operation; if {@code null}, then the operation
+     * is no longer eligible to be retried.
+     */
+    public Duration calculateRetryDelay(Throwable lastException, int retryCount) {
+        if (retryOptions.getDelay() == Duration.ZERO
+            || retryOptions.getMaxDelay() == Duration.ZERO
+            || retryCount > retryOptions.getMaxRetries()) {
+            return null;
+        }
+
+        final Duration baseDelay;
+        if (lastException instanceof QuotaExceededException) {
+            baseDelay = retryOptions.getDelay();
+        } else if (lastException instanceof TimeoutException) {
+            baseDelay = retryOptions.getDelay();
+        } else {
+            baseDelay = null;
+        }
+
+        if (baseDelay == null) {
+            return null;
+        }
+
+        final Duration delay = calculateRetryDelay(retryCount, baseDelay, baseJitter, ThreadLocalRandom.current());
+
+        // If delay is smaller or equal to the maximum delay, return the maximum delay.
+        return delay.compareTo(retryOptions.getMaxDelay()) <= 0
+            ? delay
+            : retryOptions.getMaxDelay();
+    }
+
+    /**
+     * Calculates the amount of time to delay before the next retry attempt based on the {@code retryCount},
+     * {@code baseDelay}, and {@code baseJitter}.
+     *
+     * @param retryCount The number of attempts that have been made, including the initial attempt before any retries.
+     * @param baseDelay The base delay for a retry attempt.
+     * @param baseJitter The base jitter delay.
+     * @param random The random number generator. Can be utilised to calculate a random jitter value for the retry.
+     * @return The amount of time to delay before retrying to associated operation; or {@code null} if the it cannot be
+     * retried.
+     */
+    protected abstract Duration calculateRetryDelay(int retryCount, Duration baseDelay, Duration baseJitter,
+        ThreadLocalRandom random);
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(retryOptions);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (!(obj instanceof RetryPolicy)) {
+            return false;
+        }
+
+        final RetryPolicy other = (RetryPolicy) obj;
+        return retryOptions.equals(other.retryOptions);
+    }
+}
