@@ -42,12 +42,11 @@ public class RetryUtil {
      * @param source The publisher to apply the retry policy to.
      * @return A publisher that returns the results of the {@link Flux} if any of the retry attempts are successful.
      *         Otherwise, propagates a {@link TimeoutException}.
-     
+     */
     public static <T> Flux<T> withRetry(Flux<T> source, Duration operationTimeout, RetryPolicy retryPolicy) {
         return Flux.defer(() -> source.timeout(operationTimeout))
             .retryWhen(errors -> retry(errors, retryPolicy));
     }
-*/
     
     /**
      * Given a {@link Mono} will apply the retry policy to it when the operation times out.

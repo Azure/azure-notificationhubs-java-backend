@@ -38,7 +38,6 @@ import org.apache.http.entity.mime.content.StringBody;
 import com.google.gson.GsonBuilder;
 
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.MonoSink;
 
 import static com.windowsazure.messaging.RetryUtil.getRetryPolicy;
 import static com.windowsazure.messaging.RetryUtil.withRetry;
@@ -591,7 +590,7 @@ public class NotificationHub implements INotificationHub {
 					
 			return withRetry(process(post, trackingId), retryOptions.getTryTimeout(), retryPolicy);		
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			return Mono.error(new RuntimeException(e));
 		} 
 	}	
 
@@ -672,7 +671,7 @@ public class NotificationHub implements INotificationHub {
 			
 			return withRetry(process(post, trackingId), retryOptions.getTryTimeout(), retryPolicy);	
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			return Mono.error(new RuntimeException(e));
 		} 
 	}
 
@@ -710,7 +709,7 @@ public class NotificationHub implements INotificationHub {
 			post.setEntity(entity);			
 			return withRetry(process(post, trackingId), retryOptions.getTryTimeout(), retryPolicy);	
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+            return Mono.error(new RuntimeException(e));
 		} 
 		
 	}
