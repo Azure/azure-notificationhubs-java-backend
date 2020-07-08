@@ -57,29 +57,27 @@ public class RetryUtil {
      *         Otherwise, propagates a {@link TimeoutException}.
      */
     public static <T> Mono<T> withRetry(Mono<T> source, Duration operationTimeout, RetryPolicy retryPolicy) {
-        return Mono.defer(() -> source.timeout(operationTimeout))
-            .retryWhen(errors -> retry(errors, retryPolicy));
+        return Mono.defer(() -> source.timeout(operationTimeout)).retryWhen(errors -> retry(errors, retryPolicy));
     }
 
     private static Flux<Long> retry(Flux<Throwable> source, RetryPolicy retryPolicy) {
         return source.zipWith(Flux.range(1, retryPolicy.getMaxRetries() + 1),
             (error, attempt) -> {
                 if (attempt > retryPolicy.getMaxRetries()) {
-                    //LOGGER.warning("Retry attempts are exhausted. Current: {}. Max: {}.", attempt, retryPolicy.getMaxRetries());
+                	System.out.println("Retry attempts are exhausted. Current: " + attempt + ". Max: " + retryPolicy.getMaxRetries());
                     throw Exceptions.propagate(error);
                 }
 
                 if (error instanceof TimeoutException) {
-                    //LOGGER.info("TimeoutException error occurred. Retrying operation. Attempt: {}.", attempt, error);
-
+                	System.out.println("TimeoutException error occurred. Retrying operation. Attempt: " + attempt);
+                	
                     return retryPolicy.calculateRetryDelay(error, attempt);
-                } else if (error instanceof QuotaExceededException) {
-                    //LOGGER.info("Retryable error occurred. Retrying operation. Attempt: {}. Error condition: {}", attempt, ((QuotaExceededException) error).getErrorCondition(), error);
-
+                } else if (error instanceof QuotaExceededException && (((QuotaExceededException) error).getIsTransient())) {
+                	System.out.println("Retryable error occurred. Retrying operation. Attempt: " + attempt + ". Error: " + error);
+                	
                     return retryPolicy.calculateRetryDelay(error, attempt);
                 } else {
-                    //LOGGER.warning("Error is not a TimeoutException nor is it a retryable exception.", error);
-
+                	System.out.println("Error is not a TimeoutException nor is it a retryable exception." + error);
                     throw Exceptions.propagate(error);
                 }
             })

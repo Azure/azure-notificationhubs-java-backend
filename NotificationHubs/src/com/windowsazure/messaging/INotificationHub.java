@@ -6,6 +6,8 @@ import java.util.Set;
 
 import org.apache.http.concurrent.FutureCallback;
 
+import reactor.core.publisher.Mono;
+
 
 /**
  * Interface for the REST wrapper of WIndows Azure Notification Hubs
@@ -44,14 +46,14 @@ public interface INotificationHub {
 	void getRegistrationsByChannelAsync(String channel,	FutureCallback<CollectionResult> callback);
 	void getRegistrationsAsync(int top, String continuationToken, FutureCallback<CollectionResult> callback);	
 
-	void sendNotificationAsync(Notification notification, FutureCallback<NotificationOutcome> callback);
-	void sendNotificationAsync(Notification notification, Set<String> tags,	FutureCallback<NotificationOutcome> callback);
-	void sendNotificationAsync(Notification notification, String tagExpression,	FutureCallback<NotificationOutcome> callback);
-	void sendDirectNotificationAsync(Notification notification, String deviceHandle, FutureCallback<NotificationOutcome> callback);
-	void sendDirectNotificationAsync(Notification notification, List<String> deviceHandles, FutureCallback<NotificationOutcome> callback);	
-	void scheduleNotificationAsync(Notification notification, Date scheduledTime, FutureCallback<NotificationOutcome> callback);
-	void scheduleNotificationAsync(Notification notification, Set<String> tags,	Date scheduledTime, FutureCallback<NotificationOutcome> callback);	
-	void scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime, FutureCallback<NotificationOutcome> callback);
+	Mono<NotificationOutcome> sendNotificationAsync(Notification notification);
+	Mono<NotificationOutcome> sendNotificationAsync(Notification notification, Set<String> tags);
+	Mono<NotificationOutcome> sendNotificationAsync(Notification notification, String tagExpression);
+	Mono<NotificationOutcome> sendDirectNotificationAsync(Notification notification, String deviceHandle);
+	Mono<NotificationOutcome> sendDirectNotificationAsync(Notification notification, List<String> deviceHandles);	
+	Mono<NotificationOutcome> scheduleNotificationAsync(Notification notification, Date scheduledTime);
+	Mono<NotificationOutcome> scheduleNotificationAsync(Notification notification, Set<String> tags,	Date scheduledTime);	
+	Mono<NotificationOutcome> scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime);
 	void cancelScheduledNotificationAsync(String notificationId, FutureCallback<Object> callback);
 			
 	void createOrUpdateInstallationAsync(Installation installation,	FutureCallback<Object> callback);

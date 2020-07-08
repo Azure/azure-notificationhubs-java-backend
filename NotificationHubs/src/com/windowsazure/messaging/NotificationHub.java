@@ -503,55 +503,47 @@ public class NotificationHub implements INotificationHub {
 	}
 	
 	@Override
-	public void sendNotificationAsync(Notification notification, FutureCallback<NotificationOutcome> callback) {
-		scheduleNotificationAsync(notification, "", null, callback);
+	public Mono<NotificationOutcome> sendNotificationAsync(Notification notification) {
+		return scheduleNotificationAsync(notification, "", null);
 	}
 	
 	@Override
 	public NotificationOutcome sendNotification(Notification notification)  throws NotificationHubsException{
-		SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
-		sendNotificationAsync(notification, callback);
-		return callback.getResult();		
+		return sendNotificationAsync(notification).block();	
 	}
 
 	@Override
-	public void sendNotificationAsync(Notification notification, Set<String> tags, FutureCallback<NotificationOutcome> callback) {
-		scheduleNotificationAsync(notification, tags, null, callback);
+	public Mono<NotificationOutcome> sendNotificationAsync(Notification notification, Set<String> tags) {
+		return scheduleNotificationAsync(notification, tags, null);
 	}
 	
 	@Override
-	public NotificationOutcome sendNotification(Notification notification, Set<String> tags)  throws NotificationHubsException{
-		SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
-		sendNotificationAsync(notification, tags, callback);
-		return callback.getResult();
+	public NotificationOutcome sendNotification(Notification notification, Set<String> tags)  throws NotificationHubsException{		
+		return sendNotificationAsync(notification, tags).block();
 	}
 	
 	@Override
-	public void sendNotificationAsync(Notification notification, String tagExpression, FutureCallback<NotificationOutcome> callback) {
-		scheduleNotificationAsync(notification, tagExpression, null, callback);
+	public Mono<NotificationOutcome> sendNotificationAsync(Notification notification, String tagExpression) {
+		return scheduleNotificationAsync(notification, tagExpression, null);
 	}
 
 	@Override
 	public NotificationOutcome sendNotification(Notification notification, String tagExpression)  throws NotificationHubsException{
-		SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
-		sendNotificationAsync(notification, tagExpression, callback);
-		return callback.getResult();
+		return sendNotificationAsync(notification, tagExpression).block();
 	}
 	
 	@Override
-	public void scheduleNotificationAsync(Notification notification, Date scheduledTime, FutureCallback<NotificationOutcome> callback) {
-		scheduleNotificationAsync(notification, "", scheduledTime, callback);
+	public Mono<NotificationOutcome> scheduleNotificationAsync(Notification notification, Date scheduledTime) {
+		return scheduleNotificationAsync(notification, "", scheduledTime);
 	}
 	
 	@Override
-	public NotificationOutcome scheduleNotification(Notification notification,	Date scheduledTime)  throws NotificationHubsException{
-		SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
-		scheduleNotificationAsync(notification, scheduledTime, callback);
-		return callback.getResult();
+	public NotificationOutcome scheduleNotification(Notification notification,	Date scheduledTime)  throws NotificationHubsException{		
+		return scheduleNotificationAsync(notification, scheduledTime).block();
 	}
 	
 	@Override
-	public void scheduleNotificationAsync(Notification notification, Set<String> tags, Date scheduledTime, FutureCallback<NotificationOutcome> callback) {
+	public Mono<NotificationOutcome> scheduleNotificationAsync(Notification notification, Set<String> tags, Date scheduledTime) {
 		if (tags.isEmpty())
 			throw new IllegalArgumentException(
 					"tags has to contain at least an element");
@@ -563,18 +555,16 @@ public class NotificationHub implements INotificationHub {
 				exp.append(" || ");
 		}
 
-		scheduleNotificationAsync(notification, exp.toString(), scheduledTime, callback);
+		return scheduleNotificationAsync(notification, exp.toString(), scheduledTime);
 	}
 
 	@Override
 	public NotificationOutcome scheduleNotification(Notification notification,	Set<String> tags, Date scheduledTime)  throws NotificationHubsException{
-		SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
-		scheduleNotificationAsync(notification, tags, scheduledTime, callback);
-		return callback.getResult();		
+		return scheduleNotificationAsync(notification, tags, scheduledTime).block();		
 	}
 
 	@Override
-	public void scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime, final FutureCallback<NotificationOutcome> callback){
+	public Mono<NotificationOutcome> scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime){
 		try {
 			URI uri = new URI(endpoint + hubPath + (scheduledTime == null ? "/messages" : "/schedulednotifications") + APIVERSION);
 			final HttpPost post = new HttpPost(uri);
@@ -598,77 +588,16 @@ public class NotificationHub implements INotificationHub {
 			}
 
 			post.setEntity(new StringEntity(notification.getBody(), notification.getContentType()));			
-			
-			Mono<NotificationOutcome> mono = nonBlockingHttpCallWithMono(post, trackingId, callback);			
-			withRetry(mono, retryOptions.getTryTimeout(), retryPolicy);			
-		
+					
+			return withRetry(process(post, trackingId), retryOptions.getTryTimeout(), retryPolicy);		
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		} 
 	}	
-	
-	public Mono<NotificationOutcome> nonBlockingHttpCallWithMono(HttpPost post, final String trackingId, final FutureCallback<NotificationOutcome> callback) {
-		
-		return Mono.create(sink -> {
-	    	
-	    	HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
-		        public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();
-		        		
-		        		if (httpStatusCode != 201) {
-		    				String msg = "";
-		    				if (response.getEntity() != null&& response.getEntity().getContent() != null) {
-		    					msg = IOUtils.toString(response.getEntity().getContent());
-		    				}		    				
-		    				
-			        		if (httpStatusCode == 429) {
-			        		 	callback.failed(new QuotaExceededException("Error: " + response.getStatusLine()	+ " body: " + msg, httpStatusCode));
-			        			sink.error(new QuotaExceededException("Error: " + response.getStatusLine()	+ " body: " + msg, httpStatusCode));        
-			        		}
-		    				
-		    				callback.failed(new NotificationHubsException("Error: " + response.getStatusLine()	+ " body: " + msg, httpStatusCode));
-			        		sink.error(new NotificationHubsException("Error: " + response.getStatusLine()	+ " body: " + msg, httpStatusCode));
-			        		
-		    				return;
-		    			}
-		        		
-		        		String notificationId = null;
-		        		Header locationHeader = response.getFirstHeader(CONTENT_LOCATION_HEADER);		        		
-		        		if(locationHeader != null){
-		        			URI location = new URI(locationHeader.getValue());
-		        			String[] segments = location.getPath().split("/");
-		        			notificationId = segments[segments.length-1];
-		        		}
-		        		
-						callback.completed(new NotificationOutcome(trackingId, notificationId));
-						sink.success(new NotificationOutcome(trackingId, notificationId));
-		        	} catch (Exception e) {
-		        		callback.failed(e);
-			        	sink.error(e);        		
-		        	} finally {
-		        		post.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	post.releaseConnection();
-		        	callback.failed(ex);
-		        	sink.error(ex);
-		        }
-		        public void cancelled() {
-		        	post.releaseConnection();
-		        	callback.cancelled();
-		        	sink.error(new RuntimeException("Operation was cancelled."));
-		        }
-			});
-	    });
-	}	
 
 	@Override
 	public NotificationOutcome scheduleNotification(Notification notification,	String tagExpression, Date scheduledTime)  throws NotificationHubsException{
-		SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
-		scheduleNotificationAsync(notification, tagExpression, scheduledTime, callback);
-		return callback.getResult();
+		return scheduleNotificationAsync(notification, tagExpression, scheduledTime).block();
 	}	
 	
 	@Override
@@ -716,22 +645,17 @@ public class NotificationHub implements INotificationHub {
 	}
 	
 	@Override
-	public NotificationOutcome sendDirectNotification(Notification notification, String deviceHandle)	throws NotificationHubsException {
-		SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
-		sendDirectNotificationAsync(notification, deviceHandle, callback);
-		return callback.getResult();	
+	public NotificationOutcome sendDirectNotification(Notification notification, String deviceHandle)	throws NotificationHubsException {		
+		return sendDirectNotificationAsync(notification, deviceHandle).block();
 	}
 
 	@Override
 	public NotificationOutcome sendDirectNotification(Notification notification, List<String> deviceHandles) throws NotificationHubsException {
-		SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
-		sendDirectNotificationAsync(notification, deviceHandles, callback);
-		return callback.getResult();
+		return sendDirectNotificationAsync(notification, deviceHandles).block();
 	}
 
 	@Override
-	public void sendDirectNotificationAsync(Notification notification,
-			String deviceHandle, final FutureCallback<NotificationOutcome> callback) {
+	public Mono<NotificationOutcome> sendDirectNotificationAsync(Notification notification, String deviceHandle) {
 		try {
 			URI uri = new URI(endpoint + hubPath + "/messages" + APIVERSION + "&direct");
 			final HttpPost post = new HttpPost(uri);
@@ -744,52 +668,16 @@ public class NotificationHub implements INotificationHub {
 				post.setHeader(header, notification.getHeaders().get(header));
 			}
 
-			post.setEntity(new StringEntity(notification.getBody(), notification.getContentType()));
+			post.setEntity(new StringEntity(notification.getBody(), notification.getContentType()));			
 			
-			HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
-		        public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();		        		
-		        		if (httpStatusCode != 201) {
-		    				String msg = "";
-		    				if (response.getEntity() != null&& response.getEntity().getContent() != null) {
-		    					msg = IOUtils.toString(response.getEntity().getContent());
-		    				}
-		    				callback.failed(new NotificationHubsException("Error: " + response.getStatusLine()	+ " body: " + msg, httpStatusCode));
-		    				return;
-		    			}
-		        		
-		        		String notificationId = null;
-		        		Header locationHeader = response.getFirstHeader(CONTENT_LOCATION_HEADER);		        		
-		        		if(locationHeader != null){
-		        			URI location = new URI(locationHeader.getValue());
-		        			String[] segments = location.getPath().split("/");
-		        			notificationId = segments[segments.length-1];
-		        		}
-		        		
-						callback.completed(new NotificationOutcome(trackingId, notificationId));
-		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
-		        	} finally {
-		        		post.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	post.releaseConnection();
-		        	callback.failed(ex);
-		        }
-		        public void cancelled() {
-		        	post.releaseConnection();
-		        	callback.cancelled();
-		        }
-			});			
+			return withRetry(process(post, trackingId), retryOptions.getTryTimeout(), retryPolicy);	
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		} 
 	}
 
 	@Override
-	public void sendDirectNotificationAsync(Notification notification, List<String> deviceHandles, final FutureCallback<NotificationOutcome> callback) {
+	public Mono<NotificationOutcome> sendDirectNotificationAsync(Notification notification, List<String> deviceHandles) {
 		try {
 			URI uri = new URI(endpoint + hubPath + "/messages/$batch" + APIVERSION + "&direct");
 			final HttpPost post = new HttpPost(uri);
@@ -819,19 +707,32 @@ public class NotificationHub implements INotificationHub {
 					.addPart(devicesPart)
 			    	.build();
 			
-			post.setEntity(entity);
-			
-			HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
+			post.setEntity(entity);			
+			return withRetry(process(post, trackingId), retryOptions.getTryTimeout(), retryPolicy);	
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} 
+		
+	}
+
+	private Mono<NotificationOutcome> process(HttpPost post, String trackingId){
+		return Mono.create(sink -> {		    	
+	    	HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();		        		
+		        	try{					        		
+		        		int httpStatusCode = response.getStatusLine().getStatusCode();
+	    				
+		        		if (httpStatusCode == 429) {
+		        			throw new QuotaExceededException("Error: " + response.getStatusLine(), httpStatusCode);       
+		        		}
+		        		
 		        		if (httpStatusCode != 201) {
 		    				String msg = "";
 		    				if (response.getEntity() != null&& response.getEntity().getContent() != null) {
 		    					msg = IOUtils.toString(response.getEntity().getContent());
 		    				}
-		    				callback.failed(new NotificationHubsException("Error: " + response.getStatusLine()	+ " body: " + msg, httpStatusCode));
-		    				return;
+		    				
+		    				throw new NotificationHubsException("Error: " + response.getStatusLine()	+ " body: " + msg, httpStatusCode);
 		    			}
 		        		
 		        		String notificationId = null;
@@ -842,28 +743,25 @@ public class NotificationHub implements INotificationHub {
 		        			notificationId = segments[segments.length-1];
 		        		}
 		        		
-						callback.completed(new NotificationOutcome(trackingId, notificationId));
+						sink.success(new NotificationOutcome(trackingId, notificationId));
 		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
+			        	sink.error(e);        		
 		        	} finally {
 		        		post.releaseConnection();
 		    		}
 		        }
 		        public void failed(final Exception ex) {
 		        	post.releaseConnection();
-		        	callback.failed(ex);
+		        	sink.error(ex);
 		        }
 		        public void cancelled() {
 		        	post.releaseConnection();
-		        	callback.cancelled();
+		        	sink.error(new RuntimeException("Operation was cancelled."));
 		        }
-			});			
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		} 
-		
+			});
+	    });
 	}
-
+	
 	@Override
 	public NotificationTelemetry getNotificationTelemetry(String notificationId)
 			throws NotificationHubsException {
