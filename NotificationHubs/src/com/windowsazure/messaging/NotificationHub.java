@@ -502,47 +502,51 @@ public class NotificationHub implements INotificationHub {
 	}
 	
 	@Override
-	public Mono<NotificationOutcome> sendNotificationAsync(Notification notification) {
+	public Mono<Void> sendNotificationAsync(Notification notification) {
 		return scheduleNotificationAsync(notification, "", null);
 	}
 	
 	@Override
 	public NotificationOutcome sendNotification(Notification notification)  throws NotificationHubsException{
-		return sendNotificationAsync(notification).block();	
+		return scheduleNotificationWithResult(notification, "", null).block();
 	}
 
 	@Override
-	public Mono<NotificationOutcome> sendNotificationAsync(Notification notification, Set<String> tags) {
+	public Mono<Void> sendNotificationAsync(Notification notification, Set<String> tags) {
 		return scheduleNotificationAsync(notification, tags, null);
 	}
 	
 	@Override
-	public NotificationOutcome sendNotification(Notification notification, Set<String> tags)  throws NotificationHubsException{		
-		return sendNotificationAsync(notification, tags).block();
+	public NotificationOutcome sendNotification(Notification notification, Set<String> tags)  throws NotificationHubsException{
+		return scheduleNotificationWithResult(notification, tags, null).block();
 	}
 	
 	@Override
-	public Mono<NotificationOutcome> sendNotificationAsync(Notification notification, String tagExpression) {
+	public Mono<Void> sendNotificationAsync(Notification notification, String tagExpression) {
 		return scheduleNotificationAsync(notification, tagExpression, null);
 	}
 
 	@Override
 	public NotificationOutcome sendNotification(Notification notification, String tagExpression)  throws NotificationHubsException{
-		return sendNotificationAsync(notification, tagExpression).block();
+		return scheduleNotificationWithResult(notification, tagExpression, null).block();
 	}
 	
 	@Override
-	public Mono<NotificationOutcome> scheduleNotificationAsync(Notification notification, Date scheduledTime) {
+	public Mono<Void> scheduleNotificationAsync(Notification notification, Date scheduledTime) {
 		return scheduleNotificationAsync(notification, "", scheduledTime);
 	}
 	
 	@Override
 	public NotificationOutcome scheduleNotification(Notification notification,	Date scheduledTime)  throws NotificationHubsException{		
-		return scheduleNotificationAsync(notification, scheduledTime).block();
+		return scheduleNotificationWithResult(notification, "", scheduledTime).block();
 	}
 	
 	@Override
-	public Mono<NotificationOutcome> scheduleNotificationAsync(Notification notification, Set<String> tags, Date scheduledTime) {
+	public Mono<Void> scheduleNotificationAsync(Notification notification, Set<String> tags, Date scheduledTime) {
+		return scheduleNotificationWithResult(notification, tags, scheduledTime).then();
+	}
+	
+	private Mono<NotificationOutcome> scheduleNotificationWithResult(Notification notification, Set<String> tags, Date scheduledTime) {
 		if (tags.isEmpty())
 			throw new IllegalArgumentException(
 					"tags has to contain at least an element");
@@ -554,16 +558,15 @@ public class NotificationHub implements INotificationHub {
 				exp.append(" || ");
 		}
 
-		return scheduleNotificationAsync(notification, exp.toString(), scheduledTime);
+		return scheduleNotificationWithResult(notification, exp.toString(), scheduledTime);
 	}
 
 	@Override
 	public NotificationOutcome scheduleNotification(Notification notification,	Set<String> tags, Date scheduledTime)  throws NotificationHubsException{
-		return scheduleNotificationAsync(notification, tags, scheduledTime).block();		
+		return scheduleNotificationWithResult(notification, tags, scheduledTime).block();		
 	}
 
-	@Override
-	public Mono<NotificationOutcome> scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime){
+	private Mono<NotificationOutcome> scheduleNotificationWithResult(Notification notification, String tagExpression, Date scheduledTime){
 		try {
 			URI uri = new URI(endpoint + hubPath + (scheduledTime == null ? "/messages" : "/schedulednotifications") + APIVERSION);
 			final HttpPost post = new HttpPost(uri);
@@ -595,8 +598,13 @@ public class NotificationHub implements INotificationHub {
 	}	
 
 	@Override
+	public Mono<Void> scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime){
+		return scheduleNotificationWithResult(notification, tagExpression, scheduledTime).then();
+	}	
+	
+	@Override
 	public NotificationOutcome scheduleNotification(Notification notification,	String tagExpression, Date scheduledTime)  throws NotificationHubsException{
-		return scheduleNotificationAsync(notification, tagExpression, scheduledTime).block();
+		return scheduleNotificationWithResult(notification, tagExpression, scheduledTime).block();
 	}	
 	
 	@Override
@@ -645,16 +653,20 @@ public class NotificationHub implements INotificationHub {
 	
 	@Override
 	public NotificationOutcome sendDirectNotification(Notification notification, String deviceHandle)	throws NotificationHubsException {		
-		return sendDirectNotificationAsync(notification, deviceHandle).block();
+		return sendDirectNotificationWithResult(notification, deviceHandle).block();
 	}
 
 	@Override
 	public NotificationOutcome sendDirectNotification(Notification notification, List<String> deviceHandles) throws NotificationHubsException {
-		return sendDirectNotificationAsync(notification, deviceHandles).block();
+		return sendDirectNotificationWithResult(notification, deviceHandles).block();
 	}
 
 	@Override
-	public Mono<NotificationOutcome> sendDirectNotificationAsync(Notification notification, String deviceHandle) {
+	public Mono<Void> sendDirectNotificationAsync(Notification notification, String deviceHandle) {
+		return sendDirectNotificationWithResult(notification, deviceHandle).then();
+	}
+	
+	private Mono<NotificationOutcome> sendDirectNotificationWithResult(Notification notification, String deviceHandle) {
 		try {
 			URI uri = new URI(endpoint + hubPath + "/messages" + APIVERSION + "&direct");
 			final HttpPost post = new HttpPost(uri);
@@ -676,7 +688,11 @@ public class NotificationHub implements INotificationHub {
 	}
 
 	@Override
-	public Mono<NotificationOutcome> sendDirectNotificationAsync(Notification notification, List<String> deviceHandles) {
+	public Mono<Void> sendDirectNotificationAsync(Notification notification, List<String> deviceHandles) {
+		return sendDirectNotificationWithResult(notification, deviceHandles).then();
+	}
+	
+	private Mono<NotificationOutcome> sendDirectNotificationWithResult(Notification notification, List<String> deviceHandles) {
 		try {
 			URI uri = new URI(endpoint + hubPath + "/messages/$batch" + APIVERSION + "&direct");
 			final HttpPost post = new HttpPost(uri);

@@ -46,14 +46,14 @@ public interface INotificationHub {
 	void getRegistrationsByChannelAsync(String channel,	FutureCallback<CollectionResult> callback);
 	void getRegistrationsAsync(int top, String continuationToken, FutureCallback<CollectionResult> callback);	
 
-	Mono<NotificationOutcome> sendNotificationAsync(Notification notification);
-	Mono<NotificationOutcome> sendNotificationAsync(Notification notification, Set<String> tags);
-	Mono<NotificationOutcome> sendNotificationAsync(Notification notification, String tagExpression);
-	Mono<NotificationOutcome> sendDirectNotificationAsync(Notification notification, String deviceHandle);
-	Mono<NotificationOutcome> sendDirectNotificationAsync(Notification notification, List<String> deviceHandles);	
-	Mono<NotificationOutcome> scheduleNotificationAsync(Notification notification, Date scheduledTime);
-	Mono<NotificationOutcome> scheduleNotificationAsync(Notification notification, Set<String> tags,	Date scheduledTime);	
-	Mono<NotificationOutcome> scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime);
+	Mono<Void> sendNotificationAsync(Notification notification);
+	Mono<Void> sendNotificationAsync(Notification notification, Set<String> tags);
+	Mono<Void> sendNotificationAsync(Notification notification, String tagExpression);
+	Mono<Void> sendDirectNotificationAsync(Notification notification, String deviceHandle);
+	Mono<Void> sendDirectNotificationAsync(Notification notification, List<String> deviceHandles);	
+	Mono<Void> scheduleNotificationAsync(Notification notification, Date scheduledTime);
+	Mono<Void> scheduleNotificationAsync(Notification notification, Set<String> tags,	Date scheduledTime);	
+	Mono<Void> scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime);
 	void cancelScheduledNotificationAsync(String notificationId, FutureCallback<Object> callback);
 			
 	void createOrUpdateInstallationAsync(Installation installation,	FutureCallback<Object> callback);
