@@ -82,7 +82,7 @@ public class NotificationHub implements INotificationHub {
 	}
 	
 	@Override
-	public void createRegistrationAsync(Registration registration, final FutureCallback<Registration> callback){
+	public Mono<Registration> createRegistrationAsync(Registration registration){
 		try {
 			URI uri = new URI(endpoint + hubPath + "/registrations"	+ APIVERSION);
 			final HttpPost post = new HttpPost(uri);
@@ -92,94 +92,95 @@ public class NotificationHub implements INotificationHub {
 			entity.setContentEncoding("utf-8");
 			post.setEntity(entity);
 			
-			HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
+			return Mono.create(sink -> {
+				HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{		        		       		
 		        		int httpStatusCode = response.getStatusLine().getStatusCode();
 		        		if (httpStatusCode != 200) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
+		        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
 		        			return;
 		    			}	
 		    			
-						callback.completed(Registration.parse(response.getEntity().getContent()));
-		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
-		        	} finally {
-		    			post.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	post.releaseConnection();
-		        	callback.failed(ex);
-		        }
-		        public void cancelled() {
-		        	post.releaseConnection();
-		        	callback.cancelled();
-		        }
-			});			
+		        		sink.success(Registration.parse(response.getEntity().getContent()));
+			        	} catch (Exception e) {
+			        		sink.error(e);	        		
+			        	} finally {
+			    			post.releaseConnection();
+			    		}
+			        }
+			        public void failed(final Exception ex) {
+			        	post.releaseConnection();
+			        	sink.error(ex);
+			        }
+			        public void cancelled() {
+			        	post.releaseConnection();
+			        	sink.error(new RuntimeException("Operation was cancelled."));
+			        }
+				});
+			});
+						
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			return Mono.error(new RuntimeException(e));
 		} 
 	}
 	
 	@Override
 	public Registration createRegistration(Registration registration)  throws NotificationHubsException{
-		SyncCallback<Registration> callback = new SyncCallback<Registration>();
-		createRegistrationAsync(registration, callback);
-		return callback.getResult();
+		return createRegistrationAsync(registration).block();
 	}
-	
+
 	@Override
-	public void createRegistrationIdAsync(final FutureCallback<String> callback){
-		try {
+	public Mono<String> createRegistrationIdAsync(){
+		try {			
 			URI uri = new URI(endpoint + hubPath + "/registrationids"+ APIVERSION);
 			final HttpPost post = new HttpPost(uri);
 			post.setHeader("Authorization", generateSasToken(uri));
 			
-			HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
-		        public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();
-		        		if (httpStatusCode != 201) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
-		        			return;
-		    			}	
-		        		
-			        	String location = response.getFirstHeader(CONTENT_LOCATION_HEADER).getValue();
-						Pattern extractId = Pattern.compile("(\\S+)/registrationids/([^?]+).*");
-						Matcher m = extractId.matcher(location);
-						m.matches();
-						String id = m.group(2);
-						callback.completed(id);
-		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
-		        	} finally {
-		    			post.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	post.releaseConnection();
-		        	callback.failed(ex);
-		        }
-		        public void cancelled() {
-		        	post.releaseConnection();
-		        	callback.cancelled();
-		        }
-			});			
+			return Mono.create(sink -> {		    	
+				HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
+			        public void completed(final HttpResponse response) {
+			        	try{
+			        		int httpStatusCode = response.getStatusLine().getStatusCode();
+			        		if (httpStatusCode != 201) {
+			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			        			return;
+			    			}	
+			        		
+				        	String location = response.getFirstHeader(CONTENT_LOCATION_HEADER).getValue();
+							Pattern extractId = Pattern.compile("(\\S+)/registrationids/([^?]+).*");
+							Matcher m = extractId.matcher(location);
+							m.matches();
+							String id = m.group(2);
+							sink.success(id);
+			        	} catch (Exception e) {
+			        		sink.error(e);	        		
+			        	} finally {
+			    			post.releaseConnection();
+			    		}
+			        }
+			        public void failed(final Exception ex) {
+			        	post.releaseConnection();
+			        	sink.error(ex);
+			        }
+			        public void cancelled() {
+			        	post.releaseConnection();
+			        	sink.error(new RuntimeException("Operation was cancelled."));
+			        }
+				});
+			});
 		} catch (Exception e) {
-			throw new RuntimeException(e);
-		} 
+            return Mono.error(new RuntimeException(e));
+		}
 	}
 
 	@Override
 	public String createRegistrationId()  throws NotificationHubsException{
-		SyncCallback<String> callback = new SyncCallback<String>();
-		createRegistrationIdAsync(callback);
-		return callback.getResult();
+		return createRegistrationIdAsync().block();
 	}
-
+	
 	@Override
-	public void updateRegistrationAsync(Registration registration, final FutureCallback<Registration> callback){
+	public Mono<Registration> updateRegistrationAsync(Registration registration){
 		try {
 			URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + APIVERSION);
 			final HttpPut put = new HttpPut(uri);
@@ -187,200 +188,197 @@ public class NotificationHub implements INotificationHub {
 			put.setHeader("If-Match", registration.getEtag() == null ? "*"	: "W/\"" + registration.getEtag() + "\"");
 			put.setEntity(new StringEntity(registration.getXml(), ContentType.APPLICATION_ATOM_XML));
 			
-			HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
-		        public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();
-		        		if (httpStatusCode != 200) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
-		        			return;
-		    			}			    			
-		    			
-						callback.completed(Registration.parse(response.getEntity().getContent()));
-		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
-		        	} finally {
-		        		put.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	put.releaseConnection();
-		        	callback.failed(ex);
-		        }
-		        public void cancelled() {
-		        	put.releaseConnection();
-		        	callback.cancelled();
-		        }
+			return  Mono.create(sink -> {		
+					HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
+				        public void completed(final HttpResponse response) {
+				        	try{
+				        		int httpStatusCode = response.getStatusLine().getStatusCode();
+				        		if (httpStatusCode != 200) {
+				        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+				        			return;
+				    			}			    			
+				    			
+								sink.success(Registration.parse(response.getEntity().getContent()));
+				        	} catch (Exception e) {
+				        		sink.error(e);	        		
+				        	} finally {
+				        		put.releaseConnection();
+				    		}
+				        }
+				        public void failed(final Exception ex) {
+				        	put.releaseConnection();
+				        	sink.error(ex);
+				        }
+				        public void cancelled() {
+				        	put.releaseConnection();
+				        	sink.error(new RuntimeException("Operation was cancelled."));
+				        }
+				});				
 			});			
 		} catch (Exception e) {
-			throw new RuntimeException(e);
-		} 
+			return Mono.error(new RuntimeException(e));
+		}
 	}
 	
 	@Override
 	public Registration updateRegistration(Registration registration)  throws NotificationHubsException{
-		SyncCallback<Registration> callback = new SyncCallback<Registration>();
-		updateRegistrationAsync(registration, callback);
-		return callback.getResult();
+		return updateRegistrationAsync(registration).block();
 	}
 	
 	@Override
-	public void upsertRegistrationAsync(Registration registration, final FutureCallback<Registration> callback){
+	public Mono<Registration> upsertRegistrationAsync(Registration registration){
 		try {
 			URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + APIVERSION);
 			final HttpPut put = new HttpPut(uri);
 			put.setHeader("Authorization", generateSasToken(uri));
 			put.setEntity(new StringEntity(registration.getXml(), ContentType.APPLICATION_ATOM_XML));
-			
-			HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
-		        public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();
-		        		if (httpStatusCode != 200) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
-		        			return;
-		    			}			    			
-		    			
-						callback.completed(Registration.parse(response.getEntity().getContent()));
-		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
-		        	} finally {
-		        		put.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	put.releaseConnection();
-		        	callback.failed(ex);
-		        }
-		        public void cancelled() {
-		        	put.releaseConnection();
-		        	callback.cancelled();
-		        }
-			});			
+
+			return  Mono.create(sink -> {
+				HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
+			        public void completed(final HttpResponse response) {
+			        	try{
+			        		int httpStatusCode = response.getStatusLine().getStatusCode();
+			        		if (httpStatusCode != 200) {
+			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			        			return;
+			    			}			    			
+			    			
+			        		sink.success(Registration.parse(response.getEntity().getContent()));
+			        	} catch (Exception e) {
+			        		sink.error(e);       		
+			        	} finally {
+			        		put.releaseConnection();
+			    		}
+			        }
+			        public void failed(final Exception ex) {
+			        	put.releaseConnection();
+			        	sink.error(ex);
+			        }
+			        public void cancelled() {
+			        	put.releaseConnection();
+			        	sink.error(new RuntimeException("Operation was cancelled."));
+			        }
+				});		
+			});	
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			return Mono.error(new RuntimeException(e));
 		} 
 	}
 	
 	@Override
 	public Registration upsertRegistration(Registration registration)  throws NotificationHubsException{
-		SyncCallback<Registration> callback = new SyncCallback<Registration>();
-		upsertRegistrationAsync(registration, callback);
-		return callback.getResult();
+		return upsertRegistrationAsync(registration).block();
 	}
 
 	@Override
-	public void deleteRegistrationAsync(Registration registration, final FutureCallback<Object> callback){
-		deleteRegistrationAsync(registration.getRegistrationId(), callback);
-	}
-	
-	@Override
-	public void deleteRegistration(Registration registration)  throws NotificationHubsException{
-		SyncCallback<Object> callback = new SyncCallback<Object>();
-		deleteRegistrationAsync(registration, callback);
-		callback.getResult();
-	}	
-	
-	@Override
-	public void deleteRegistrationAsync(String registrationId, final FutureCallback<Object> callback){
+	public Mono<Void> deleteRegistrationAsync(Registration registration){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + APIVERSION);
 			final HttpDelete delete = new HttpDelete(uri);
 			delete.setHeader("Authorization", generateSasToken(uri));
 			delete.setHeader("If-Match", "*");
 			
-			HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
-		        public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();
-		        		if (httpStatusCode != 200 && httpStatusCode!=404) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
-		        			return;
-		    			}		    			
-		    			
-						callback.completed(null);
-		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
-		        	} finally {
-		        		delete.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	delete.releaseConnection();
-		        	callback.failed(ex);
-		        }
-		        public void cancelled() {
-		        	delete.releaseConnection();
-		        	callback.cancelled();
-		        }
-			});			
+			return  Mono.create(sink -> {
+				HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
+			        public void completed(final HttpResponse response) {
+			        	try{
+			        		int httpStatusCode = response.getStatusLine().getStatusCode();
+			        		if (httpStatusCode != 200 && httpStatusCode!=404) {
+			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			        			return;
+			    			}		    			
+			    			
+							sink.success();
+			        	} catch (Exception e) {
+			        		sink.error(e);	        		
+			        	} finally {
+			        		delete.releaseConnection();
+			    		}
+			        }
+			        public void failed(final Exception ex) {
+			        	delete.releaseConnection();
+			        	sink.error(ex);
+			        }
+			        public void cancelled() {
+			        	delete.releaseConnection();
+			        	sink.error(new RuntimeException("Operation was cancelled."));
+			        }
+				});
+			});
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			return Mono.error(new RuntimeException(e));
 		} 
 	}
 	
 	@Override
-	public void deleteRegistration(String registrationId)  throws NotificationHubsException{
-		SyncCallback<Object> callback = new SyncCallback<Object>();
-		deleteRegistrationAsync(registrationId, callback);
-		callback.getResult();
+	public void deleteRegistration(Registration registration)  throws NotificationHubsException{
+		deleteRegistrationAsync(registration.getRegistrationId()).block();
 	}
-
+	
 	@Override
-	public void getRegistrationAsync(String registrationId, final FutureCallback<Registration> callback){
+	public Mono<Void> deleteRegistrationAsync(String registrationId){
+		return deleteRegistrationAsync(registrationId);
+	}
+	
+	@Override
+	public void deleteRegistration(String registrationId)  throws NotificationHubsException{
+		deleteRegistrationAsync(registrationId).block();
+	}
+	
+	@Override
+	public Mono<Registration> getRegistrationAsync(String registrationId){
 		try {
 			URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + APIVERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
 			
-			HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
-		        public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();
-		        		if (httpStatusCode != 200) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
-		        			return;
-		    			}		    			
-		    			
-						callback.completed(Registration.parse(response.getEntity().getContent()));
-		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
-		        	} finally {
-		        		get.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	get.releaseConnection();
-		        	callback.failed(ex);
-		        }
-		        public void cancelled() {
-		        	get.releaseConnection();
-		        	callback.cancelled();
-		        }
-			});			
+			return  Mono.create(sink -> {
+				HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
+			        public void completed(final HttpResponse response) {
+			        	try{
+			        		int httpStatusCode = response.getStatusLine().getStatusCode();
+			        		if (httpStatusCode != 200) {
+			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			        			return;
+			    			}		    			
+			    			
+			        		sink.success(Registration.parse(response.getEntity().getContent()));
+			        	} catch (Exception e) {
+			        		sink.error(e);	        		
+			        	} finally {
+			        		get.releaseConnection();
+			    		}
+			        }
+			        public void failed(final Exception ex) {
+			        	get.releaseConnection();
+			        	sink.error(ex);
+			        }
+			        public void cancelled() {
+			        	get.releaseConnection();
+			        	sink.error(new RuntimeException("Operation was cancelled."));
+			        }
+				});	
+			});
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			return Mono.error(new RuntimeException(e));
 		} 
 	}
 	
 	@Override
 	public Registration getRegistration(String registrationId)  throws NotificationHubsException{
-		SyncCallback<Registration> callback = new SyncCallback<Registration>();
-		getRegistrationAsync(registrationId, callback);
-		return callback.getResult();
+		return getRegistrationAsync(registrationId).block();
 	}
 
 	@Override
-	public void getRegistrationsAsync(int top, String continuationToken, final FutureCallback<CollectionResult> callback) {
+	public Mono<CollectionResult> getRegistrationsAsync(int top, String continuationToken) {
 		String queryUri = endpoint + hubPath + "/registrations" + APIVERSION + getQueryString(top, continuationToken);
-		retrieveRegistrationCollectionAsync(queryUri, callback);
+		return retrieveRegistrationCollectionAsync(queryUri);
 	}
 	
 	@Override
 	public CollectionResult getRegistrations(int top, String continuationToken)  throws NotificationHubsException{
-		SyncCallback<CollectionResult> callback = new SyncCallback<CollectionResult>();
-		getRegistrationsAsync(top, continuationToken, callback);
-		return callback.getResult();
+		String queryUri = endpoint + hubPath + "/registrations" + APIVERSION + getQueryString(top, continuationToken);
+		return retrieveRegistrationCollectionAsync(queryUri).block();
 	}
 	
 	@Override
@@ -389,34 +387,33 @@ public class NotificationHub implements INotificationHub {
 	}
 	
 	@Override
-	public void getRegistrationsByTagAsync(String tag, int top,	String continuationToken, final FutureCallback<CollectionResult> callback) {
+	public Mono<CollectionResult> getRegistrationsByTagAsync(String tag, int top,	String continuationToken) {
 		String queryUri = endpoint + hubPath + "/tags/" + tag
 				+ "/registrations" + APIVERSION
 				+ getQueryString(top, continuationToken);
-		retrieveRegistrationCollectionAsync(queryUri, callback);
+		return retrieveRegistrationCollectionAsync(queryUri);
 	}
 	
 	@Override
 	public CollectionResult getRegistrationsByTag(String tag, int top,	String continuationToken)  throws NotificationHubsException{
-		SyncCallback<CollectionResult> callback = new SyncCallback<CollectionResult>();
-		getRegistrationsByTagAsync(tag, top, continuationToken, callback);
-		return callback.getResult();
+		String queryUri = endpoint + hubPath + "/tags/" + tag
+				+ "/registrations" + APIVERSION
+				+ getQueryString(top, continuationToken);
+		return retrieveRegistrationCollectionAsync(queryUri).block();
 	}
 	
 	@Override
-	public void getRegistrationsByTagAsync(String tag, final FutureCallback<CollectionResult> callback) {
-		getRegistrationsByTagAsync(tag, 0, null, callback);
+	public Mono<CollectionResult> getRegistrationsByTagAsync(String tag) {
+		return getRegistrationsByTagAsync(tag, 0, null);
 	}
 	
 	@Override
 	public CollectionResult getRegistrationsByTag(String tag)  throws NotificationHubsException{
-		SyncCallback<CollectionResult> callback = new SyncCallback<CollectionResult>();
-		getRegistrationsByTagAsync(tag, callback);
-		return callback.getResult();
+		return getRegistrationsByTagAsync(tag).block();
 	}
 	
 	@Override
-	public void getRegistrationsByChannelAsync(String channel, int top, String continuationToken, final FutureCallback<CollectionResult> callback) {
+	public Mono<CollectionResult> getRegistrationsByChannelAsync(String channel, int top, String continuationToken) {
 		String queryUri = null;
 		try {
 			String channelQuery = URLEncoder.encode("ChannelUri eq '" + channel	+ "'", "UTF-8");
@@ -424,28 +421,24 @@ public class NotificationHub implements INotificationHub {
 					+ "&$filter=" + channelQuery
 					+ getQueryString(top, continuationToken);
 		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
+			return Mono.error(new RuntimeException(e));
 		}
-		retrieveRegistrationCollectionAsync(queryUri, callback);
+		return retrieveRegistrationCollectionAsync(queryUri);
 	}
 
 	@Override
 	public CollectionResult getRegistrationsByChannel(String channel, int top, String continuationToken)  throws NotificationHubsException{
-		SyncCallback<CollectionResult> callback = new SyncCallback<CollectionResult>();
-		getRegistrationsByChannelAsync(channel, top, continuationToken, callback);
-		return callback.getResult();
+		return getRegistrationsByChannelAsync(channel, top, continuationToken).block();
 	}
 
 	@Override
-	public void getRegistrationsByChannelAsync(String channel, final FutureCallback<CollectionResult> callback) {
-		getRegistrationsByChannelAsync(channel, 0, null, callback);
+	public Mono<CollectionResult> getRegistrationsByChannelAsync(String channel) {
+		return getRegistrationsByChannelAsync(channel, 0, null);
 	}
 	
 	@Override
 	public CollectionResult getRegistrationsByChannel(String channel)  throws NotificationHubsException{
-		SyncCallback<CollectionResult> callback = new SyncCallback<CollectionResult>();
-		getRegistrationsByChannelAsync(channel, callback);
-		return callback.getResult();
+		return getRegistrationsByChannelAsync(channel).block();
 	}
 	
 	private String getQueryString(int top, String continuationToken) {
@@ -459,45 +452,47 @@ public class NotificationHub implements INotificationHub {
 		return buf.toString();
 	}
 	
-	private void retrieveRegistrationCollectionAsync(String queryUri, final FutureCallback<CollectionResult> callback) {
+	private Mono<CollectionResult> retrieveRegistrationCollectionAsync(String queryUri) {
 		try {
 			URI uri = new URI(queryUri);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
 			
-			HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
-		        public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();
-		        		if (httpStatusCode != 200) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
-		        			return;
-		    			}		    			
-		    			
-		        		CollectionResult result = Registration.parseRegistrations(response.getEntity().getContent());
-		    			Header contTokenHeader = response.getFirstHeader("X-MS-ContinuationToken");
-		    			if (contTokenHeader != null) {
-		    				result.setContinuationToken(contTokenHeader.getValue());
-		    			}
-		        		
-						callback.completed(result);
-		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
-		        	} finally {
-		        		get.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	get.releaseConnection();
-		        	callback.failed(ex);
-		        }
-		        public void cancelled() {
-		        	get.releaseConnection();
-		        	callback.cancelled();
-		        }
+			return  Mono.create(sink -> {		
+				HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
+			        public void completed(final HttpResponse response) {
+			        	try{
+			        		int httpStatusCode = response.getStatusLine().getStatusCode();
+			        		if (httpStatusCode != 200) {
+			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			        			return;
+			    			}		    			
+			    			
+			        		CollectionResult result = Registration.parseRegistrations(response.getEntity().getContent());
+			    			Header contTokenHeader = response.getFirstHeader("X-MS-ContinuationToken");
+			    			if (contTokenHeader != null) {
+			    				result.setContinuationToken(contTokenHeader.getValue());
+			    			}
+			        		
+							sink.success(result);
+			        	} catch (Exception e) {
+			        		sink.error(e);	        		
+			        	} finally {
+			        		get.releaseConnection();
+			    		}
+			        }
+			        public void failed(final Exception ex) {
+			        	get.releaseConnection();
+			        	sink.error(ex);
+			        }
+			        public void cancelled() {
+			        	get.releaseConnection();
+			        	sink.error(new RuntimeException("Operation was cancelled."));
+			        }
+				});
 			});			
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			return Mono.error(new RuntimeException(e));
 		} 
 	}
 	
@@ -609,45 +604,45 @@ public class NotificationHub implements INotificationHub {
 	
 	@Override
 	public void cancelScheduledNotification(String notificationId) throws NotificationHubsException{
-		SyncCallback<Object> callback = new SyncCallback<Object>();
-		cancelScheduledNotificationAsync(notificationId, callback);
-		callback.getResult();
+		cancelScheduledNotificationAsync(notificationId).block();
 	}
 
 	@Override
-	public void cancelScheduledNotificationAsync(String notificationId,	final FutureCallback<Object> callback) {
+	public Mono<Void> cancelScheduledNotificationAsync(String notificationId) {
 		try {
 			URI uri = new URI(endpoint + hubPath + "/schedulednotifications/" + notificationId + APIVERSION);
 			final HttpDelete delete = new HttpDelete(uri);
 			delete.setHeader("Authorization", generateSasToken(uri));
-								
-			HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
-				public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();
-		        		if (httpStatusCode != 200 && httpStatusCode!=404) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
-		        			return;
-		    			}		    			
-		    			
-						callback.completed(null);
-		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
-		        	} finally {
-		        		delete.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	delete.releaseConnection();
-		        	callback.failed(ex);
-		        }
-		        public void cancelled() {
-		        	delete.releaseConnection();
-		        	callback.cancelled();
-		        }
-			});			
+						
+			return  Mono.create(sink -> {		
+				HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
+					public void completed(final HttpResponse response) {
+			        	try{
+			        		int httpStatusCode = response.getStatusLine().getStatusCode();
+			        		if (httpStatusCode != 200 && httpStatusCode!=404) {
+			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			        			return;
+			    			}		    			
+			    			
+							sink.success();
+			        	} catch (Exception e) {
+			        		sink.error(e);	        		
+			        	} finally {
+			        		delete.releaseConnection();
+			    		}
+			        }
+			        public void failed(final Exception ex) {
+			        	delete.releaseConnection();
+			        	sink.error(ex);
+			        }
+			        public void cancelled() {
+			        	delete.releaseConnection();
+			        	sink.error(new RuntimeException("Operation was cancelled."));
+			        }
+				});	
+			});
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			return Mono.error(new RuntimeException(e));
 		}		
 	}
 	
@@ -780,50 +775,50 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public NotificationTelemetry getNotificationTelemetry(String notificationId)
 			throws NotificationHubsException {
-		SyncCallback<NotificationTelemetry> callback = new SyncCallback<NotificationTelemetry>();
-		getNotificationTelemetryAsync(notificationId, callback);
-		return callback.getResult();
+		return getNotificationTelemetryAsync(notificationId).block();
 	}
 
 	@Override
-	public void getNotificationTelemetryAsync(String notificationId, final FutureCallback<NotificationTelemetry> callback) {
+	public Mono<NotificationTelemetry> getNotificationTelemetryAsync(String notificationId) {
 		try {
 			URI uri = new URI(endpoint + hubPath + "/messages/"	+ notificationId + APIVERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
 			
-			HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
-		        public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();
-		        		if (httpStatusCode != 200) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
-		        			return;
-		    			}		    			
-		    			
-						callback.completed(NotificationTelemetry.parseOne(response.getEntity().getContent()));
-		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
-		        	} finally {
-		        		get.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	get.releaseConnection();
-		        	callback.failed(ex);
-		        }
-		        public void cancelled() {
-		        	get.releaseConnection();
-		        	callback.cancelled();
-		        }
+			return  Mono.create(sink -> {		
+				HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
+			        public void completed(final HttpResponse response) {
+			        	try{
+			        		int httpStatusCode = response.getStatusLine().getStatusCode();
+			        		if (httpStatusCode != 200) {
+			        			Mono.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			        			return;
+			    			}		    			
+			    			
+							sink.success(NotificationTelemetry.parseOne(response.getEntity().getContent()));
+			        	} catch (Exception e) {
+			        		Mono.error(e);	        		
+			        	} finally {
+			        		get.releaseConnection();
+			    		}
+			        }
+			        public void failed(final Exception ex) {
+			        	get.releaseConnection();
+			        	Mono.error(ex);
+			        }
+			        public void cancelled() {
+			        	get.releaseConnection();
+			        	sink.error(new RuntimeException("Operation was cancelled."));
+			        }
+				});			
 			});			
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			return Mono.error(new RuntimeException(e));
 		} 
 	}	
 	
 	@Override
-	public void createOrUpdateInstallationAsync(Installation installation, final FutureCallback<Object> callback){
+	public Mono<Void> createOrUpdateInstallationAsync(Installation installation){
 		try {
 			URI uri = new URI(endpoint + hubPath + "/installations/" + installation.getInstallationId() + APIVERSION);
 			final HttpPut put = new HttpPut(uri);
@@ -833,68 +828,64 @@ public class NotificationHub implements INotificationHub {
 			entity.setContentEncoding("utf-8");
 			put.setEntity(entity);
 			
-			HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
-		        public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();
-		        		if (httpStatusCode != 200) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
-		        			return;
-		    			}		    			
-		    			
-						callback.completed(null);
-		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
-		        	} finally {
-		        		put.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	put.releaseConnection();
-		        	callback.failed(ex);
-		        }
-		        public void cancelled() {
-		        	put.releaseConnection();
-		        	callback.cancelled();
-		        }
-			});			
+			return  Mono.create(sink -> {		
+				HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
+			        public void completed(final HttpResponse response) {
+			        	try{
+			        		int httpStatusCode = response.getStatusLine().getStatusCode();
+			        		if (httpStatusCode != 200) {
+			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			        			return;
+			    			}		    			
+			    			
+			        		sink.success();
+			        	} catch (Exception e) {
+			        		sink.error(e);	        		
+			        	} finally {
+			        		put.releaseConnection();
+			    		}
+			        }
+			        public void failed(final Exception ex) {
+			        	put.releaseConnection();
+			        	sink.error(ex);
+			        }
+			        public void cancelled() {
+			        	put.releaseConnection();
+			        	sink.error(new RuntimeException("Operation was cancelled."));
+			        }
+				});
+			});				
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			return Mono.error(new RuntimeException(e));
 		} 
 	}
 	
 	@Override
 	public void createOrUpdateInstallation(Installation installation)  throws NotificationHubsException{
-		SyncCallback<Object> callback = new SyncCallback<Object>();
-		createOrUpdateInstallationAsync(installation, callback);
-		callback.getResult();
+		createOrUpdateInstallationAsync(installation).block();
 	}
 	
 	@Override
-	public void patchInstallationAsync(String installationId, FutureCallback<Object> callback, PartialUpdateOperation... operations) {
-		patchInstallationInternalAsync(installationId, PartialUpdateOperation.toJson(operations), callback);
+	public Mono<Void> patchInstallationAsync(String installationId, PartialUpdateOperation... operations) {
+		return patchInstallationInternalAsync(installationId, PartialUpdateOperation.toJson(operations));
 	}
 	
 	@Override
 	public void patchInstallation(String installationId, PartialUpdateOperation... operations)  throws NotificationHubsException{
-		SyncCallback<Object> callback = new SyncCallback<Object>();
-		patchInstallationAsync(installationId, callback, operations);
-		callback.getResult();
+		patchInstallationAsync(installationId, operations);
 	}
 
 	@Override
-	public void patchInstallationAsync(String installationId, List<PartialUpdateOperation> operations, FutureCallback<Object> callback) {
-		patchInstallationInternalAsync(installationId, PartialUpdateOperation.toJson(operations), callback);
+	public Mono<Void> patchInstallationAsync(String installationId, List<PartialUpdateOperation> operations) {
+		return patchInstallationInternalAsync(installationId, PartialUpdateOperation.toJson(operations));
 	}
 	
 	@Override
 	public void patchInstallation(String installationId, List<PartialUpdateOperation> operations)  throws NotificationHubsException{
-		SyncCallback<Object> callback = new SyncCallback<Object>();
-		patchInstallationAsync(installationId, operations, callback);
-		callback.getResult();
+		patchInstallationAsync(installationId, operations).block();
 	}
 
-	private void patchInstallationInternalAsync(String installationId, String operationsJson, final FutureCallback<Object> callback){
+	private Mono<Void> patchInstallationInternalAsync(String installationId, String operationsJson){
 		try {
 			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + APIVERSION);
 			final HttpPatch patch = new HttpPatch(uri);
@@ -903,127 +894,128 @@ public class NotificationHub implements INotificationHub {
 			StringEntity entity = new StringEntity(operationsJson, ContentType.APPLICATION_JSON);
 			entity.setContentEncoding("utf-8");
 			patch.setEntity(entity);
+
+			return Mono.create(sink -> {		
+				HttpClientManager.getHttpAsyncClient().execute(patch, new FutureCallback<HttpResponse>() {
+			        public void completed(final HttpResponse response) {
+			        	try{
+			        		int httpStatusCode = response.getStatusLine().getStatusCode();
+			        		if (httpStatusCode != 200) {
+			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			        			return;
+			    			}		    			
+			    			
+			        		sink.success();
+			        	} catch (Exception e) {
+			        		sink.error(e);	        		
+			        	} finally {
+			        		patch.releaseConnection();
+			    		}
+			        }
+			        public void failed(final Exception ex) {
+			        	patch.releaseConnection();
+			        	sink.error(ex);
+			        }
+			        public void cancelled() {
+			        	patch.releaseConnection();
+			        	sink.error(new RuntimeException("Operation was cancelled."));
+			        }
+				});			
+			});
 			
-			HttpClientManager.getHttpAsyncClient().execute(patch, new FutureCallback<HttpResponse>() {
-		        public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();
-		        		if (httpStatusCode != 200) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
-		        			return;
-		    			}		    			
-		    			
-						callback.completed(null);
-		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
-		        	} finally {
-		        		patch.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	patch.releaseConnection();
-		        	callback.failed(ex);
-		        }
-		        public void cancelled() {
-		        	patch.releaseConnection();
-		        	callback.cancelled();
-		        }
-			});			
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			 return Mono.error(new RuntimeException(e));
 		} 
 	}	
 	
 	@Override
-	public void deleteInstallationAsync(String installationId, final FutureCallback<Object> callback){
+	public Mono<Void> deleteInstallationAsync(String installationId){
 		try {
 			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + APIVERSION);
 			final HttpDelete delete = new HttpDelete(uri);
 			delete.setHeader("Authorization", generateSasToken(uri));
 			
-			HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
-		        public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();
-		        		if (httpStatusCode != 204) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
-		        			return;
-		    			}			    			
-		    			
-						callback.completed(null);
-		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
-		        	} finally {
-		        		delete.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	delete.releaseConnection();
-		        	callback.failed(ex);
-		        }
-		        public void cancelled() {
-		        	delete.releaseConnection();
-		        	callback.cancelled();
-		        }
-			});			
+			return Mono.create(sink -> {		
+				HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
+			        public void completed(final HttpResponse response) {
+			        	try{
+			        		int httpStatusCode = response.getStatusLine().getStatusCode();
+			        		if (httpStatusCode != 204) {
+			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			    			}			    			
+			    			
+			        		sink.success();
+			        	} catch (Exception e) {
+			        		sink.error(e);	        		
+			        	} finally {
+			        		delete.releaseConnection();
+			    		}
+			        }
+			        public void failed(final Exception ex) {
+			        	delete.releaseConnection();
+			        	sink.error(ex);
+			        }
+			        public void cancelled() {
+			        	delete.releaseConnection();
+			        	sink.error(new RuntimeException("Operation was cancelled."));
+			        }
+				});			
+			});	
+			
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			return Mono.error(new RuntimeException(e));
 		} 
 	}
 	
 	@Override
 	public void deleteInstallation(String installationId)  throws NotificationHubsException{
-		SyncCallback<Object> callback = new SyncCallback<Object>();
-		deleteInstallationAsync(installationId, callback);
-		callback.getResult();
+		deleteInstallationAsync(installationId).block();
 	}
 
 	@Override
-	public void getInstallationAsync(String installationId, final FutureCallback<Installation> callback){
+	public Mono<Installation> getInstallationAsync(String installationId){
 		try {
 			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + APIVERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
-			
-			HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
-		        public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();
-		        		if (httpStatusCode != 200) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
-		        			return;
-		    			}			    			
-		    			
-						callback.completed(Installation.fromJson(response.getEntity().getContent()));
-		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
-		        	} finally {
-		        		get.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	get.releaseConnection();
-		        	callback.failed(ex);
-		        }
-		        public void cancelled() {
-		        	get.releaseConnection();
-		        	callback.cancelled();
-		        }
+			return Mono.create(sink -> {		
+				HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
+			        public void completed(final HttpResponse response) {
+			        	try{
+			        		int httpStatusCode = response.getStatusLine().getStatusCode();
+			        		if (httpStatusCode != 200) {
+			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			    			}			    			
+			    			
+			        		sink.success(Installation.fromJson(response.getEntity().getContent()));
+			        	} catch (Exception e) {
+			        		sink.error(e);	        		
+			        	} finally {
+			        		get.releaseConnection();
+			    		}
+			        }
+			        public void failed(final Exception ex) {
+			        	get.releaseConnection();
+			        	sink.error(ex);
+			        }
+			        public void cancelled() {
+			        	get.releaseConnection();
+			        	sink.error(new RuntimeException("Operation was cancelled."));
+			        }
+				});			
 			});			
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			return Mono.error(new RuntimeException(e));
 		} 
 	}
 	
 	@Override
 	public Installation getInstallation(String installationId)  throws NotificationHubsException{
-		SyncCallback<Installation> callback = new SyncCallback<Installation>();
-		getInstallationAsync(installationId, callback);
-		return callback.getResult();
+		return getInstallationAsync(installationId).block();
 	}
 	
 	@Override
-	public void submitNotificationHubJobAsync(NotificationHubJob job, final FutureCallback<NotificationHubJob> callback){
+	public Mono<NotificationHubJob> submitNotificationHubJobAsync(NotificationHubJob job){
 		try {
 			URI uri = new URI(endpoint + hubPath + "/jobs" + APIVERSION);
 			final HttpPost post = new HttpPost(uri);
@@ -1033,129 +1025,125 @@ public class NotificationHub implements INotificationHub {
 			entity.setContentEncoding("utf-8");
 			post.setEntity(entity);
 			
-			HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
-		        public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();
-		        		if (httpStatusCode != 201) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
-		        			return;
-		    			}	
-		        					        	
-						callback.completed(NotificationHubJob.parseOne(response.getEntity().getContent()));
-		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
-		        	} finally {
-		    			post.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	post.releaseConnection();
-		        	callback.failed(ex);
-		        }
-		        public void cancelled() {
-		        	post.releaseConnection();
-		        	callback.cancelled();
-		        }
+			return Mono.create(sink -> {		
+				HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
+			        public void completed(final HttpResponse response) {
+			        	try{
+			        		int httpStatusCode = response.getStatusLine().getStatusCode();
+			        		if (httpStatusCode != 201) {
+			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			    			}	
+			        					        	
+							sink.success(NotificationHubJob.parseOne(response.getEntity().getContent()));
+			        	} catch (Exception e) {
+			        		sink.error(e);	        		
+			        	} finally {
+			    			post.releaseConnection();
+			    		}
+			        }
+			        public void failed(final Exception ex) {
+			        	post.releaseConnection();
+			        	sink.error(ex);
+			        }
+			        public void cancelled() {
+			        	post.releaseConnection();
+			        	sink.error(new RuntimeException("Operation was cancelled."));
+			        }
+				});			
 			});			
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			return Mono.error(new RuntimeException(e));
 		} 
 	}
 	
 	@Override
 	public NotificationHubJob submitNotificationHubJob(NotificationHubJob job)  throws NotificationHubsException{
-		SyncCallback<NotificationHubJob> callback = new SyncCallback<NotificationHubJob>();
-		submitNotificationHubJobAsync(job, callback);
-		return callback.getResult();
+		return submitNotificationHubJobAsync(job).block();
 	}
 
 	@Override
-	public void getNotificationHubJobAsync(String jobId, final FutureCallback<NotificationHubJob> callback){
+	public Mono<NotificationHubJob> getNotificationHubJobAsync(String jobId){
 		try {
 			URI uri = new URI(endpoint + hubPath + "/jobs/"	+ jobId + APIVERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
-			
-			HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
-		        public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();
-		        		if (httpStatusCode != 200) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
-		        			return;
-		    			}		    			
-		    			
-						callback.completed(NotificationHubJob.parseOne(response.getEntity().getContent()));
-		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
-		        	} finally {
-		        		get.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	get.releaseConnection();
-		        	callback.failed(ex);
-		        }
-		        public void cancelled() {
-		        	get.releaseConnection();
-		        	callback.cancelled();
-		        }
+			return Mono.create(sink -> {		
+				HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
+			        public void completed(final HttpResponse response) {
+			        	try{
+			        		int httpStatusCode = response.getStatusLine().getStatusCode();
+			        		if (httpStatusCode != 200) {
+			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			    			}		    			
+			    			
+			        		sink.success(NotificationHubJob.parseOne(response.getEntity().getContent()));
+			        	} catch (Exception e) {
+			        		sink.error(e);	        		
+			        	} finally {
+			        		get.releaseConnection();
+			    		}
+			        }
+			        public void failed(final Exception ex) {
+			        	get.releaseConnection();
+			        	sink.error(ex);
+			        }
+			        public void cancelled() {
+			        	get.releaseConnection();
+			        	sink.error(new RuntimeException("Operation was cancelled."));
+			        }
+				});			
 			});			
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			return Mono.error(new RuntimeException(e));
 		} 
 	}
 	
 	@Override
-	public NotificationHubJob getNotificationHubJob(String jobId)  throws NotificationHubsException{
-		SyncCallback<NotificationHubJob> callback = new SyncCallback<NotificationHubJob>();
-		getNotificationHubJobAsync(jobId, callback);
-		return callback.getResult();
+	public NotificationHubJob getNotificationHubJob(String jobId)  throws NotificationHubsException{		
+		return getNotificationHubJobAsync(jobId).block();
 	}
 
 	@Override
-	public void getAllNotificationHubJobsAsync(final FutureCallback<List<NotificationHubJob>> callback){
+	public Mono<List<NotificationHubJob>> getAllNotificationHubJobsAsync(){
 		try {
 			URI uri = new URI(endpoint + hubPath + "/jobs" + APIVERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
-			
-			HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
-		        public void completed(final HttpResponse response) {
-		        	try{
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();
-		        		if (httpStatusCode != 200) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
-		        			return;
-		    			}		    			
-		    			
-						callback.completed(NotificationHubJob.parseCollection(response.getEntity().getContent()));
-		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
-		        	} finally {
-		        		get.releaseConnection();
-		    		}
-		        }
-		        public void failed(final Exception ex) {
-		        	get.releaseConnection();
-		        	callback.failed(ex);
-		        }
-		        public void cancelled() {
-		        	get.releaseConnection();
-		        	callback.cancelled();
-		        }
+			return Mono.create(sink -> {		
+				HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
+			        public void completed(final HttpResponse response) {
+			        	try{
+			        		int httpStatusCode = response.getStatusLine().getStatusCode();
+			        		if (httpStatusCode != 200) {
+			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			        			return;
+			    			}		    			
+			    			
+			        		sink.success(NotificationHubJob.parseCollection(response.getEntity().getContent()));
+			        	} catch (Exception e) {
+			        		sink.error(e);	        		
+			        	} finally {
+			        		get.releaseConnection();
+			    		}
+			        }
+			        public void failed(final Exception ex) {
+			        	get.releaseConnection();
+			        	sink.error(ex);
+			        }
+			        public void cancelled() {
+			        	get.releaseConnection();
+			        	sink.error(new RuntimeException("Operation was cancelled."));
+			        }
+				});			
 			});			
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			 return Mono.error(new RuntimeException(e));
 		} 
 	}
 	
 	@Override
 	public List<NotificationHubJob> getAllNotificationHubJobs()  throws NotificationHubsException{
-		SyncCallback<List<NotificationHubJob>> callback = new SyncCallback<List<NotificationHubJob>>();
-		getAllNotificationHubJobsAsync(callback);
-		return callback.getResult();
+		return getAllNotificationHubJobsAsync().block();
 	}	
 
 	private String getErrorString(HttpResponse response)

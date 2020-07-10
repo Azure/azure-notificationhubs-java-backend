@@ -33,18 +33,18 @@ public interface INotificationHub {
 	
 	NotificationTelemetry getNotificationTelemetry(String notificationId) throws NotificationHubsException;
 	
-	void createRegistrationIdAsync(FutureCallback<String> callback);
-	void createRegistrationAsync(Registration registration, FutureCallback<Registration> callback);
-	void updateRegistrationAsync(Registration registration, FutureCallback<Registration> callback);
-	void upsertRegistrationAsync(Registration registration, FutureCallback<Registration> callback);
-	void deleteRegistrationAsync(Registration registration, FutureCallback<Object> callback);
-	void deleteRegistrationAsync(String registrationId, FutureCallback<Object> callback);
-	void getRegistrationAsync(String registrationId, FutureCallback<Registration> callback);
-	void getRegistrationsByChannelAsync(String channel, int top, String continuationToken, FutureCallback<CollectionResult> callback);
-	void getRegistrationsByTagAsync(String tag, int top, String continuationToken, FutureCallback<CollectionResult> callback);
-	void getRegistrationsByTagAsync(String tag,	FutureCallback<CollectionResult> callback);
-	void getRegistrationsByChannelAsync(String channel,	FutureCallback<CollectionResult> callback);
-	void getRegistrationsAsync(int top, String continuationToken, FutureCallback<CollectionResult> callback);	
+	Mono<String> createRegistrationIdAsync();
+	Mono<Registration> createRegistrationAsync(Registration registration);
+	Mono<Registration> updateRegistrationAsync(Registration registration);
+	Mono<Registration> upsertRegistrationAsync(Registration registration);
+	Mono<Void> deleteRegistrationAsync(Registration registration);
+	Mono<Void> deleteRegistrationAsync(String registrationId);
+	Mono<Registration> getRegistrationAsync(String registrationId);
+	Mono<CollectionResult> getRegistrationsByChannelAsync(String channel, int top, String continuationToken);
+	Mono<CollectionResult> getRegistrationsByTagAsync(String tag, int top, String continuationToken);
+	Mono<CollectionResult> getRegistrationsByTagAsync(String tag);
+	Mono<CollectionResult> getRegistrationsByChannelAsync(String channel);
+	Mono<CollectionResult> getRegistrationsAsync(int top, String continuationToken);	
 
 	Mono<Void> sendNotificationAsync(Notification notification);
 	Mono<Void> sendNotificationAsync(Notification notification, Set<String> tags);
@@ -54,19 +54,19 @@ public interface INotificationHub {
 	Mono<Void> scheduleNotificationAsync(Notification notification, Date scheduledTime);
 	Mono<Void> scheduleNotificationAsync(Notification notification, Set<String> tags,	Date scheduledTime);	
 	Mono<Void> scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime);
-	void cancelScheduledNotificationAsync(String notificationId, FutureCallback<Object> callback);
+	Mono<Void> cancelScheduledNotificationAsync(String notificationId);
 			
-	void createOrUpdateInstallationAsync(Installation installation,	FutureCallback<Object> callback);
-	void patchInstallationAsync(String installationId,	List<PartialUpdateOperation> operations, FutureCallback<Object> callback);
-	void patchInstallationAsync(String installationId,	FutureCallback<Object> callback, PartialUpdateOperation... operations);
-	void deleteInstallationAsync(String installationId,	FutureCallback<Object> callback);
-	void getInstallationAsync(String installationId, FutureCallback<Installation> callback);
+	Mono<Void> createOrUpdateInstallationAsync(Installation installation);
+	Mono<Void> patchInstallationAsync(String installationId,	List<PartialUpdateOperation> operations);
+	Mono<Void> patchInstallationAsync(String installationId, PartialUpdateOperation... operations);
+	Mono<Void> deleteInstallationAsync(String installationId);
+	Mono<Installation> getInstallationAsync(String installationId);
 		
-	void submitNotificationHubJobAsync(NotificationHubJob job,	FutureCallback<NotificationHubJob> callback);
-	void getNotificationHubJobAsync(String jobId, FutureCallback<NotificationHubJob> callback);
-	void getAllNotificationHubJobsAsync(FutureCallback<List<NotificationHubJob>> callback);	
+	Mono<NotificationHubJob> submitNotificationHubJobAsync(NotificationHubJob job);
+	Mono<NotificationHubJob> getNotificationHubJobAsync(String jobId);
+	Mono<List<NotificationHubJob>> getAllNotificationHubJobsAsync();	
 	
-	void getNotificationTelemetryAsync(String notificationId, FutureCallback<NotificationTelemetry> callback);
+	Mono<NotificationTelemetry> getNotificationTelemetryAsync(String notificationId);
 	
 	
 	/**
