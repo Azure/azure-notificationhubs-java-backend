@@ -58,7 +58,7 @@ public class NamespaceManager {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
-			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 			    			}		    			
 			    			
 			        		sink.success(NotificationHubDescription.parseOne(response.getEntity().getContent()));
@@ -98,7 +98,7 @@ public class NamespaceManager {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
-			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 			    			}			    			
 			    			
 			        		sink.success(NotificationHubDescription.parseCollection(response.getEntity().getContent()));
@@ -162,9 +162,9 @@ public class NamespaceManager {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != (isUpdate ? 200 : 201)) {
-			        			sink.error(new NotificationHubsException(getErrorString(response) ,httpStatusCode));
-			    			}		    			
-			    			
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
+			    			}
+
 			        		sink.success(NotificationHubDescription.parseOne(response.getEntity().getContent()));
 			        	} catch (Exception e) {
 			        		sink.error(e);	        		
@@ -198,7 +198,7 @@ public class NamespaceManager {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200 && httpStatusCode != 404) {
-			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 			    			}		    			
 			    			
 			        		sink.success();

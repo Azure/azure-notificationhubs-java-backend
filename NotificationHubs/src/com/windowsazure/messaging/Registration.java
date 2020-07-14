@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.ObjectCreationFactory;
@@ -23,26 +24,18 @@ public abstract class Registration implements Cloneable {
 	protected String etag;
 	protected Date expirationTime;
 	
-	private static final ThreadLocal<Digester> singleRegParser;
-	private static final ThreadLocal<Digester> multiRegParser;
+	private static final AtomicReference<Digester> singleRegParser = new AtomicReference<Digester>();
+	private static final AtomicReference<Digester> multiRegParser = new AtomicReference<Digester>();
 	
 	static {
-		singleRegParser = new ThreadLocal<Digester>(){
-			@Override protected Digester initialValue() {
-				Digester instance = new Digester();
-				addRegistrationRules(instance);
-                return instance;
-             }
-		};
+		Digester singleReginstance = new Digester();
+		addRegistrationRules(singleReginstance);
+		singleRegParser.set( singleReginstance);
 		
-		multiRegParser = new ThreadLocal<Digester>(){
-			@Override protected Digester initialValue() {
-				Digester instance = new Digester();
-				addRegistrationRules(instance);
-				addCollectionRules(instance);
-                return instance;
-             }
-		};
+		Digester multiReginstance = new Digester();
+		addRegistrationRules(multiReginstance);
+		addCollectionRules(multiReginstance);
+		multiRegParser.set( multiReginstance);
 	}
 
 	public Registration() {

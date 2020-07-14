@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.digester3.Digester;
 import org.xml.sax.SAXException;
@@ -28,17 +29,12 @@ public class NotificationTelemetry {
 	private Map<String, Integer> baiduOutcomeCounts;
 	private String pnsErrorDetailsUri;	
 	
-	private static final ThreadLocal<Digester> parser;
+	private static final AtomicReference<Digester> parser = new AtomicReference<Digester>();
 	
 	static {
-		parser = new ThreadLocal<Digester>(){
-			@Override protected Digester initialValue() {
-				Digester instance = new Digester();
-				setupParser(instance);
-                return instance;
-             }
-		};		
-	}	
+		parser.set( new Digester());		
+		setupParser(parser.get());
+	}
 	
 	public static NotificationTelemetry parseOne(InputStream content) throws IOException,	SAXException {
 		return parser.get().parse(content);

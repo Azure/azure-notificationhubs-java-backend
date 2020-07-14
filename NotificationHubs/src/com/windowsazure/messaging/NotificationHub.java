@@ -98,8 +98,7 @@ public class NotificationHub implements INotificationHub {
 		        	try{		        		       		
 		        		int httpStatusCode = response.getStatusLine().getStatusCode();
 		        		if (httpStatusCode != 200) {
-		        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
-		        			return;
+		        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 		    			}	
 		    			
 		        		sink.success(Registration.parse(response.getEntity().getContent()));
@@ -143,8 +142,7 @@ public class NotificationHub implements INotificationHub {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 201) {
-			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
-			        			return;
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 			    			}	
 			        		
 				        	String location = response.getFirstHeader(CONTENT_LOCATION_HEADER).getValue();
@@ -194,8 +192,7 @@ public class NotificationHub implements INotificationHub {
 				        	try{
 				        		int httpStatusCode = response.getStatusLine().getStatusCode();
 				        		if (httpStatusCode != 200) {
-				        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
-				        			return;
+				        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 				    			}			    			
 				    			
 								sink.success(Registration.parse(response.getEntity().getContent()));
@@ -239,8 +236,7 @@ public class NotificationHub implements INotificationHub {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
-			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
-			        			return;
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 			    			}			    			
 			    			
 			        		sink.success(Registration.parse(response.getEntity().getContent()));
@@ -271,9 +267,9 @@ public class NotificationHub implements INotificationHub {
 	}
 
 	@Override
-	public Mono<Void> deleteRegistrationAsync(Registration registration){
+	public Mono<Void> deleteRegistrationAsync(String registrationId){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + APIVERSION);
 			final HttpDelete delete = new HttpDelete(uri);
 			delete.setHeader("Authorization", generateSasToken(uri));
 			delete.setHeader("If-Match", "*");
@@ -284,8 +280,7 @@ public class NotificationHub implements INotificationHub {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200 && httpStatusCode!=404) {
-			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
-			        			return;
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 			    			}		    			
 			    			
 							sink.success();
@@ -316,8 +311,8 @@ public class NotificationHub implements INotificationHub {
 	}
 	
 	@Override
-	public Mono<Void> deleteRegistrationAsync(String registrationId){
-		return deleteRegistrationAsync(registrationId);
+	public Mono<Void> deleteRegistrationAsync(Registration registration){
+		return deleteRegistrationAsync(registration.getRegistrationId());
 	}
 	
 	@Override
@@ -338,8 +333,7 @@ public class NotificationHub implements INotificationHub {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
-			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
-			        			return;
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 			    			}		    			
 			    			
 			        		sink.success(Registration.parse(response.getEntity().getContent()));
@@ -464,8 +458,7 @@ public class NotificationHub implements INotificationHub {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
-			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
-			        			return;
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 			    			}		    			
 			    			
 			        		CollectionResult result = Registration.parseRegistrations(response.getEntity().getContent());
@@ -620,8 +613,7 @@ public class NotificationHub implements INotificationHub {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200 && httpStatusCode!=404) {
-			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
-			        			return;
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 			    			}		    			
 			    			
 							sink.success();
@@ -791,20 +783,19 @@ public class NotificationHub implements INotificationHub {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
-			        			Mono.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
-			        			return;
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 			    			}		    			
 			    			
 							sink.success(NotificationTelemetry.parseOne(response.getEntity().getContent()));
 			        	} catch (Exception e) {
-			        		Mono.error(e);	        		
+			        		sink.error(e);	        		
 			        	} finally {
 			        		get.releaseConnection();
 			    		}
 			        }
 			        public void failed(final Exception ex) {
 			        	get.releaseConnection();
-			        	Mono.error(ex);
+			        	sink.error(ex);
 			        }
 			        public void cancelled() {
 			        	get.releaseConnection();
@@ -834,8 +825,7 @@ public class NotificationHub implements INotificationHub {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
-			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
-			        			return;
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 			    			}		    			
 			    			
 			        		sink.success();
@@ -901,8 +891,7 @@ public class NotificationHub implements INotificationHub {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
-			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
-			        			return;
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 			    			}		    			
 			    			
 			        		sink.success();
@@ -941,7 +930,7 @@ public class NotificationHub implements INotificationHub {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 204) {
-			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 			    			}			    			
 			    			
 			        		sink.success();
@@ -984,7 +973,7 @@ public class NotificationHub implements INotificationHub {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
-			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 			    			}			    			
 			    			
 			        		sink.success(Installation.fromJson(response.getEntity().getContent()));
@@ -1031,7 +1020,7 @@ public class NotificationHub implements INotificationHub {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 201) {
-			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 			    			}	
 			        					        	
 							sink.success(NotificationHubJob.parseOne(response.getEntity().getContent()));
@@ -1073,7 +1062,7 @@ public class NotificationHub implements INotificationHub {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
-			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 			    			}		    			
 			    			
 			        		sink.success(NotificationHubJob.parseOne(response.getEntity().getContent()));
@@ -1115,8 +1104,7 @@ public class NotificationHub implements INotificationHub {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
-			        			sink.error(new NotificationHubsException(getErrorString(response), httpStatusCode));
-			        			return;
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
 			    			}		    			
 			    			
 			        		sink.success(NotificationHubJob.parseCollection(response.getEntity().getContent()));
