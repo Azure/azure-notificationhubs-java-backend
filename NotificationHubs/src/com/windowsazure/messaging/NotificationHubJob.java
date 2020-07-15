@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 import java.io.IOException;
@@ -7,6 +11,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.digester3.Digester;
 import org.xml.sax.SAXException;
@@ -26,25 +31,15 @@ public class NotificationHubJob {
 	private Date createdAt;
 	private Date updatedAt;
 	
-	private static final ThreadLocal<Digester> singleEntryParser;
-	private static final ThreadLocal<Digester> collectionParser;
+	private static final AtomicReference<Digester> singleEntryParser = new AtomicReference<Digester>();
+	private static final AtomicReference<Digester> collectionParser = new AtomicReference<Digester>();
 	
 	static {
-		singleEntryParser = new ThreadLocal<Digester>(){
-			@Override protected Digester initialValue() {
-				Digester instance = new Digester();
-				setupSingleEntryParser(instance);
-                return instance;
-             }
-		};
+		singleEntryParser.set( new Digester());		
+		setupSingleEntryParser(singleEntryParser.get());
 		
-		collectionParser = new ThreadLocal<Digester>(){
-			@Override protected Digester initialValue() {
-				Digester instance = new Digester();
-				setupCollectionParser(instance);
-                return instance;
-             }
-		};
+		collectionParser.set( new Digester());		
+		setupCollectionParser(collectionParser.get());
 	}	
 	
 	public String getJobId() {

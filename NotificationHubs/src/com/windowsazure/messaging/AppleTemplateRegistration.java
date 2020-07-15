@@ -1,4 +1,12 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
+
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class representing a registration for template notifications for devices using APNs.
@@ -14,6 +22,7 @@ public class AppleTemplateRegistration extends AppleRegistration {
 	
 	private String bodyTemplate;
 	private String expiry;
+	private Map<String, String> headers = new HashMap<String, String>();
 
 	public AppleTemplateRegistration() {
 		super();
@@ -30,6 +39,12 @@ public class AppleTemplateRegistration extends AppleRegistration {
 		this.bodyTemplate = bodyTemplate;
 	}
 
+	public AppleTemplateRegistration(String deviceToken, String bodyTemplate, Map<String, String> headers) {
+		super(deviceToken);
+		this.bodyTemplate = bodyTemplate;
+		this.headers = headers;
+	}
+	
 	public String getBodyTemplate() {
 		return bodyTemplate;
 	}
@@ -46,15 +61,21 @@ public class AppleTemplateRegistration extends AppleRegistration {
 		this.expiry = expiry;
 	}
 	
-	
+	public Map<String, String> getHeaders() {
+		return headers;
+	}
+
+	public void addHeader(String name, String value) {
+		headers.put(name, value);
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result
-				+ ((bodyTemplate == null) ? 0 : bodyTemplate.hashCode());
+		result = prime * result	+ ((bodyTemplate == null) ? 0 : bodyTemplate.hashCode());
 		result = prime * result + ((expiry == null) ? 0 : expiry.hashCode());
+		result = prime * result + ((headers == null) ? 0 : headers.hashCode());
 		return result;
 	}
 
@@ -76,7 +97,12 @@ public class AppleTemplateRegistration extends AppleRegistration {
 			if (other.expiry != null)
 				return false;
 		} else if (!expiry.equals(other.expiry))
-			return false;
+			return false;		
+		if (headers == null) {
+				if (other.headers != null)
+					return false;
+			} else if (!headers.equals(other.headers))
+				return false;
 		return true;
 	}
 
@@ -91,10 +117,25 @@ public class AppleTemplateRegistration extends AppleRegistration {
 		buf.append(bodyTemplate);
 		buf.append(APNS_TEMPLATE_REGISTRATION4);
 		buf.append(getExpiryXml());
+		buf.append(getHeadersXml());
 		buf.append(APNS_TEMPLATE_REGISTRATION5);
 		return buf.toString();
 	}
 
+	private String getHeadersXml() {
+		StringBuffer buf = new StringBuffer();
+		if (!headers.isEmpty()) {
+			buf.append("<ApnsHeaders>");
+			for (String key : headers.keySet()) {
+				buf.append("<ApnsHeader><Header>");
+				buf.append(key).append("</Header><Value>");
+				buf.append(headers.get(key)).append("</Value></ApnsHeader>");
+			}
+		}
+		buf.append("</ApnsHeaders>");
+		return buf.toString();
+	}
+	
 	private String getExpiryXml() {
 		if (expiry == null) return "";
 		return "<Expiry>" + expiry + "</Expiry>";

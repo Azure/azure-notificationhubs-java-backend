@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging.e2e;
 
 import static org.junit.Assert.*;
@@ -104,7 +108,7 @@ public class RegistrationCrudsE2E {
 	 	namespaceManager.createNotificationHub(hubDescription);		
 		Thread.sleep(1000);
 		
-		hub = new NotificationHub(connectionString, hubPath);
+		hub = new NotificationHub(connectionString, hubPath, new RetryOptions());
 	}
 	
 	@After
@@ -720,7 +724,7 @@ public class RegistrationCrudsE2E {
 	public void testSendAppleNotification()  throws NotificationHubsException{
 		
 		assertTrue(apnscert!=null && !apnscert.isEmpty() && apnskey!=null && !apnskey.isEmpty());
-		Notification n = Notification.createAppleNotifiation(APNSBODYTEMPLATE);
+		Notification n = Notification.createAppleNotification(APNSBODYTEMPLATE);
 		
 		hub.sendNotification(n);
 		
@@ -737,7 +741,7 @@ public class RegistrationCrudsE2E {
 	public void testScheduleAppleNotification()  throws NotificationHubsException{
 		
 		assertTrue(apnscert!=null && !apnscert.isEmpty() && apnskey!=null && !apnskey.isEmpty());
-		Notification n = Notification.createAppleNotifiation(APNSBODYTEMPLATE);
+		Notification n = Notification.createAppleNotification(APNSBODYTEMPLATE);
 
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DATE, 1);		
@@ -754,7 +758,7 @@ public class RegistrationCrudsE2E {
 	@Test
 	public void testNotificationOutcomeOnSend()  throws NotificationHubsException{
 		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
-		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+		Notification n = Notification.createGcmNotification(GCMBODYTEMPLATE);
 		NotificationOutcome o = hub.sendNotification(n);
 		
 		assertNotNull(o);
@@ -766,7 +770,7 @@ public class RegistrationCrudsE2E {
 	public void testNotificationOutcomeOnSchedule()  throws NotificationHubsException{
 		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
 		
-		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+		Notification n = Notification.createGcmNotification(GCMBODYTEMPLATE);
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DATE, 1);		
 		NotificationOutcome o = hub.scheduleNotification(n, c.getTime());
@@ -780,7 +784,7 @@ public class RegistrationCrudsE2E {
 	public void testCancelScheduledNotification()  throws NotificationHubsException{
 		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
 		
-		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+		Notification n = Notification.createGcmNotification(GCMBODYTEMPLATE);
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DATE, 1);		
 		NotificationOutcome o = hub.scheduleNotification(n, c.getTime());
@@ -795,7 +799,7 @@ public class RegistrationCrudsE2E {
 	@Test
 	public void testSendDirectNotification()  throws NotificationHubsException{
 		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
-		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+		Notification n = Notification.createGcmNotification(GCMBODYTEMPLATE);
 		NotificationOutcome o = hub.sendDirectNotification(n, GCMREGID);
 		
 		assertNotNull(o);
@@ -806,7 +810,7 @@ public class RegistrationCrudsE2E {
 	@Test
 	public void testSendBatchDirectNotification()  throws NotificationHubsException{
 		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
-		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+		Notification n = Notification.createGcmNotification(GCMBODYTEMPLATE);
 		NotificationOutcome o = hub.sendDirectNotification(n, Arrays.asList(GCMREGID,GCMREGID2));
 		
 		assertNotNull(o);
@@ -817,7 +821,7 @@ public class RegistrationCrudsE2E {
 	@Test
 	public void testGetNotificationTelemetry()  throws NotificationHubsException, InterruptedException{
 		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
-		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+		Notification n = Notification.createGcmNotification(GCMBODYTEMPLATE);
 		NotificationOutcome o = hub.sendDirectNotification(n, Arrays.asList(GCMREGID,GCMREGID2));
 		
 		assertNotNull(o);
@@ -836,7 +840,7 @@ public class RegistrationCrudsE2E {
 	public void testSendGcmNotification()  throws NotificationHubsException{
 		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
 		
-		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+		Notification n = Notification.createGcmNotification(GCMBODYTEMPLATE);
 		
 		hub.sendNotification(n);
 		
@@ -853,7 +857,7 @@ public class RegistrationCrudsE2E {
 	public void testScheduleGcmNotification()  throws NotificationHubsException{
 		assertTrue(gcmkey!=null && !gcmkey.isEmpty());
 		
-		Notification n = Notification.createGcmNotifiation(GCMBODYTEMPLATE);
+		Notification n = Notification.createGcmNotification(GCMBODYTEMPLATE);
 
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DATE, 1);		
@@ -871,7 +875,7 @@ public class RegistrationCrudsE2E {
 	public void testSendAdmNotification()  throws NotificationHubsException{
 		assertTrue(admid!=null && !admid.isEmpty() && admsecret!=null && !admsecret.isEmpty());
 		
-		Notification n = Notification.createAdmNotifiation(ADMBODYTEMPLATE);
+		Notification n = Notification.createAdmNotification(ADMBODYTEMPLATE);
 		
 		hub.sendNotification(n);
 		
@@ -888,7 +892,7 @@ public class RegistrationCrudsE2E {
 	public void testScheduleAdmNotification()  throws NotificationHubsException{
 		assertTrue(admid!=null && !admid.isEmpty() && admsecret!=null && !admsecret.isEmpty());
 		
-		Notification n = Notification.createAdmNotifiation(ADMBODYTEMPLATE);
+		Notification n = Notification.createAdmNotification(ADMBODYTEMPLATE);
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DATE, 1);		
 		
@@ -905,7 +909,7 @@ public class RegistrationCrudsE2E {
 	public void testSendMpnsNotification()  throws NotificationHubsException{
 		assertTrue(mpnscert!=null && !mpnscert.isEmpty() && mpnskey!=null && !mpnskey.isEmpty());
 		
-		Notification n = Notification.createMpnsNotifiation(MPNSBODYTEMPLATE);
+		Notification n = Notification.createMpnsNotification(MPNSBODYTEMPLATE);
 		
 		hub.sendNotification(n);
 		
@@ -922,7 +926,7 @@ public class RegistrationCrudsE2E {
 	public void testScheduleMpnsNotification()  throws NotificationHubsException{
 		assertTrue(mpnscert!=null && !mpnscert.isEmpty() && mpnskey!=null && !mpnskey.isEmpty());
 		
-		Notification n = Notification.createMpnsNotifiation(MPNSBODYTEMPLATE);
+		Notification n = Notification.createMpnsNotification(MPNSBODYTEMPLATE);
 
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DATE, 1);		
@@ -939,7 +943,7 @@ public class RegistrationCrudsE2E {
 	public void testSendBaiduNotification()  throws NotificationHubsException{
 		assertTrue(baidukey!=null && !baidukey.isEmpty() && baidusecret!=null && !baidusecret.isEmpty());
 		
-		Notification n = Notification.createBaiduNotifiation(BAIDUBODYTEMPLATE1);
+		Notification n = Notification.createBaiduNotification(BAIDUBODYTEMPLATE1);
 		
 		hub.sendNotification(n);
 		
@@ -956,7 +960,7 @@ public class RegistrationCrudsE2E {
 	public void testScheduleBaiduNotification()  throws NotificationHubsException{
 		assertTrue(baidukey!=null && !baidukey.isEmpty() && baidusecret!=null && !baidusecret.isEmpty());
 		
-		Notification n = Notification.createBaiduNotifiation(BAIDUBODYTEMPLATE1);
+		Notification n = Notification.createBaiduNotification(BAIDUBODYTEMPLATE1);
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DATE, 1);		
 		

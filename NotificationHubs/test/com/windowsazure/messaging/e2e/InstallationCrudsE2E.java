@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging.e2e;
 
 import static org.junit.Assert.*;
@@ -27,7 +31,7 @@ public class InstallationCrudsE2E {
 	 	namespaceManager.createNotificationHub(hubDescription);		
 		Thread.sleep(1000);
 		
-		hub = new NotificationHub(connectionString, hubPath);
+		hub = new NotificationHub(connectionString, hubPath, new RetryOptions());
 	}
 	
 	@After

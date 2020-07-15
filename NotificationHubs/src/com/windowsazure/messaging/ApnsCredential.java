@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 import java.util.AbstractMap.SimpleEntry;
@@ -7,10 +11,16 @@ import java.util.List;
 public final class ApnsCredential extends PnsCredential {	
 	public static final String PROD_ENDPOINT="gateway.push.apple.com";
 	public static final String SANDBOX_ENDPOINT="gateway.sandbox.push.apple.com";
+	public static final String APNS2_PROD_ENDPOINT="https://api.push.apple.com:443/3/device";
+	public static final String APNS2_DEV_ENDPOINT="https://api.development.push.apple.com:443/3/device";
 	
 	private String endpoint;
 	private String apnsCertificate;
-	private String certificateKey;
+	private String certificateKey;	
+	private String token;
+	private String keyId;
+	private String appName;
+	private String appId;
 	
 	public ApnsCredential(){
 		this(null,null);
@@ -51,9 +61,23 @@ public final class ApnsCredential extends PnsCredential {
 		return certificateKey;
 	}
 
-	public void setCertificateKey(String certificateKey) {
-		this.certificateKey = certificateKey;
-	}	
+	public void setCertificateKey(String certificateKey) {	this.certificateKey = certificateKey; }
+
+	public String getToken() { return token; }
+
+	public void setToken(String token) { this.token = token; }
+
+	public String getKeyId() { return keyId; }
+
+	public void setKeyId(String keyId) { this.keyId = keyId; }
+
+	public String getAppName() { return appName; }
+
+	public void setAppName(String appName) { this.appName = appName; }
+
+	public String getAppId() { return appId; }
+
+	public void setAppId(String appId) { this.appId = appId; }
 	
 	@Override
 	public List<SimpleEntry<String, String>> getProperties() {

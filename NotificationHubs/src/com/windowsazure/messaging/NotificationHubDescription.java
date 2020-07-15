@@ -1,9 +1,15 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.digester3.Digester;
 import org.xml.sax.SAXException;
@@ -20,25 +26,15 @@ public class NotificationHubDescription {
 	private FcmCredential fcmCredential;
 	private BaiduCredential baiduCredential;
 	
-	private static final ThreadLocal<Digester> singleEntryParser;
-	private static final ThreadLocal<Digester> collectionParser;
+	public static final AtomicReference<Digester> singleEntryParser = new AtomicReference<Digester>();
+	public static final AtomicReference<Digester> collectionParser = new AtomicReference<Digester>();
 	
 	static {
-		singleEntryParser = new ThreadLocal<Digester>(){
-			@Override protected Digester initialValue() {
-				Digester instance = new Digester();
-				setupSingleEntryParser(instance);
-                return instance;
-             }
-		};
+		singleEntryParser.set( new Digester());		
+		setupSingleEntryParser(singleEntryParser.get());
 		
-		collectionParser = new ThreadLocal<Digester>(){
-			@Override protected Digester initialValue() {
-				Digester instance = new Digester();
-				setupCollectionParser(instance);
-                return instance;
-             }
-		};
+		collectionParser.set( new Digester());		
+		setupCollectionParser(collectionParser.get());
 	}	
 	
 	public NotificationHubDescription(){
