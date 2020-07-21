@@ -28,7 +28,7 @@ public class NamespaceManager {
 	private static final String IFMATCH_HEADER_NAME = "If-Match";
 	private static final String AUTHORIZATION_HEADER_NAME = "Authorization";
 	private static final String HUBS_COLLECTION_PATH = "$Resources/NotificationHubs/";
-	private static final String APIVERSION = "?api-version=2020-06";
+	private static final String APIVERSION = "?api-version=2014-09";
 	private static final String SKIP_TOP_PARAM = "&$skip=0&$top=2147483647";
 	private String endpoint;
 	private String SasKeyName;
