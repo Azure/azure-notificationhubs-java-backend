@@ -41,6 +41,7 @@ public class InstallationParseTest {
 		Installation installation = Installation.fromJson(inputJson);
 		assertNotNull(installation);
 		assertEquals("123", installation.getInstallationId());
+		assertEquals("123", installation.getUserId());
 		assertEquals(NotificationPlatform.Wns, installation.getPlatform());
 		assertEquals("wns-push-channel1", installation.getPushChannel());
 		assertNotNull(installation.getTemplates());

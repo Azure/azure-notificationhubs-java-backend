@@ -669,7 +669,7 @@ public class RegistrationCrudsE2E {
 
 	// send
 	@Test
-	public void testSendWindowsNotification() throws NotificationHubsException{
+	public void testSendWindowsNotification() throws NotificationHubsException{		
 		assertTrue(winsid!=null && !winsid.isEmpty() && winkey!=null && !winkey.isEmpty());
 		
 		Notification n = Notification.createWindowsNotification(WNSBODYTEMPLATE);
@@ -680,9 +680,10 @@ public class RegistrationCrudsE2E {
 		tags.add("boo");
 		tags.add("foo");
 		
-		hub.sendNotification(n, tags);
-		
-		hub.sendNotification(n, "foo && ! bar");
+		hub.sendNotification(n, tags);		
+		hub.sendNotification(n, "foo && ! bar");		
+		hub.sendNotification(n, String.format("$UserId:{%s}", UUID.randomUUID().toString()));		
+		hub.sendNotification(n, String.format("$InstallationId:{%s}", UUID.randomUUID().toString()));
 	}
 	
 	@Test
@@ -701,6 +702,8 @@ public class RegistrationCrudsE2E {
 		hub.scheduleNotification(n, c.getTime());		
 		hub.scheduleNotification(n, tags, c.getTime());		
 		hub.scheduleNotification(n, "foo && ! bar", c.getTime());
+		hub.scheduleNotification(n, String.format("$UserId:{%s}", UUID.randomUUID().toString()), c.getTime());		
+		hub.scheduleNotification(n, String.format("$InstallationId:{%s}", UUID.randomUUID().toString()), c.getTime());
 	}
 	
 	@Test
@@ -715,9 +718,10 @@ public class RegistrationCrudsE2E {
 		tags.add("boo");
 		tags.add("foo");
 		
-		hub.sendNotification(n, tags);
-		
+		hub.sendNotification(n, tags);		
 		hub.sendNotification(n, "foo && ! bar");
+		hub.sendNotification(n, String.format("$UserId:{%s}", UUID.randomUUID().toString()));		
+		hub.sendNotification(n, String.format("$InstallationId:{%s}", UUID.randomUUID().toString()));
 	}
 	
 	@Test
@@ -732,9 +736,10 @@ public class RegistrationCrudsE2E {
 		tags.add("boo");
 		tags.add("foo");
 		
-		hub.sendNotification(n, tags);
-		
+		hub.sendNotification(n, tags);		
 		hub.sendNotification(n, "foo && ! bar");
+		hub.sendNotification(n, String.format("$UserId:{%s}", UUID.randomUUID().toString()));		
+		hub.sendNotification(n, String.format("$InstallationId:{%s}", UUID.randomUUID().toString()));
 	}
 	
 	@Test
@@ -753,6 +758,8 @@ public class RegistrationCrudsE2E {
 		hub.scheduleNotification(n, c.getTime());		
 		hub.scheduleNotification(n, tags, c.getTime());		
 		hub.scheduleNotification(n, "foo && ! bar", c.getTime());
+		hub.scheduleNotification(n, String.format("$UserId:{%s}", UUID.randomUUID().toString()), c.getTime());		
+		hub.scheduleNotification(n, String.format("$InstallationId:{%s}", UUID.randomUUID().toString()), c.getTime());
 	}
 	
 	@Test
@@ -848,9 +855,10 @@ public class RegistrationCrudsE2E {
 		tags.add("boo");
 		tags.add("foo");
 		
-		hub.sendNotification(n, tags);
-		
+		hub.sendNotification(n, tags);		
 		hub.sendNotification(n, "foo && ! bar");
+		hub.sendNotification(n, String.format("$UserId:{%s}", UUID.randomUUID().toString()));		
+		hub.sendNotification(n, String.format("$InstallationId:{%s}", UUID.randomUUID().toString()));
 	}
 	
 	@Test
@@ -869,6 +877,8 @@ public class RegistrationCrudsE2E {
 		hub.scheduleNotification(n, c.getTime());		
 		hub.scheduleNotification(n, tags, c.getTime());		
 		hub.scheduleNotification(n, "foo && ! bar", c.getTime());
+		hub.scheduleNotification(n, String.format("$UserId:{%s}", UUID.randomUUID().toString()), c.getTime());		
+		hub.scheduleNotification(n, String.format("$InstallationId:{%s}", UUID.randomUUID().toString()), c.getTime());
 	}
 	
 	@Test
@@ -986,9 +996,10 @@ public class RegistrationCrudsE2E {
 		tags.add("boo");
 		tags.add("foo");
 		
-		hub.sendNotification(n, tags);
-		
+		hub.sendNotification(n, tags);		
 		hub.sendNotification(n, "foo && ! bar");
+		hub.sendNotification(n, String.format("$UserId:{%s}", UUID.randomUUID().toString()));		
+		hub.sendNotification(n, String.format("$InstallationId:{%s}", UUID.randomUUID().toString()));
 	}
 	
 	@Test
@@ -1008,5 +1019,7 @@ public class RegistrationCrudsE2E {
 		hub.scheduleNotification(n, c.getTime());		
 		hub.scheduleNotification(n, tags, c.getTime());		
 		hub.scheduleNotification(n, "foo && ! bar", c.getTime());
+		hub.scheduleNotification(n, String.format("$UserId:{%s}", UUID.randomUUID().toString()), c.getTime());		
+		hub.scheduleNotification(n, String.format("$InstallationId:{%s}", UUID.randomUUID().toString()), c.getTime());
 	}
 }

@@ -19,6 +19,7 @@ import com.google.gson.GsonBuilder;
 
 public class Installation {
 	        private String installationId;
+	        private String userId;
 	        private NotificationPlatform platform;
 	        private String pushChannel;
 	        private boolean pushChannelExpired;
@@ -36,15 +37,16 @@ public class Installation {
 	        }
 	        
 	        public Installation(String installationId, String... tags){
-	        	this(installationId, null, null, (String[])null);
+	        	this(installationId, null, null, null, (String[])null);
 	        }
 	        
 	        public Installation(String installationId, NotificationPlatform platform, String pushChannel){
-	        	this(installationId, platform, pushChannel, (String[])null);
+	        	this(installationId, platform, pushChannel, null, (String[])null);
 	        }
 	        
-	        public Installation(String installationId, NotificationPlatform platform, String pushChannel, String... tags){
+	        public Installation(String installationId, NotificationPlatform platform, String pushChannel, String userId, String... tags){
 	        	this.installationId = installationId;
+	        	this.userId = userId;
 	        	this.platform = platform;
 	        	this.pushChannel = pushChannel;
 	        	if(tags != null){		
@@ -86,6 +88,14 @@ public class Installation {
 				this.platform = platform;
 			}
 
+			public String getUserId() {
+				return userId;
+			}
+
+			public void setUserId(String userId) {
+				this.userId = userId;
+			}
+			
 			public List<String> getTags() {
 				return tags;
 			}

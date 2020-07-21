@@ -42,13 +42,14 @@ public class InstallationCrudsE2E {
 	
 	@Test
 	public void BasicCrudScenarioTest() throws Exception{
-		Installation installation = new Installation("installation-id", NotificationPlatform.Adm, "adm-push-channel");
+		Installation installation = new Installation("installation-id", NotificationPlatform.Adm, "adm-push-channel", "user-id");
 		hub.createOrUpdateInstallation(installation);
 		Thread.sleep(3000);
 		
 		installation = hub.getInstallation(installation.getInstallationId());
 		assertNotNull(installation);
 		assertEquals("installation-id", installation.getInstallationId());
+		assertEquals("user-id", installation.getUserId());
 		assertEquals(NotificationPlatform.Adm, installation.getPlatform());
 		assertEquals("adm-push-channel", installation.getPushChannel());
 		assertNull(installation.getTags());
@@ -57,11 +58,13 @@ public class InstallationCrudsE2E {
 		
 		installation.addTag("foo");
 		installation.addTemplate("template1", new InstallationTemplate("{\"data\":{\"key1\":\"value1\"}}"));
+		installation.setUserId("user-id-new");
 		hub.createOrUpdateInstallation(installation);
 		Thread.sleep(3000);
 		
 		installation = hub.getInstallation(installation.getInstallationId());
 		assertEquals("installation-id", installation.getInstallationId());
+		assertEquals("user-id-new", installation.getUserId());
 		assertEquals(NotificationPlatform.Adm, installation.getPlatform());
 		assertEquals("adm-push-channel", installation.getPushChannel());
 		assertNotNull(installation.getTags());
@@ -76,12 +79,14 @@ public class InstallationCrudsE2E {
 		PartialUpdateOperation addChannel = new PartialUpdateOperation(UpdateOperationType.Add, "/pushChannel", "adm-push-channel2");
 		PartialUpdateOperation addTag = new PartialUpdateOperation(UpdateOperationType.Add, "/tags", "bar");
 		PartialUpdateOperation replaceTemplate = new PartialUpdateOperation(UpdateOperationType.Replace, "/templates/template1", new InstallationTemplate("{\"data\":{\"key2\":\"value2\"}}").toJson());
+		PartialUpdateOperation replaceUserId = new PartialUpdateOperation(UpdateOperationType.Replace, "/userId", "user-id-patched");
 		hub.patchInstallation(installation.getInstallationId(), addChannel, addTag, replaceTemplate);
 		Thread.sleep(3000);
 		
 		installation = hub.getInstallation(installation.getInstallationId());
 		assertNotNull(installation);
 		assertEquals("installation-id", installation.getInstallationId());
+		assertEquals("user-id-patched", installation.getUserId());
 		assertEquals(NotificationPlatform.Adm, installation.getPlatform());
 		assertEquals("adm-push-channel2", installation.getPushChannel());
 		assertNotNull(installation.getTags());
