@@ -866,7 +866,7 @@ public class NotificationHub implements INotificationHub {
 	
 	@Override
 	public void patchInstallation(String installationId, PartialUpdateOperation... operations)  throws NotificationHubsException{
-		patchInstallationAsync(installationId, operations);
+		patchInstallationAsync(installationId, operations).block();
 	}
 
 	@Override

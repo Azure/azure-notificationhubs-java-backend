@@ -59,7 +59,7 @@ public interface INotificationHub {
 	Mono<Void> cancelScheduledNotificationAsync(String notificationId);
 			
 	Mono<Void> createOrUpdateInstallationAsync(Installation installation);
-	Mono<Void> patchInstallationAsync(String installationId,	List<PartialUpdateOperation> operations);
+	Mono<Void> patchInstallationAsync(String installationId, List<PartialUpdateOperation> operations);
 	Mono<Void> patchInstallationAsync(String installationId, PartialUpdateOperation... operations);
 	Mono<Void> deleteInstallationAsync(String installationId);
 	Mono<Installation> getInstallationAsync(String installationId);
