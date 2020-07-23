@@ -6,7 +6,13 @@ package com.windowsazure.messaging;
 
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+
+import java.util.Optional;
+
+import org.apache.http.Header;
+import org.apache.http.HttpHeaders;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.HttpResponse;
 
 public class HttpClientManager {
 
@@ -86,5 +92,26 @@ public class HttpClientManager {
         } else {
             throw new RuntimeException("Cannot setSocketTimeout after previously setting httpAsyncClient, or after default already initialized from earlier call to getHttpAsyncClient.");
         }
+    }
+    
+    public static Optional<Integer> parseRetryAfter(HttpResponse response)
+    {
+        Header retryAfter = response.getFirstHeader(HttpHeaders.RETRY_AFTER);
+        if (retryAfter == null) {
+            return Optional.empty();
+        }
+        String retryAfterValue = retryAfter.getValue();
+        if (retryAfterValue == "") {
+            return Optional.empty();
+        }
+        Integer retryAfterSeconds;
+        try {
+            retryAfterSeconds = Integer.parseInt(retryAfterValue);
+        }
+        catch (NumberFormatException e) {
+        	System.out.println("Failed to parse Retry-After header: '" + retryAfterValue + "'");
+            return Optional.empty();
+        }
+        return Optional.of(retryAfterSeconds);
     }
 }

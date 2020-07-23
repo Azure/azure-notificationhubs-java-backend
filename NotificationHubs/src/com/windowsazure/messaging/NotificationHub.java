@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
@@ -27,6 +28,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -726,10 +728,9 @@ public class NotificationHub implements INotificationHub {
 	    	HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{					        		
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();
-	    				
-		        		if (httpStatusCode == 429) {
-		        			throw new QuotaExceededException("Error: " + response.getStatusLine(), httpStatusCode);       
+		        		int httpStatusCode = response.getStatusLine().getStatusCode();	
+		        		if (httpStatusCode == 429 || httpStatusCode == 403) {
+		        			throw new QuotaExceededException("Error: " + response.getStatusLine(), httpStatusCode, HttpClientManager.parseRetryAfter(response));       
 		        		}
 		        		
 		        		if (httpStatusCode != 201) {
