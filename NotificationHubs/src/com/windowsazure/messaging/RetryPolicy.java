@@ -89,11 +89,20 @@ public class RetryPolicy {
         			baseJitter, 
         			ThreadLocalRandom.current());
         } else if (lastException instanceof NotificationHubsException) {
+        	
         	switch(retryOptions.getMode()) {
         	case FIXED:
-        		delay = calculateFixedRetryDelay(retryCount, retryOptions.getDelay(), baseJitter, ThreadLocalRandom.current());
+        		delay = calculateFixedRetryDelay(
+        				retryCount, 
+        				retryAfterDelay == null ? retryOptions.getDelay() : retryAfterDelay,
+        				baseJitter, 
+        				ThreadLocalRandom.current());
         	case EXPONENTIAL:
-        		delay = calculateExponentialRetryDelay(retryCount, retryOptions.getDelay(), baseJitter, ThreadLocalRandom.current());
+        		delay = calculateExponentialRetryDelay(
+        				retryCount, 
+        				retryAfterDelay == null ? retryOptions.getDelay() : retryAfterDelay,
+        				baseJitter, 
+        				ThreadLocalRandom.current());
         	}
         }
         
