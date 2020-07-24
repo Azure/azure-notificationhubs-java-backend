@@ -15,11 +15,11 @@ public class RetryOptions {
 	 private RetryMode retryMode;
 	 
 	 /**
-	 * Creates an instance with the default retry options set.
+	 * Creates an instance with the default retry options set (note: trottling retry has its own default values for options).
 	 */
 	 public RetryOptions() {
 		 maxRetries = 3;
-		 delay = Duration.ofMillis(800);
+		 delay = Duration.ofSeconds(1);
 		 maxDelay = Duration.ofMinutes(1);
 		 tryTimeout = Duration.ofMinutes(1);
 		 retryMode = RetryMode.EXPONENTIAL;

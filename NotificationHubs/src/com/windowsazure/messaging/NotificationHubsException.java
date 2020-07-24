@@ -4,17 +4,18 @@
 
 package com.windowsazure.messaging;
 
-import java.time.Duration;
+import java.util.Optional;
 
 @SuppressWarnings("serial")
 public class NotificationHubsException extends Exception {
 	private int httpStatusCode;
 	protected boolean isTransient;
-	protected Duration retryAfter;
-	
-	public NotificationHubsException(String message, int httpStatusCode){
+	protected Optional<Integer> retryAfter;
+		
+	public NotificationHubsException(String message, int httpStatusCode, Optional<Integer> retryAfter){
 		super(message);
 		this.httpStatusCode=httpStatusCode;
+		this.retryAfter = retryAfter;
 	}
 	
 	public int getHttpStatusCode(){

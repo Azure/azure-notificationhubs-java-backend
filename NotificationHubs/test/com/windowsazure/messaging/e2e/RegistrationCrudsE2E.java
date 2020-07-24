@@ -104,7 +104,7 @@ public class RegistrationCrudsE2E {
 	 	if(baidukey!=null && !baidukey.isEmpty() && baidusecret!=null && !baidusecret.isEmpty())
 	 		hubDescription.setBaiduCredential(new BaiduCredential(baidukey,baidusecret));
 	 	
-	 	namespaceManager = new NamespaceManager(connectionString);
+	 	namespaceManager = new NamespaceManager(connectionString, new RetryOptions());
 	 	namespaceManager.createNotificationHub(hubDescription);		
 		Thread.sleep(1000);
 		

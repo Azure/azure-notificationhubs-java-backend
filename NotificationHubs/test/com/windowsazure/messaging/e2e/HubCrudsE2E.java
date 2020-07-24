@@ -54,7 +54,7 @@ public class HubCrudsE2E {
 	public void GcmCrudsTest() throws Exception{
 	 	assertTrue(gcmkey!=null && !gcmkey.isEmpty());
 		
-		NamespaceManager nsm = new NamespaceManager(connectionString);
+		NamespaceManager nsm = new NamespaceManager(connectionString, new RetryOptions());
 		
 		// Create new
 		NotificationHubDescription hub = new NotificationHubDescription(hubPath);
@@ -97,7 +97,7 @@ public class HubCrudsE2E {
 	public void AdmCrudsTest() throws Exception{
 		assertTrue(admid!=null && !admid.isEmpty() && admsecret!=null && !admsecret.isEmpty());
 		
-		NamespaceManager nsm = new NamespaceManager(connectionString);
+		NamespaceManager nsm = new NamespaceManager(connectionString, new RetryOptions());
 		
 		// Create new
 		NotificationHubDescription hub = new NotificationHubDescription(hubPath);
@@ -143,7 +143,7 @@ public class HubCrudsE2E {
 	public void ApnsCrudsTest() throws Exception{
 	 	assertTrue(apnscert!=null && !apnscert.isEmpty() && apnskey!=null && !apnskey.isEmpty());
 		
-		NamespaceManager nsm = new NamespaceManager(connectionString);
+		NamespaceManager nsm = new NamespaceManager(connectionString, new RetryOptions());
 		
 		// Create new
 		NotificationHubDescription hub = new NotificationHubDescription(hubPath);
@@ -189,7 +189,7 @@ public class HubCrudsE2E {
 	public void MpnsCrudsTest() throws Exception{
 	 	assertTrue(mpnscert!=null && !mpnscert.isEmpty() && mpnskey!=null && !mpnskey.isEmpty());
 		
-		NamespaceManager nsm = new NamespaceManager(connectionString);
+		NamespaceManager nsm = new NamespaceManager(connectionString, new RetryOptions());
 		
 		// Create new
 		NotificationHubDescription hub = new NotificationHubDescription(hubPath);
@@ -235,7 +235,7 @@ public class HubCrudsE2E {
 	public void WnsCrudsTest() throws Exception{
 	 	assertTrue(winsid!=null && !winsid.isEmpty() && winkey!=null && !winkey.isEmpty());
 		
-		NamespaceManager nsm = new NamespaceManager(connectionString);
+		NamespaceManager nsm = new NamespaceManager(connectionString, new RetryOptions());
 		
 		// Create new
 		NotificationHubDescription hub = new NotificationHubDescription(hubPath);
@@ -281,7 +281,7 @@ public class HubCrudsE2E {
 	public void BaiduCrudsTest() throws Exception{
 	 	assertTrue(baidukey!=null && !baidukey.isEmpty() && baidusecret!=null && !baidusecret.isEmpty());
 		
-		NamespaceManager nsm = new NamespaceManager(connectionString);
+		NamespaceManager nsm = new NamespaceManager(connectionString, new RetryOptions());
 		
 		// Create new
 		NotificationHubDescription hub = new NotificationHubDescription(hubPath);
@@ -328,7 +328,7 @@ public class HubCrudsE2E {
 		assertTrue(admid!=null && !admid.isEmpty() && admsecret!=null && !admsecret.isEmpty());
 		assertTrue(baidukey!=null && !baidukey.isEmpty() && baidusecret!=null && !baidusecret.isEmpty());
 		
-		NamespaceManager nsm = new NamespaceManager(connectionString);
+		NamespaceManager nsm = new NamespaceManager(connectionString, new RetryOptions());
 				 	
 		NotificationHubDescription hub = new NotificationHubDescription(hubPath);
 		hub.setBaiduCredential(new BaiduCredential(baidukey, baidusecret));

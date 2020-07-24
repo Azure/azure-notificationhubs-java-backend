@@ -8,6 +8,8 @@ import java.time.Duration;
 import java.util.Locale;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.http.HttpStatus;
+
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -21,6 +23,8 @@ public class RetryUtil {
     private RetryUtil() {
     }
 
+    private static int[] retriableStatusCodes = new int[] {500, 503, 504, 408};
+    
     /**
      * Given a set of {@link RetryOptions options}, creates the appropriate retry policy.
      *
@@ -29,15 +33,7 @@ public class RetryUtil {
      * @throws IllegalArgumentException If {@link RetryOptions#getMode()} is not a supported mode.
      */
     public static RetryPolicy getRetryPolicy(RetryOptions options) {
-        switch (options.getMode()) {
-            case FIXED:
-                return new FixedRetryPolicy(options);
-            case EXPONENTIAL:
-                return new ExponentialRetryPolicy(options);
-            default:
-                throw new IllegalArgumentException(
-                    String.format(Locale.ROOT, "Mode is not supported: %s", options.getMode()));
-        }
+    	return new RetryPolicy(options);
     }
 
     /**
@@ -72,13 +68,20 @@ public class RetryUtil {
                 }
 
                 if (error instanceof TimeoutException) {
-                	System.out.println("TimeoutException error occurred. Retrying operation. Attempt: " + attempt);
-                	
+                	System.out.println("TimeoutException error occurred. Retrying operation. Attempt: " + attempt); 
                     return retryPolicy.calculateRetryDelay(error, attempt);
-                } else if (error instanceof QuotaExceededException && (((QuotaExceededException) error).getIsTransient())) {
+                } else if (error instanceof QuotaExceededException) {
                 	System.out.println("Retryable error occurred. Retrying operation. Attempt: " + attempt + ". Error: " + error);
-                	
                     return retryPolicy.calculateRetryDelay(error, attempt);
+                } else if (error instanceof NotificationHubsException) {                    	
+                    	int statusCode = ((NotificationHubsException) error).getHttpStatusCode();
+                    	if (statusCode == 408 || statusCode == 500 || statusCode == 503 || statusCode == 504) {
+                    		System.out.println("Retryable error occurred. Retrying operation. Attempt: " + attempt + ". Error: " + error);
+                    		return retryPolicy.calculateRetryDelay(error, attempt);
+                    	}
+                    	
+                    	System.out.println("Error is not a TimeoutException nor is it a retryable exception." + error);
+                        throw Exceptions.propagate(error);
                 } else {
                 	System.out.println("Error is not a TimeoutException nor is it a retryable exception." + error);
                     throw Exceptions.propagate(error);

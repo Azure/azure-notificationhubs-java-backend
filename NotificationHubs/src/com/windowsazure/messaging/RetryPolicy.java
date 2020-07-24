@@ -10,9 +10,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeoutException;
 
 /**
- * An abstract representation of a policy to govern retrying of messaging operations.
+ * Policy to govern retrying of operations.
  */
-public abstract class RetryPolicy {
+public class RetryPolicy {
     static final long NANOS_PER_SECOND = 1000_000_000L;
 
     private static final double JITTER_FACTOR = 0.08;
@@ -20,6 +20,8 @@ public abstract class RetryPolicy {
     private final RetryOptions retryOptions;
     private final Duration baseJitter;
 
+    private final double retryFactor;
+    
     /**
      * Creates an instance with the given retry options. If {@link RetryOptions#getMaxDelay()}, {@link
      * RetryOptions#getDelay()}, or {@link RetryOptions#getMaxRetries()} is equal to {@link Duration#ZERO} or
@@ -28,7 +30,7 @@ public abstract class RetryPolicy {
      * @param retryOptions The options to set on this retry policy.
      * @throws NullPointerException if {@code retryOptions} is {@code null}.
      */
-    protected RetryPolicy(RetryOptions retryOptions) {
+    public RetryPolicy(RetryOptions retryOptions) {
         Objects.requireNonNull(retryOptions, "'retryOptions' cannot be null.");
 
         this.retryOptions = retryOptions;
@@ -36,6 +38,8 @@ public abstract class RetryPolicy {
         // 1 second = 1.0 * 10^9 nanoseconds.
         final double jitterInNanos = retryOptions.getDelay().getSeconds() * JITTER_FACTOR * NANOS_PER_SECOND;
         baseJitter = Duration.ofNanos((long) jitterInNanos);
+        
+        this.retryFactor = computeRetryFactor();
     }
 
     /**
@@ -65,26 +69,37 @@ public abstract class RetryPolicy {
      * is no longer eligible to be retried.
      */
     public Duration calculateRetryDelay(Throwable lastException, int retryCount) {
-        if (retryOptions.getDelay() == Duration.ZERO
+        if (retryOptions.getMaxRetries() <= 0
+        	|| retryOptions.getDelay() == Duration.ZERO
             || retryOptions.getMaxDelay() == Duration.ZERO
             || retryCount > retryOptions.getMaxRetries()) {
             return null;
         }
 
-        final Duration baseDelay;
+        Duration retryAfterDelay = null;
+        if (lastException instanceof NotificationHubsException && ((NotificationHubsException) lastException).retryAfter.isPresent()) {
+            retryAfterDelay = Duration.ofSeconds(((NotificationHubsException) lastException).retryAfter.get());
+        } 
+
+        Duration delay = null;
         if (lastException instanceof QuotaExceededException) {
-            baseDelay = retryOptions.getDelay();
-        } else if (lastException instanceof TimeoutException) {
-            baseDelay = retryOptions.getDelay();
-        } else {
-            baseDelay = null;
+        	delay = calculateFixedRetryDelay(
+        			retryCount, 
+        			retryAfterDelay == null ? QuotaExceededException.DefaultDelay : retryAfterDelay, 
+        			baseJitter, 
+        			ThreadLocalRandom.current());
+        } else if (lastException instanceof NotificationHubsException) {
+        	switch(retryOptions.getMode()) {
+        	case FIXED:
+        		delay = calculateFixedRetryDelay(retryCount, retryOptions.getDelay(), baseJitter, ThreadLocalRandom.current());
+        	case EXPONENTIAL:
+        		delay = calculateExponentialRetryDelay(retryCount, retryOptions.getDelay(), baseJitter, ThreadLocalRandom.current());
+        	}
         }
-
-        if (baseDelay == null) {
-            return null;
+        
+        if (delay == null) {
+        	return null;
         }
-
-        final Duration delay = calculateRetryDelay(retryCount, baseDelay, baseJitter, ThreadLocalRandom.current());
 
         // If delay is smaller or equal to the maximum delay, return the maximum delay.
         return delay.compareTo(retryOptions.getMaxDelay()) <= 0
@@ -92,26 +107,10 @@ public abstract class RetryPolicy {
             : retryOptions.getMaxDelay();
     }
 
-    /**
-     * Calculates the amount of time to delay before the next retry attempt based on the {@code retryCount},
-     * {@code baseDelay}, and {@code baseJitter}.
-     *
-     * @param retryCount The number of attempts that have been made, including the initial attempt before any retries.
-     * @param baseDelay The base delay for a retry attempt.
-     * @param baseJitter The base jitter delay.
-     * @param random The random number generator. Can be utilised to calculate a random jitter value for the retry.
-     * @return The amount of time to delay before retrying to associated operation; or {@code null} if the it cannot be
-     * retried.
-     */
-    protected abstract Duration calculateRetryDelay(int retryCount, Duration baseDelay, Duration baseJitter,
-        ThreadLocalRandom random);
-
-    @Override
     public int hashCode() {
         return Objects.hash(retryOptions);
     }
 
-    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -123,5 +122,56 @@ public abstract class RetryPolicy {
 
         final RetryPolicy other = (RetryPolicy) obj;
         return retryOptions.equals(other.retryOptions);
+    }   
+
+    /**
+     * Calculates the delay for a fixed backoff.
+     *
+     * @param retryCount The number of attempts that have been made, including the initial attempt before any
+     *     retries.
+     * @param baseDelay The delay to use for the fixed backoff.
+     * @param baseJitter The duration to use for the basis of the random jitter value.
+     * @param random The random number generator used to calculate the jitter.
+     * @return The duration to delay before retrying a request.
+     */
+    protected Duration calculateFixedRetryDelay(int retryCount, Duration baseDelay, Duration baseJitter,
+                                           ThreadLocalRandom random) {
+        final Double jitterNanos = random.nextDouble() * baseJitter.getSeconds() * RetryPolicy.NANOS_PER_SECOND;
+        final Duration jitter = Duration.ofNanos(jitterNanos.longValue());
+
+        return baseDelay.plus(jitter);
+    }
+    
+    /**
+     * Calculates the retry delay using exponential backoff.
+     *
+     * @param retryCount The number of attempts that have been made, including the initial attempt before any
+     *         retries.
+     * @param baseDelay The delay to use for the basis of the exponential backoff.
+     * @param baseJitter The duration to use for the basis of the random jitter value.
+     * @param random The random number generator used to calculate the jitter.
+     * @return The duration to delay before retrying a request.
+     */
+    private Duration calculateExponentialRetryDelay(int retryCount, Duration baseDelay, Duration baseJitter,
+                                           ThreadLocalRandom random) {
+        final double jitterSeconds = random.nextDouble() * baseJitter.getSeconds();
+        final double nextRetrySeconds = Math.pow(retryFactor, (double) retryCount);
+        final Double nextRetryNanos = (jitterSeconds + nextRetrySeconds) * NANOS_PER_SECOND;
+
+        return baseDelay.plus(Duration.ofNanos(nextRetryNanos.longValue()));
+    }
+    
+    private double computeRetryFactor() {
+        final RetryOptions options = getRetryOptions();
+        final Duration maxBackoff = options.getMaxDelay();
+        final Duration minBackoff = options.getDelay();
+        final int maximumRetries = options.getMaxRetries();
+        final long deltaBackoff = maxBackoff.minus(minBackoff).getSeconds();
+
+        if (deltaBackoff <= 0 || maximumRetries <= 0) {
+            return 0;
+        }
+
+        return Math.log(deltaBackoff) / Math.log(maximumRetries);
     }
 }
