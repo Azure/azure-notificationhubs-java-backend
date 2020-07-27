@@ -53,7 +53,7 @@ import static com.windowsazure.messaging.RetryUtil.withRetry;
  */
 public class NotificationHub implements INotificationHub {
 		
-	private static final String APIVERSION = "?api-version=2015-04";
+	private static final String APIVERSION = "?api-version=2020-06";
 	private static final String CONTENT_LOCATION_HEADER = "Location";
 	private static final String TRACKING_ID_HEADER = "TrackingId";
     private final RetryOptions retryOptions;
@@ -866,7 +866,7 @@ public class NotificationHub implements INotificationHub {
 	
 	@Override
 	public void patchInstallation(String installationId, PartialUpdateOperation... operations)  throws NotificationHubsException{
-		patchInstallationAsync(installationId, operations);
+		patchInstallationAsync(installationId, operations).block();
 	}
 
 	@Override

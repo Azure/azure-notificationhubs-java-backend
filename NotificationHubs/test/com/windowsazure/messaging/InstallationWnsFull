@@ -1,5 +1,6 @@
 {
 	"installationId":"123",
+	"userId":"123",
 	"platform":"wns",
 	"pushChannel":"wns-push-channel1",
 	"pushChannelExpired":true,
