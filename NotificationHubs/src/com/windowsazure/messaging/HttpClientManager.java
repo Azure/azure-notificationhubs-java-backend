@@ -93,6 +93,10 @@ public class HttpClientManager {
             throw new RuntimeException("Cannot setSocketTimeout after previously setting httpAsyncClient, or after default already initialized from earlier call to getHttpAsyncClient.");
         }
     }
+
+    public static void changeHttpAsyncClient(CloseableHttpAsyncClient httpAsyncClient) {
+        HttpClientManager.httpAsyncClient = httpAsyncClient;
+    }
     
     public static Optional<Integer> parseRetryAfter(HttpResponse response)
     {
