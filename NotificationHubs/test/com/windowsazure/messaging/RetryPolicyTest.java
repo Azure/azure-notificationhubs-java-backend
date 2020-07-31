@@ -24,7 +24,6 @@ import reactor.core.Exceptions;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadLocalRandom;
 
 @RunWith(Theories.class)
 public class RetryPolicyTest {
@@ -40,9 +39,7 @@ public class RetryPolicyTest {
     public void EmitRetryWhenBackendResponseHaveRetriableStatusCode(@TestedOn(ints = {408, 500, 503, 504}) final int statusCode) {
 
         RetryOptions retryOptions = new RetryOptions();
-
-        int maxRetries = ThreadLocalRandom.current().nextInt(1, 6);
-        retryOptions.setMaxRetries(maxRetries);
+        retryOptions.setMaxRetries(2);
 
         NamespaceManager manager = new NamespaceManager("Endpoint=sb://address/;SharedAccessKeyName=keyName;SharedAccessKey=key", retryOptions);
 
@@ -67,7 +64,7 @@ public class RetryPolicyTest {
             assertEquals(Exceptions.unwrap(e).getClass(), NotificationHubsException.class);
         }
 
-        Mockito.verify(closeableHttpAsyncClientMock, Mockito.times(maxRetries + 1))
+        Mockito.verify(closeableHttpAsyncClientMock, Mockito.times(3))
                 .execute(any(HttpUriRequest.class), any(FutureCallback.class));
     }
 
