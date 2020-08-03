@@ -93,25 +93,4 @@ public class HttpClientManager {
             throw new RuntimeException("Cannot setSocketTimeout after previously setting httpAsyncClient, or after default already initialized from earlier call to getHttpAsyncClient.");
         }
     }
-    
-    public static Optional<Integer> parseRetryAfter(HttpResponse response)
-    {
-        Header retryAfter = response.getFirstHeader(HttpHeaders.RETRY_AFTER);
-        if (retryAfter == null) {
-            return Optional.empty();
-        }
-        String retryAfterValue = retryAfter.getValue();
-        if (retryAfterValue == "") {
-            return Optional.empty();
-        }
-        Integer retryAfterSeconds;
-        try {
-            retryAfterSeconds = Integer.parseInt(retryAfterValue);
-        }
-        catch (NumberFormatException e) {
-        	System.out.println("Failed to parse Retry-After header: '" + retryAfterValue + "'");
-            return Optional.empty();
-        }
-        return Optional.of(retryAfterSeconds);
-    }
 }

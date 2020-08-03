@@ -12,12 +12,15 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -28,7 +31,6 @@ import org.apache.http.entity.StringEntity;
 
 import reactor.core.publisher.Mono;
 
-import static com.windowsazure.messaging.RetryUtil.getRetryPolicy;
 import static com.windowsazure.messaging.RetryUtil.withRetry;
 
 public class NamespaceManager {
@@ -74,7 +76,7 @@ public class NamespaceManager {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
-			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, HttpClientManager.parseRetryAfter(response));
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
 			    			}		    			
 			    			
 			        		sink.success(NotificationHubDescription.parseOne(response.getEntity().getContent()));
@@ -114,7 +116,7 @@ public class NamespaceManager {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
-			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, HttpClientManager.parseRetryAfter(response));
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
 			    			}			    			
 			    			
 			        		sink.success(NotificationHubDescription.parseCollection(response.getEntity().getContent()));
@@ -178,7 +180,7 @@ public class NamespaceManager {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != (isUpdate ? 200 : 201)) {
-			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, HttpClientManager.parseRetryAfter(response));
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
 			    			}
 
 			        		sink.success(NotificationHubDescription.parseOne(response.getEntity().getContent()));
@@ -214,7 +216,7 @@ public class NamespaceManager {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200 && httpStatusCode != 404) {
-			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, HttpClientManager.parseRetryAfter(response));
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
 			    			}		    			
 			    			
 			        		sink.success();

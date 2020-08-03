@@ -6,8 +6,12 @@ package com.windowsazure.messaging;
 
 import java.time.Duration;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.http.Header;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 
 import reactor.core.Exceptions;
@@ -88,5 +92,26 @@ public class RetryUtil {
                 }
             })
             .flatMap(Mono::delay);
+    }
+
+    public static Optional<Integer> parseRetryAfter(HttpResponse response)
+    {
+        Header retryAfter = response.getFirstHeader(HttpHeaders.RETRY_AFTER);
+        if (retryAfter == null) {
+            return Optional.empty();
+        }
+        String retryAfterValue = retryAfter.getValue();
+        if (retryAfterValue == "") {
+            return Optional.empty();
+        }
+        Integer retryAfterSeconds;
+        try {
+            retryAfterSeconds = Integer.parseInt(retryAfterValue);
+        }
+        catch (NumberFormatException e) {
+            System.out.println("Failed to parse Retry-After header: '" + retryAfterValue + "'");
+            return Optional.empty();
+        }
+        return Optional.of(retryAfterSeconds);
     }
 }
