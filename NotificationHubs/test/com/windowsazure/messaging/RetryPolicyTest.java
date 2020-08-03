@@ -12,6 +12,7 @@ import org.junit.Before;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import org.junit.BeforeClass;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.experimental.theories.suppliers.TestedOn;
@@ -27,12 +28,17 @@ import java.util.concurrent.Future;
 
 @RunWith(Theories.class)
 public class RetryPolicyTest {
-    CloseableHttpAsyncClient closeableHttpAsyncClientMock;
+    static CloseableHttpAsyncClient closeableHttpAsyncClientMock;
+
+    @BeforeClass
+    public static void setUpClass() {
+        closeableHttpAsyncClientMock = Mockito.mock(CloseableHttpAsyncClient.class);
+        HttpClientManager.setHttpAsyncClient(closeableHttpAsyncClientMock);
+    }
 
     @Before
     public void setUp() {
-        closeableHttpAsyncClientMock = Mockito.mock(CloseableHttpAsyncClient.class);
-        HttpClientManager.changeHttpAsyncClient(closeableHttpAsyncClientMock);
+        reset(closeableHttpAsyncClientMock);
     }
 
     @Theory
