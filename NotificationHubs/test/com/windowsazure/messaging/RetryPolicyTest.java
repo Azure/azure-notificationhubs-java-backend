@@ -42,7 +42,7 @@ public class RetryPolicyTest {
     }
 
     @Theory
-    public void EmitRetryWhenBackendResponseHaveRetriableStatusCode(@TestedOn(ints = {408, 500, 503, 504}) final int statusCode) {
+    public void EmitRetryWhenBackendResponseHaveRetriableStatusCode(@TestedOn(ints = {500, 503, 504, 408, 429, 403}) final int statusCode) {
 
         RetryOptions retryOptions = new RetryOptions();
         retryOptions.setMaxRetries(2);

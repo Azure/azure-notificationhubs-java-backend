@@ -5,6 +5,7 @@
 package com.windowsazure.messaging;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
@@ -27,7 +28,7 @@ public class RetryUtil {
     private RetryUtil() {
     }
 
-    private static int[] retriableStatusCodes = new int[] {500, 503, 504, 408};
+    private static int[] retriableStatusCodes = new int[] {500, 503, 504, 408, 429, 403};
     
     /**
      * Given a set of {@link RetryOptions options}, creates the appropriate retry policy.
@@ -67,27 +68,20 @@ public class RetryUtil {
         return source.zipWith(Flux.range(1, retryPolicy.getMaxRetries() + 1),
             (error, attempt) -> {
                 if (attempt > retryPolicy.getMaxRetries()) {
-                	System.out.println("Retry attempts are exhausted. Current: " + attempt + ". Max: " + retryPolicy.getMaxRetries());
                     throw Exceptions.propagate(error);
                 }
 
                 if (error instanceof TimeoutException) {
-                	System.out.println("TimeoutException error occurred. Retrying operation. Attempt: " + attempt); 
                     return retryPolicy.calculateRetryDelay(error, attempt);
                 } else if (error instanceof QuotaExceededException) {
-                	System.out.println("Retryable error occurred. Retrying operation. Attempt: " + attempt + ". Error: " + error);
                     return retryPolicy.calculateRetryDelay(error, attempt);
                 } else if (error instanceof NotificationHubsException) {                    	
                     	int statusCode = ((NotificationHubsException) error).getHttpStatusCode();
-                    	if (statusCode == 408 || statusCode == 500 || statusCode == 503 || statusCode == 504) {
-                    		System.out.println("Retryable error occurred. Retrying operation. Attempt: " + attempt + ". Error: " + error);
+                    	if (Arrays.stream(retriableStatusCodes).anyMatch(code -> code == statusCode)) {
                     		return retryPolicy.calculateRetryDelay(error, attempt);
                     	}
-                    	
-                    	System.out.println("Error is not a TimeoutException nor is it a retryable exception." + error);
                         throw Exceptions.propagate(error);
                 } else {
-                	System.out.println("Error is not a TimeoutException nor is it a retryable exception." + error);
                     throw Exceptions.propagate(error);
                 }
             })
@@ -109,7 +103,6 @@ public class RetryUtil {
             retryAfterSeconds = Integer.parseInt(retryAfterValue);
         }
         catch (NumberFormatException e) {
-            System.out.println("Failed to parse Retry-After header: '" + retryAfterValue + "'");
             return Optional.empty();
         }
         return Optional.of(retryAfterSeconds);
