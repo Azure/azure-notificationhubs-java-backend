@@ -7,12 +7,7 @@ package com.windowsazure.messaging;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 
-import java.util.Optional;
-
-import org.apache.http.Header;
-import org.apache.http.HttpHeaders;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.HttpResponse;
 
 public class HttpClientManager {
 

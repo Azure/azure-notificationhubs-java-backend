@@ -6,14 +6,12 @@ package com.windowsazure.messaging;
 
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
@@ -88,7 +86,7 @@ public class RetryUtil {
             .flatMap(Mono::delay);
     }
 
-    public static Optional<Integer> parseRetryAfter(HttpResponse response)
+    static Optional<Integer> parseRetryAfter(HttpResponse response)
     {
         Header retryAfter = response.getFirstHeader(HttpHeaders.RETRY_AFTER);
         if (retryAfter == null) {
