@@ -4,6 +4,7 @@
 
 package com.windowsazure.messaging;
 
+import org.apache.http.entity.ContentType;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
