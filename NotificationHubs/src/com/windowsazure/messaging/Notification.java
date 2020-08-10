@@ -16,9 +16,9 @@ import org.apache.http.entity.ContentType;
  */
 public class Notification {
 
-	private Map<String, String> headers = new HashMap<String, String>();
-	private String body;
-	private ContentType contentType;
+	Map<String, String> headers = new HashMap<String, String>();
+	String body;
+	ContentType contentType;
 
 	/**
 	 * Utility method to set up a native notification for WNS. Sets the
@@ -35,11 +35,11 @@ public class Notification {
 
 		n.headers.put("ServiceBusNotification-Format", "windows");
 
-		if (body.contains("<toast>"))
+		if (body.matches("^<toast[\\s\\S]*>[\\s\\S]+</toast>$"))
 			n.headers.put("X-WNS-Type", "wns/toast");
-		if (body.contains("<tile>"))
+		if (body.matches("^<tile[\\s\\S]*>[\\s\\S]+</tile>$"))
 			n.headers.put("X-WNS-Type", "wns/tile");
-		if (body.contains("<badge>"))
+		if (body.matches("^<badge[\\s\\S]*>[\\s\\S]+</badge>$"))
 			n.headers.put("X-WNS-Type", "wns/badge");
 
 		if (body.startsWith("<")) {
