@@ -16,9 +16,9 @@ import org.apache.http.entity.ContentType;
  */
 public class Notification {
 
-	private Map<String, String> headers = new HashMap<String, String>();
-	private String body;
-	private ContentType contentType;
+	Map<String, String> headers = new HashMap<String, String>();
+	String body;
+	ContentType contentType;
 
 	/**
 	 * Utility method to set up a native notification for WNS. Sets the
