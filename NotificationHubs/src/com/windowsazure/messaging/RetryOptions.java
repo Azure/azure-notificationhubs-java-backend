@@ -13,6 +13,7 @@ public class RetryOptions {
     private Duration maxDelay;
     private Duration tryTimeout;
     private RetryMode retryMode;
+	private boolean ignoreThrottling;
 
     /**
      * Creates an instance with the default retry options set (note: trottling retry has its own default values for options).
@@ -23,6 +24,7 @@ public class RetryOptions {
         maxDelay = Duration.ofMinutes(1);
         tryTimeout = Duration.ofMinutes(1);
         retryMode = RetryMode.EXPONENTIAL;
+        ignoreThrottling = false;
     }
 
     /**
@@ -37,6 +39,7 @@ public class RetryOptions {
         this.maxRetries = retryOptions.getMaxRetries();
         this.retryMode = retryOptions.getMode();
         this.tryTimeout = retryOptions.getTryTimeout();
+        this.ignoreThrottling = retryOptions.getIgnoreThrottling();
     }
 
     /**
@@ -140,6 +143,27 @@ public class RetryOptions {
     public Duration getTryTimeout() {
         return tryTimeout;
     }
+
+	/**
+	 * Fetches whether or not to respect a server's indication to slow the rate of requests.
+	 * @return True if the server should be respected, false otherwise.
+	 *
+	 * @apiNote This does nothing to change whether or not a server will actually respond to your requests, just how
+	 * long you wait to ask again. It should be used when it is appropriate to wait longer than the server implied.
+	 */
+	public boolean getIgnoreThrottling() {
+		return ignoreThrottling;
+	}
+
+	/**
+	 * Sets whether or not to respect a server's indication to slow the rate of requests.
+	 * @param ignoreThrottling True to ignore the server, false to defer to the server.
+	 * @return The updated {@link RetryOptions} object.
+	 */
+	public RetryOptions setIgnoreThrottling(boolean ignoreThrottling) {
+		this.ignoreThrottling = ignoreThrottling;
+		return this;
+	}
 
     /**
      * {@inheritDoc}
