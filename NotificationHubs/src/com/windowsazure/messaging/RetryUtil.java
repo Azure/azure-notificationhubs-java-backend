@@ -5,8 +5,13 @@
 package com.windowsazure.messaging;
 
 import java.time.Duration;
-import java.util.Locale;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
+
+import org.apache.http.Header;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpResponse;
 
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
@@ -21,6 +26,8 @@ public class RetryUtil {
     private RetryUtil() {
     }
 
+    private static int[] retriableStatusCodes = new int[] {500, 503, 504, 408, 429, 403};
+    
     /**
      * Given a set of {@link RetryOptions options}, creates the appropriate retry policy.
      *
@@ -28,16 +35,15 @@ public class RetryUtil {
      * @return A new retry policy configured with the given {@code options}.
      * @throws IllegalArgumentException If {@link RetryOptions#getMode()} is not a supported mode.
      */
-    public static RetryPolicy getRetryPolicy(RetryOptions options) {
-        switch (options.getMode()) {
-            case FIXED:
-                return new FixedRetryPolicy(options);
-            case EXPONENTIAL:
-                return new ExponentialRetryPolicy(options);
-            default:
-                throw new IllegalArgumentException(
-                    String.format(Locale.ROOT, "Mode is not supported: %s", options.getMode()));
-        }
+    public static RetryPolicy getRetryPolicy(RetryOptions options) {    	
+    	switch(options.getMode()) {
+    	case FIXED:
+    		return new FixedRetryPolicy(options);
+		case EXPONENTIAL:
+			return new ExponentialRetryPolicy(options);
+		default:
+			throw new IllegalArgumentException("options contained an unknown RetryMode");
+    	}
     }
 
     /**
@@ -67,23 +73,43 @@ public class RetryUtil {
         return source.zipWith(Flux.range(1, retryPolicy.getMaxRetries() + 1),
             (error, attempt) -> {
                 if (attempt > retryPolicy.getMaxRetries()) {
-                	System.out.println("Retry attempts are exhausted. Current: " + attempt + ". Max: " + retryPolicy.getMaxRetries());
                     throw Exceptions.propagate(error);
                 }
 
                 if (error instanceof TimeoutException) {
-                	System.out.println("TimeoutException error occurred. Retrying operation. Attempt: " + attempt);
-                	
                     return retryPolicy.calculateRetryDelay(error, attempt);
-                } else if (error instanceof QuotaExceededException && (((QuotaExceededException) error).getIsTransient())) {
-                	System.out.println("Retryable error occurred. Retrying operation. Attempt: " + attempt + ". Error: " + error);
-                	
+                } else if (error instanceof QuotaExceededException) {
                     return retryPolicy.calculateRetryDelay(error, attempt);
+                } else if (error instanceof NotificationHubsException) {                    	
+                    	int statusCode = ((NotificationHubsException) error).getHttpStatusCode();
+                    	if (Arrays.stream(retriableStatusCodes).anyMatch(code -> code == statusCode)) {
+                    		return retryPolicy.calculateRetryDelay(error, attempt);
+                    	}
+                        throw Exceptions.propagate(error);
                 } else {
-                	System.out.println("Error is not a TimeoutException nor is it a retryable exception." + error);
                     throw Exceptions.propagate(error);
                 }
             })
             .flatMap(Mono::delay);
+    }
+
+    static Optional<Duration> parseRetryAfter(HttpResponse response)
+    {
+        Header retryAfter = response.getFirstHeader(HttpHeaders.RETRY_AFTER);
+        if (retryAfter == null) {
+            return Optional.empty();
+        }
+        String retryAfterValue = retryAfter.getValue();
+        if (retryAfterValue == "") {
+            return Optional.empty();
+        }
+
+        try {
+            long retryAfterSeconds = Long.parseLong(retryAfterValue);
+            return Optional.of(Duration.ofSeconds(retryAfterSeconds));
+        }
+        catch (NumberFormatException e) {
+            throw new UnsupportedOperationException(String.format("\"%s\" must be an integer number of seconds", retryAfterValue));
+        }   
     }
 }

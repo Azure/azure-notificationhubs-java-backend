@@ -6,6 +6,7 @@ package com.windowsazure.messaging;
 
 import java.time.Duration;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeoutException;
 
@@ -70,20 +71,18 @@ public abstract class RetryPolicy {
             || retryCount > retryOptions.getMaxRetries()) {
             return null;
         }
-
-        final Duration baseDelay;
-        if (lastException instanceof QuotaExceededException) {
-            baseDelay = retryOptions.getDelay();
-        } else if (lastException instanceof TimeoutException) {
-            baseDelay = retryOptions.getDelay();
-        } else {
-            baseDelay = null;
+        
+        Optional<Duration> retryAfter = Optional.empty();
+        if (!retryOptions.getIgnoreThrottling() && lastException instanceof NotificationHubsException) {
+        	NotificationHubsException castException = (NotificationHubsException)lastException;
+        	retryAfter = castException.getRetryAfter();
         }
 
-        if (baseDelay == null) {
-            return null;
+        if (retryAfter.isPresent()) {
+        	return retryAfter.get();
         }
-
+        
+        final Duration baseDelay = retryOptions.getDelay();
         final Duration delay = calculateRetryDelay(retryCount, baseDelay, baseJitter, ThreadLocalRandom.current());
 
         // If delay is smaller or equal to the maximum delay, return the maximum delay.

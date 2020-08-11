@@ -4,11 +4,15 @@
 
 package com.windowsazure.messaging;
 
+import static com.windowsazure.messaging.RetryUtil.getRetryPolicy;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.Objects;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -24,6 +28,8 @@ import org.apache.http.entity.StringEntity;
 
 import reactor.core.publisher.Mono;
 
+import static com.windowsazure.messaging.RetryUtil.withRetry;
+
 public class NamespaceManager {
 	private static final String IFMATCH_HEADER_NAME = "If-Match";
 	private static final String AUTHORIZATION_HEADER_NAME = "Authorization";
@@ -33,8 +39,10 @@ public class NamespaceManager {
 	private String endpoint;
 	private String SasKeyName;
 	private String SasKeyValue;
+    private final RetryOptions retryOptions;
+    private final RetryPolicy retryPolicy;
 
-	public NamespaceManager(String connectionString) {
+	public NamespaceManager(String connectionString, RetryOptions retryOptions) {
 		String[] parts = connectionString.split(";");
 		if (parts.length != 3)
 			throw new RuntimeException("Error parsing connection string: "
@@ -49,6 +57,9 @@ public class NamespaceManager {
 				this.SasKeyValue = parts[i].substring(16);
 			}
 		}
+		
+		this.retryOptions = Objects.requireNonNull(retryOptions, "'retryOptions' cannot be null.");
+		this.retryPolicy = getRetryPolicy(retryOptions);
 	}
 	
 	public Mono<NotificationHubDescription> getNotificationHubAsync(String hubPath){
@@ -56,13 +67,13 @@ public class NamespaceManager {
 			URI uri = new URI(endpoint + hubPath + APIVERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
-			return Mono.create(sink -> {		
+			return withRetry(Mono.create(sink -> {		
 				HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
-			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
 			    			}		    			
 			    			
 			        		sink.success(NotificationHubDescription.parseOne(response.getEntity().getContent()));
@@ -81,7 +92,7 @@ public class NamespaceManager {
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
 				});	
-			});		
+			}), retryOptions.getTryTimeout(), retryPolicy);		
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
 		} 
@@ -96,13 +107,13 @@ public class NamespaceManager {
 			URI uri = new URI(endpoint + HUBS_COLLECTION_PATH + APIVERSION + SKIP_TOP_PARAM);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
-			return Mono.create(sink -> {		
+			return withRetry(Mono.create(sink -> {		
 				HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
-			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
 			    			}			    			
 			    			
 			        		sink.success(NotificationHubDescription.parseCollection(response.getEntity().getContent()));
@@ -121,7 +132,7 @@ public class NamespaceManager {
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
 				});
-			});			
+			}), retryOptions.getTryTimeout(), retryPolicy);			
 		} catch (Exception e) {
 			 return Mono.error(new RuntimeException(e));
 		} 
@@ -160,13 +171,13 @@ public class NamespaceManager {
 			entity.setContentEncoding("utf-8");
 			put.setEntity(entity);
 
-			return Mono.create(sink -> {		
+			return withRetry(Mono.create(sink -> {		
 				HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != (isUpdate ? 200 : 201)) {
-			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
 			    			}
 
 			        		sink.success(NotificationHubDescription.parseOne(response.getEntity().getContent()));
@@ -185,7 +196,7 @@ public class NamespaceManager {
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
 				});
-			});		
+			}), retryOptions.getTryTimeout(), retryPolicy);		
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
 		} 
@@ -196,13 +207,13 @@ public class NamespaceManager {
 			URI uri = new URI(endpoint + hubPath + APIVERSION);
 			final HttpDelete delete = new HttpDelete(uri);
 			delete.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
-			return Mono.create(sink -> {		
+			return withRetry(Mono.create(sink -> {		
 				HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200 && httpStatusCode != 404) {
-			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode);
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
 			    			}		    			
 			    			
 			        		sink.success();
@@ -221,7 +232,7 @@ public class NamespaceManager {
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
 				});
-			});
+			}), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
 		} 
