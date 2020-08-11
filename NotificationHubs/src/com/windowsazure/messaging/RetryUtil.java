@@ -35,8 +35,15 @@ public class RetryUtil {
      * @return A new retry policy configured with the given {@code options}.
      * @throws IllegalArgumentException If {@link RetryOptions#getMode()} is not a supported mode.
      */
-    public static RetryPolicy getRetryPolicy(RetryOptions options) {
-    	return new RetryPolicy(options);
+    public static RetryPolicy getRetryPolicy(RetryOptions options) {    	
+    	switch(options.getMode()) {
+    	case FIXED:
+    		return new FixedRetryPolicy(options);
+		case EXPONENTIAL:
+			return new ExponentialRetryPolicy(options);
+		default:
+			throw new IllegalArgumentException("options contained an unknown RetryMode");
+    	}
     }
 
     /**
@@ -86,7 +93,7 @@ public class RetryUtil {
             .flatMap(Mono::delay);
     }
 
-    static Optional<Integer> parseRetryAfter(HttpResponse response)
+    static Optional<Duration> parseRetryAfter(HttpResponse response)
     {
         Header retryAfter = response.getFirstHeader(HttpHeaders.RETRY_AFTER);
         if (retryAfter == null) {
@@ -96,13 +103,13 @@ public class RetryUtil {
         if (retryAfterValue == "") {
             return Optional.empty();
         }
-        Integer retryAfterSeconds;
+
         try {
-            retryAfterSeconds = Integer.parseInt(retryAfterValue);
+            long retryAfterSeconds = Long.parseLong(retryAfterValue);
+            return Optional.of(Duration.ofSeconds(retryAfterSeconds));
         }
         catch (NumberFormatException e) {
-            return Optional.empty();
-        }
-        return Optional.of(retryAfterSeconds);
+            throw new UnsupportedOperationException(String.format("\"%s\" must be an integer number of seconds", retryAfterValue));
+        }   
     }
 }

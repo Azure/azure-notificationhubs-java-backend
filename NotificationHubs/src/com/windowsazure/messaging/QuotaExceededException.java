@@ -11,12 +11,12 @@ import java.util.Optional;
 public class QuotaExceededException extends NotificationHubsException{
 	public static Duration DefaultDelay = Duration.ofSeconds(10);	
 
-	public QuotaExceededException(String message, int httpStatusCode, Optional<Integer> retryAfter) {
+	public QuotaExceededException(String message, int httpStatusCode, Optional<Duration> retryAfter) {
 		super(message, httpStatusCode, retryAfter);
-		this.isTransient = true;
 	}
 	
+	@Override
 	public boolean getIsTransient(){
-		return this.isTransient;
+		return true;
 	}
 }
