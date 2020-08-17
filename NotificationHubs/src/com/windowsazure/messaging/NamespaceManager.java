@@ -12,6 +12,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -30,11 +31,11 @@ import reactor.core.publisher.Mono;
 
 import static com.windowsazure.messaging.RetryUtil.withRetry;
 
-public class NamespaceManager {
-	private static final String IFMATCH_HEADER_NAME = "If-Match";
+public class NamespaceManager implements NamespaceManagerClient {
+	private static final String IF_MATCH_HEADER_NAME = "If-Match";
 	private static final String AUTHORIZATION_HEADER_NAME = "Authorization";
 	private static final String HUBS_COLLECTION_PATH = "$Resources/NotificationHubs/";
-	private static final String APIVERSION = "?api-version=2020-06";
+	private static final String API_VERSION = "?api-version=2020-06";
 	private static final String SKIP_TOP_PARAM = "&$skip=0&$top=2147483647";
 	private String endpoint;
 	private String SasKeyName;
@@ -48,77 +49,38 @@ public class NamespaceManager {
 			throw new RuntimeException("Error parsing connection string: "
 					+ connectionString);
 
-		for (int i = 0; i < parts.length; i++) {
-			if (parts[i].startsWith("Endpoint")) {
-				this.endpoint = "https" + parts[i].substring(11);
-			} else if (parts[i].startsWith("SharedAccessKeyName")) {
-				this.SasKeyName = parts[i].substring(20);
-			} else if (parts[i].startsWith("SharedAccessKey")) {
-				this.SasKeyValue = parts[i].substring(16);
-			}
-		}
-		
+        for (String part : parts) {
+            if (part.startsWith("Endpoint")) {
+                this.endpoint = "https" + part.substring(11);
+            } else if (part.startsWith("SharedAccessKeyName")) {
+                this.SasKeyName = part.substring(20);
+            } else if (part.startsWith("SharedAccessKey")) {
+                this.SasKeyValue = part.substring(16);
+            }
+        }
+
 		this.retryOptions = Objects.requireNonNull(retryOptions, "'retryOptions' cannot be null.");
 		this.retryPolicy = getRetryPolicy(retryOptions);
 	}
-	
-	public Mono<NotificationHubDescription> getNotificationHubAsync(String hubPath){
+
+	@Override
+    public Mono<NotificationHubDescription> getNotificationHubAsync(String hubPath){
 		try {
-			URI uri = new URI(endpoint + hubPath + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + API_VERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
-			return withRetry(Mono.create(sink -> {		
+			return withRetry(Mono.create(sink -> {
 				HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
 			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}		    			
-			    			
+			    			}
+
 			        		sink.success(NotificationHubDescription.parseOne(response.getEntity().getContent()));
 			        	} catch (Exception e) {
-			        		sink.error(e);	        		
-			        	} finally {
-			        		get.releaseConnection();
-			    		}
-			        }
-			        public void failed(final Exception ex) {
-			        	get.releaseConnection();
-			        	sink.error(ex);
-			        }
-			        public void cancelled() {
-			        	get.releaseConnection();
-			        	sink.error(new RuntimeException("Operation was cancelled."));
-			        }
-				});	
-			}), retryOptions.getTryTimeout(), retryPolicy);		
-		} catch (Exception e) {
-			return Mono.error(new RuntimeException(e));
-		} 
-	}
-	
-	public NotificationHubDescription getNotificationHub(String hubPath) throws NotificationHubsException{
-		return getNotificationHubAsync(hubPath).block();
-	}
-	
-	public Mono<List<NotificationHubDescription>> getNotificationHubsAsync(){
-		try {
-			URI uri = new URI(endpoint + HUBS_COLLECTION_PATH + APIVERSION + SKIP_TOP_PARAM);
-			final HttpGet get = new HttpGet(uri);
-			get.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
-			return withRetry(Mono.create(sink -> {		
-				HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
-			        public void completed(final HttpResponse response) {
-			        	try{
-			        		int httpStatusCode = response.getStatusLine().getStatusCode();
-			        		if (httpStatusCode != 200) {
-			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}			    			
-			    			
-			        		sink.success(NotificationHubDescription.parseCollection(response.getEntity().getContent()));
-			        	} catch (Exception e) {
-			        		sink.error(e);	        		
+			        		sink.error(e);
 			        	} finally {
 			        		get.releaseConnection();
 			    		}
@@ -132,46 +94,93 @@ public class NamespaceManager {
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
 				});
-			}), retryOptions.getTryTimeout(), retryPolicy);			
+			}), retryOptions.getTryTimeout(), retryPolicy);
+		} catch (Exception e) {
+			return Mono.error(new RuntimeException(e));
+		}
+	}
+
+	@Override
+    public NotificationHubDescription getNotificationHub(String hubPath) throws NotificationHubsException{
+		return getNotificationHubAsync(hubPath).block();
+	}
+
+	@Override
+    public Mono<List<NotificationHubDescription>> getNotificationHubsAsync(){
+		try {
+			URI uri = new URI(endpoint + HUBS_COLLECTION_PATH + API_VERSION + SKIP_TOP_PARAM);
+			final HttpGet get = new HttpGet(uri);
+			get.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
+			return withRetry(Mono.create(sink -> {
+				HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
+			        public void completed(final HttpResponse response) {
+			        	try{
+			        		int httpStatusCode = response.getStatusLine().getStatusCode();
+			        		if (httpStatusCode != 200) {
+			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
+			    			}
+
+			        		sink.success(NotificationHubDescription.parseCollection(response.getEntity().getContent()));
+			        	} catch (Exception e) {
+			        		sink.error(e);
+			        	} finally {
+			        		get.releaseConnection();
+			    		}
+			        }
+			        public void failed(final Exception ex) {
+			        	get.releaseConnection();
+			        	sink.error(ex);
+			        }
+			        public void cancelled() {
+			        	get.releaseConnection();
+			        	sink.error(new RuntimeException("Operation was cancelled."));
+			        }
+				});
+			}), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			 return Mono.error(new RuntimeException(e));
-		} 
+		}
 	}
-	
-	public List<NotificationHubDescription> getNotificationHubs() throws NotificationHubsException{
+
+	@Override
+    public List<NotificationHubDescription> getNotificationHubs() throws NotificationHubsException{
 		return getNotificationHubsAsync().block();
 	}
-	
-	public Mono<NotificationHubDescription> createNotificationHubAsync(NotificationHubDescription hubDescription){
+
+	@Override
+    public Mono<NotificationHubDescription> createNotificationHubAsync(NotificationHubDescription hubDescription){
 		return createOrUpdateNotificationHubAsync(hubDescription, false);
 	}
-	
-	public NotificationHubDescription createNotificationHub(NotificationHubDescription hubDescription) throws NotificationHubsException{
+
+	@Override
+    public NotificationHubDescription createNotificationHub(NotificationHubDescription hubDescription) throws NotificationHubsException{
 		return createNotificationHubAsync(hubDescription).block();
 	}
-	
-	public Mono<NotificationHubDescription> updateNotificationHubAsync(NotificationHubDescription hubDescription){
+
+	@Override
+    public Mono<NotificationHubDescription> updateNotificationHubAsync(NotificationHubDescription hubDescription) {
 		return createOrUpdateNotificationHubAsync(hubDescription, true);
 	}
-	
-	public NotificationHubDescription updateNotificationHub(NotificationHubDescription hubDescription) throws NotificationHubsException{
+
+	@Override
+    public NotificationHubDescription updateNotificationHub(NotificationHubDescription hubDescription) throws NotificationHubsException{
 		return updateNotificationHubAsync(hubDescription).block();
 	}
-	
+
 	private Mono<NotificationHubDescription> createOrUpdateNotificationHubAsync(NotificationHubDescription hubDescription, final boolean isUpdate){
 		try {
-			URI uri = new URI(endpoint + hubDescription.getPath() + APIVERSION);
+			URI uri = new URI(endpoint + hubDescription.getPath() + API_VERSION);
 			final HttpPut put = new HttpPut(uri);
 			put.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
 			if(isUpdate){
-				put.setHeader(IFMATCH_HEADER_NAME, "*");
+				put.setHeader(IF_MATCH_HEADER_NAME, "*");
 			}
-			
+
 			StringEntity entity = new StringEntity(hubDescription.getXml(), ContentType.APPLICATION_ATOM_XML);
 			entity.setContentEncoding("utf-8");
 			put.setEntity(entity);
 
-			return withRetry(Mono.create(sink -> {		
+			return withRetry(Mono.create(sink -> {
 				HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
 			        	try{
@@ -182,7 +191,7 @@ public class NamespaceManager {
 
 			        		sink.success(NotificationHubDescription.parseOne(response.getEntity().getContent()));
 			        	} catch (Exception e) {
-			        		sink.error(e);	        		
+			        		sink.error(e);
 			        	} finally {
 			        		put.releaseConnection();
 			    		}
@@ -196,29 +205,30 @@ public class NamespaceManager {
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
 				});
-			}), retryOptions.getTryTimeout(), retryPolicy);		
+			}), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
-		} 
-	}	
-	
-	public Mono<Void> deleteNotificationHubAsync(String hubPath){
+		}
+	}
+
+	@Override
+    public Mono<Void> deleteNotificationHubAsync(String hubPath){
 		try {
-			URI uri = new URI(endpoint + hubPath + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + API_VERSION);
 			final HttpDelete delete = new HttpDelete(uri);
 			delete.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
-			return withRetry(Mono.create(sink -> {		
+			return withRetry(Mono.create(sink -> {
 				HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200 && httpStatusCode != 404) {
 			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}		    			
-			    			
+			    			}
+
 			        		sink.success();
 			        	} catch (Exception e) {
-			        		sink.error(e);	        		
+			        		sink.error(e);
 			        	} finally {
 			        		delete.releaseConnection();
 			    		}
@@ -235,13 +245,14 @@ public class NamespaceManager {
 			}), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
-		} 
-	}	
-	
-	public void deleteNotificationHub(String hubPath) throws NotificationHubsException{
+		}
+	}
+
+	@Override
+    public void deleteNotificationHub(String hubPath) throws NotificationHubsException{
 		deleteNotificationHubAsync(hubPath).block();
-	}	 
-		
+	}
+
 	private String generateSasToken(URI uri) {
 		String targetUri;
 		try {
