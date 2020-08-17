@@ -19,9 +19,15 @@ To get started, you can find all the classes in the `com.windowsazure.messaging`
 import com.windowsazure.messaging.NotificationHub;
 ```
 
-The Azure Notification Hubs SDK for Java support both synchrnous and asynchrnous operations.  The asynchronous APIs are supported using the [Reactor](https://projectreactor.io/) Framework.  We will show synchrnous examples, however you can utilize the async methods, which are suffixed with `Async` such as the following:
+The Azure Notification Hubs SDK for Java support both synchrnous and asynchrnous operations on `NotificationHub/NotificationHubClient` and `NamespaceManager/NamespaceManagerClient`.  The asynchronous APIs are supported using the [Reactor](https://projectreactor.io/) Framework.  We will show synchrnous examples, however you can utilize the async methods, which are suffixed with `Async` such as the following:
 
 ```java
+// Synchronous
+NotificationHubDescription hub = new NotificationHubDescription("hubname");
+hub.setWindowsCredential(new WindowsCredential("sid","key"));
+hub = namespaceManager.createNotificationHub(hub);
+
+// Asynchronous
 NotificationHubDescription hub = new NotificationHubDescription("hubname");
 hub.setWindowsCredential(new WindowsCredential("sid","key"));
 Disposable subscription = namespaceManager.createNotificationHubAsync(hub)
@@ -127,7 +133,7 @@ Keep in mind that CreateOrUpdate, Patch and Delete are eventually consistent wit
 
 ## Azure Notification Hub Registration API
 
-A registration associates the Platform Notification Service (PNS) handle for a device with tags and possibly a template. The PNS handle could be a ChannelURI, device token, or FCM registration ID. Tags are used to route notifications to the correct set of device handles. For more information, see Routing and Tag Expressions. Templates are used to implement per-registration transformation.  The Registration API handles requests for these operations.
+A registration associates the Platform Notification Service (PNS) handle for a device with tags and possibly a template. The PNS handle could be a ChannelURI, device token, or FCM registration ID. Tags are used to route notifications to the correct set of device handles. Templates are used to implement per-registration transformation.  The Registration API handles requests for these operations.
 
 ### Create a Windows Registration:
 

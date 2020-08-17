@@ -8,7 +8,6 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeoutException;
 
 /**
  * An abstract representation of a policy to govern retrying of messaging operations.
@@ -71,7 +70,7 @@ public abstract class RetryPolicy {
             || retryCount > retryOptions.getMaxRetries()) {
             return null;
         }
-        
+
         Optional<Duration> retryAfter = Optional.empty();
         if (!retryOptions.getIgnoreThrottling() && lastException instanceof NotificationHubsException) {
         	NotificationHubsException castException = (NotificationHubsException)lastException;
@@ -81,7 +80,7 @@ public abstract class RetryPolicy {
         if (retryAfter.isPresent()) {
         	return retryAfter.get();
         }
-        
+
         final Duration baseDelay = retryOptions.getDelay();
         final Duration delay = calculateRetryDelay(retryCount, baseDelay, baseJitter, ThreadLocalRandom.current());
 

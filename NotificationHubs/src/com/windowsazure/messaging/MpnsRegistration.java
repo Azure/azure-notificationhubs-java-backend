@@ -8,7 +8,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * 
+ *
  * Class representing a native registration for a device using MPNS.
  *
  */
@@ -18,7 +18,7 @@ public class MpnsRegistration extends Registration {
 	private static final String MPNS_NATIVE_REGISTRATION3 = "</ChannelUri></MpnsRegistrationDescription></content></entry>";
 
 	protected URI channelUri;
-	
+
 	public MpnsRegistration() {
 	}
 
@@ -43,8 +43,8 @@ public class MpnsRegistration extends Registration {
 			throw new RuntimeException(channelUri);
 		}
 	}
-	
-	
+
+
 
 	@Override
 	public int hashCode() {
@@ -65,12 +65,9 @@ public class MpnsRegistration extends Registration {
 			return false;
 		MpnsRegistration other = (MpnsRegistration) obj;
 		if (channelUri == null) {
-			if (other.channelUri != null)
-				return false;
-		} else if (!channelUri.equals(other.channelUri))
-			return false;
-		return true;
-	}
+            return other.channelUri == null;
+		} else return channelUri.equals(other.channelUri);
+    }
 
 	@Override
 	public String getXml() {

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 
@@ -262,7 +263,7 @@ public class NamespaceManager implements NamespaceManagerClient {
 			String toSign = targetUri + "\n" + expires;
 
 			// Get an hmac_sha1 key from the raw key bytes
-			byte[] keyBytes = SasKeyValue.getBytes("UTF-8");
+			byte[] keyBytes = SasKeyValue.getBytes(StandardCharsets.UTF_8);
 			SecretKeySpec signingKey = new SecretKeySpec(keyBytes, "HmacSHA256");
 
 			// Get an hmac_sha1 Mac instance and initialize with the signing key
@@ -270,7 +271,7 @@ public class NamespaceManager implements NamespaceManagerClient {
 			mac.init(signingKey);
 
 			// Compute the hmac on input data bytes
-			byte[] rawHmac = mac.doFinal(toSign.getBytes("UTF-8"));
+			byte[] rawHmac = mac.doFinal(toSign.getBytes(StandardCharsets.UTF_8));
 
 			// Convert raw bytes to Hex
 			String signature = URLEncoder.encode(

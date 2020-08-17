@@ -113,7 +113,7 @@ public interface NotificationHubClient {
 	/**
 	 * Deletes a registration.
 	 *
-	 * @param registration. Registration id has to be populated.
+	 * @param registration Registration id has to be populated.
 	 */
 	void deleteRegistration(Registration registration) throws NotificationHubsException;
 

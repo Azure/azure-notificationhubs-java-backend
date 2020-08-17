@@ -26,8 +26,8 @@ public class RetryUtil {
     private RetryUtil() {
     }
 
-    private static int[] retriableStatusCodes = new int[] {500, 503, 504, 408, 429, 403};
-    
+    private static final int[] retriableStatusCodes = new int[] {500, 503, 504, 408, 429, 403};
+
     /**
      * Given a set of {@link RetryOptions options}, creates the appropriate retry policy.
      *
@@ -35,7 +35,7 @@ public class RetryUtil {
      * @return A new retry policy configured with the given {@code options}.
      * @throws IllegalArgumentException If {@link RetryOptions#getMode()} is not a supported mode.
      */
-    public static RetryPolicy getRetryPolicy(RetryOptions options) {    	
+    public static RetryPolicy getRetryPolicy(RetryOptions options) {
     	switch(options.getMode()) {
     	case FIXED:
     		return new FixedRetryPolicy(options);
@@ -57,7 +57,7 @@ public class RetryUtil {
         return Flux.defer(() -> source.timeout(operationTimeout))
             .retryWhen(errors -> retry(errors, retryPolicy));
     }
-    
+
     /**
      * Given a {@link Mono} will apply the retry policy to it when the operation times out.
      *
@@ -80,7 +80,7 @@ public class RetryUtil {
                     return retryPolicy.calculateRetryDelay(error, attempt);
                 } else if (error instanceof QuotaExceededException) {
                     return retryPolicy.calculateRetryDelay(error, attempt);
-                } else if (error instanceof NotificationHubsException) {                    	
+                } else if (error instanceof NotificationHubsException) {
                     	int statusCode = ((NotificationHubsException) error).getHttpStatusCode();
                     	if (Arrays.stream(retriableStatusCodes).anyMatch(code -> code == statusCode)) {
                     		return retryPolicy.calculateRetryDelay(error, attempt);
@@ -100,7 +100,7 @@ public class RetryUtil {
             return Optional.empty();
         }
         String retryAfterValue = retryAfter.getValue();
-        if (retryAfterValue == "") {
+        if (retryAfterValue.equals("")) {
             return Optional.empty();
         }
 
@@ -110,6 +110,6 @@ public class RetryUtil {
         }
         catch (NumberFormatException e) {
             throw new UnsupportedOperationException(String.format("\"%s\" must be an integer number of seconds", retryAfterValue));
-        }   
+        }
     }
 }

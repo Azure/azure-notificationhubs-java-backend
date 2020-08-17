@@ -19,7 +19,6 @@ public class AppleTemplateRegistration extends AppleRegistration {
 	private static final String APNS_TEMPLATE_REGISTRATION4 = "]]></BodyTemplate>";
 	private static final String APNS_TEMPLATE_REGISTRATION5 = "</AppleTemplateRegistrationDescription></content></entry>";
 
-	
 	private String bodyTemplate;
 	private String expiry;
 	private Map<String, String> headers = new HashMap<String, String>();
@@ -44,7 +43,7 @@ public class AppleTemplateRegistration extends AppleRegistration {
 		this.bodyTemplate = bodyTemplate;
 		this.headers = headers;
 	}
-	
+
 	public String getBodyTemplate() {
 		return bodyTemplate;
 	}
@@ -60,7 +59,7 @@ public class AppleTemplateRegistration extends AppleRegistration {
 	public void setExpiry(String expiry) {
 		this.expiry = expiry;
 	}
-	
+
 	public Map<String, String> getHeaders() {
 		return headers;
 	}
@@ -97,7 +96,7 @@ public class AppleTemplateRegistration extends AppleRegistration {
 			if (other.expiry != null)
 				return false;
 		} else if (!expiry.equals(other.expiry))
-			return false;		
+			return false;
 		if (headers == null) {
 				if (other.headers != null)
 					return false;
@@ -135,10 +134,9 @@ public class AppleTemplateRegistration extends AppleRegistration {
 		buf.append("</ApnsHeaders>");
 		return buf.toString();
 	}
-	
+
 	private String getExpiryXml() {
 		if (expiry == null) return "";
 		return "<Expiry>" + expiry + "</Expiry>";
 	}
-
 }

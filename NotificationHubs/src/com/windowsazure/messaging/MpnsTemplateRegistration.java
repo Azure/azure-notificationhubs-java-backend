@@ -20,13 +20,13 @@ public class MpnsTemplateRegistration extends MpnsRegistration {
 	private static final String MPNS_TEMPLATE_REGISTRATION5 = "</MpnsTemplateRegistrationDescription></content></entry>";
 
 	private String bodyTemplate;
-	private Map<String, String> headers = new HashMap<String, String>();
+	private Map<String, String> headers = new HashMap<>();
 
 	public MpnsTemplateRegistration() {
 	}
-	
-	
-	
+
+
+
 	public MpnsTemplateRegistration(URI channelUri, String bodyTemplate,
 			Map<String, String> headers) {
 		super(channelUri);
@@ -53,12 +53,12 @@ public class MpnsTemplateRegistration extends MpnsRegistration {
 	public Map<String, String> getHeaders() {
 		return headers;
 	}
-	
+
 	public void addHeader(String name, String value) {
 		headers.put(name, value);
 	}
-	
-	
+
+
 
 	@Override
 	public int hashCode() {
@@ -87,12 +87,9 @@ public class MpnsTemplateRegistration extends MpnsRegistration {
 		} else if (!bodyTemplate.equals(other.bodyTemplate))
 			return false;
 		if (headers == null) {
-			if (other.headers != null)
-				return false;
-		} else if (!headers.equals(other.headers))
-			return false;
-		return true;
-	}
+            return other.headers == null;
+		} else return headers.equals(other.headers);
+    }
 
 
 

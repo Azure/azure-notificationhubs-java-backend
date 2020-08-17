@@ -54,12 +54,9 @@ public class AdmTemplateRegistration extends AdmRegistration {
 			return false;
 		AdmTemplateRegistration other = (AdmTemplateRegistration) obj;
 		if (bodyTemplate == null) {
-			if (other.bodyTemplate != null)
-				return false;
-		} else if (!bodyTemplate.equals(other.bodyTemplate))
-			return false;
-		return true;
-	}
+            return other.bodyTemplate == null;
+		} else return bodyTemplate.equals(other.bodyTemplate);
+    }
 
 	@Override
 	public String getXml() {

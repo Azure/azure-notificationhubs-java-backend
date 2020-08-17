@@ -40,7 +40,7 @@ public class ExponentialRetryPolicy extends RetryPolicy {
     protected Duration calculateRetryDelay(int retryCount, Duration baseDelay, Duration baseJitter,
                                            ThreadLocalRandom random) {
         final double jitterSeconds = random.nextDouble() * baseJitter.getSeconds();
-        final double nextRetrySeconds = Math.pow(retryFactor, (double) retryCount);
+        final double nextRetrySeconds = Math.pow(retryFactor, retryCount);
         final Double nextRetryNanos = (jitterSeconds + nextRetrySeconds) * NANOS_PER_SECOND;
 
         return baseDelay.plus(Duration.ofNanos(nextRetryNanos.longValue()));

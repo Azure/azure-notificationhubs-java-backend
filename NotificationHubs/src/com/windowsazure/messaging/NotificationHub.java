@@ -27,6 +27,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -61,15 +62,15 @@ public class NotificationHub implements NotificationHubClient {
 			throw new RuntimeException("Error parsing connection string: "
 					+ connectionString);
 
-		for (int i = 0; i < parts.length; i++) {
-			if (parts[i].startsWith("Endpoint")) {
-				this.endpoint = "https" + parts[i].substring(11);
-			} else if (parts[i].startsWith("SharedAccessKeyName")) {
-				this.SasKeyName = parts[i].substring(20);
-			} else if (parts[i].startsWith("SharedAccessKey")) {
-				this.SasKeyValue = parts[i].substring(16);
-			}
-		}
+        for (String part : parts) {
+            if (part.startsWith("Endpoint")) {
+                this.endpoint = "https" + part.substring(11);
+            } else if (part.startsWith("SharedAccessKeyName")) {
+                this.SasKeyName = part.substring(20);
+            } else if (part.startsWith("SharedAccessKey")) {
+                this.SasKeyValue = part.substring(16);
+            }
+        }
 
 		this.retryOptions = Objects.requireNonNull(retryOptions, "'retryOptions' cannot be null.");
 		this.retryPolicy = getRetryPolicy(retryOptions);
@@ -1154,7 +1155,7 @@ public class NotificationHub implements NotificationHubClient {
 			String toSign = targetUri + "\n" + expires;
 
 			// Get an hmac_sha1 key from the raw key bytes
-			byte[] keyBytes = SasKeyValue.getBytes("UTF-8");
+			byte[] keyBytes = SasKeyValue.getBytes(StandardCharsets.UTF_8);
 			SecretKeySpec signingKey = new SecretKeySpec(keyBytes, "HmacSHA256");
 
 			// Get an hmac_sha1 Mac instance and initialize with the signing key
@@ -1162,7 +1163,7 @@ public class NotificationHub implements NotificationHubClient {
 			mac.init(signingKey);
 
 			// Compute the hmac on input data bytes
-			byte[] rawHmac = mac.doFinal(toSign.getBytes("UTF-8"));
+			byte[] rawHmac = mac.doFinal(toSign.getBytes(StandardCharsets.UTF_8));
 
 			// Convert raw bytes to Hex
 			String signature = URLEncoder.encode(
