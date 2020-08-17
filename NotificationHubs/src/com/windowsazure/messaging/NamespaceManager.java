@@ -4,19 +4,6 @@
 
 package com.windowsazure.messaging;
 
-import static com.windowsazure.messaging.RetryUtil.getRetryPolicy;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
@@ -26,9 +13,18 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-
 import reactor.core.publisher.Mono;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.util.List;
+import java.util.Objects;
+
+import static com.windowsazure.messaging.RetryUtil.getRetryPolicy;
 import static com.windowsazure.messaging.RetryUtil.withRetry;
 
 public class NamespaceManager implements NamespaceManagerClient {
