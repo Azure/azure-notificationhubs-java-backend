@@ -24,18 +24,18 @@ import org.xml.sax.SAXException;
  */
 public abstract class Registration implements Cloneable {
 	protected String registrationId;
-	protected Set<String> tags = new HashSet<String>();
+	protected Set<String> tags = new HashSet<>();
 	protected String etag;
 	protected Date expirationTime;
-	
-	private static final AtomicReference<Digester> singleRegParser = new AtomicReference<Digester>();
+
+	private static final AtomicReference<Digester> singleRegParser = new AtomicReference<>();
 	private static final AtomicReference<Digester> multiRegParser = new AtomicReference<Digester>();
-	
+
 	static {
 		Digester singleReginstance = new Digester();
 		addRegistrationRules(singleReginstance);
 		singleRegParser.set( singleReginstance);
-		
+
 		Digester multiReginstance = new Digester();
 		addRegistrationRules(multiReginstance);
 		addCollectionRules(multiReginstance);
@@ -44,13 +44,13 @@ public abstract class Registration implements Cloneable {
 
 	public Registration() {
 	}
-	
-	public Registration clone(){  
+
+	public Registration clone(){
 	    try {
 			return (Registration) super.clone();
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException(e);
-		}  
+		}
 	}
 
 	public Registration(String registrationId) {
@@ -109,7 +109,7 @@ public abstract class Registration implements Cloneable {
 			buf.append("</Tags>");
 		}
 		return buf.toString();
-	}	
+	}
 
 	public Date getExpirationTime() {
 		return expirationTime;
@@ -119,10 +119,10 @@ public abstract class Registration implements Cloneable {
 		this.expirationTime = expirationTime;
 	}
 
-	public void setExpirationTimeFromString(String expirationTimeString) throws ParseException {		
+	public void setExpirationTimeFromString(String expirationTimeString) throws ParseException {
 		this.expirationTime = javax.xml.bind.DatatypeConverter.parseDateTime(expirationTimeString).getTime();
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -161,12 +161,9 @@ public abstract class Registration implements Cloneable {
 		} else if (!registrationId.equals(other.registrationId))
 			return false;
 		if (tags == null) {
-			if (other.tags != null)
-				return false;
-		} else if (!tags.equals(other.tags))
-			return false;
-		return true;
-	}
+            return other.tags == null;
+		} else return tags.equals(other.tags);
+    }
 
 	public static Registration parse(InputStream content) throws IOException,
 			SAXException {

@@ -35,7 +35,7 @@ public class FcmTemplateRegistration extends FcmRegistration {
 	public void setBodyTemplate(String bodyTemplate) {
 		this.bodyTemplate = bodyTemplate;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -55,12 +55,9 @@ public class FcmTemplateRegistration extends FcmRegistration {
 			return false;
 		FcmTemplateRegistration other = (FcmTemplateRegistration) obj;
 		if (bodyTemplate == null) {
-			if (other.bodyTemplate != null)
-				return false;
-		} else if (!bodyTemplate.equals(other.bodyTemplate))
-			return false;
-		return true;
-	}
+            return other.bodyTemplate == null;
+		} else return bodyTemplate.equals(other.bodyTemplate);
+    }
 
 	@Override
 	public String getXml() {

@@ -16,12 +16,12 @@ public class BaiduRegistration extends Registration {
 	private static final String BAIDU_NATIVE_REGISTRATION4 = "</BaiduChannelId></BaiduRegistrationDescription></content></entry>";
 
 	protected String baiduUserId;
-	protected String baiduChannelId;	
-	
+	protected String baiduChannelId;
+
 	public BaiduRegistration() {
 		this(null, null);
 	}
-	
+
 	public BaiduRegistration(String baiduUserId, String baiduChannelId) {
 		this(null, baiduUserId, baiduChannelId);
 	}
@@ -30,7 +30,7 @@ public class BaiduRegistration extends Registration {
 		super(registrationId);
 		this.baiduUserId = baiduUserId;
 		this.baiduChannelId = baiduChannelId;
-	}	
+	}
 
 	public String getBaiduUserId() {
 		return baiduUserId;
@@ -39,7 +39,7 @@ public class BaiduRegistration extends Registration {
 	public void setBaiduUserId(String baiduUserId) {
 		this.baiduUserId = baiduUserId;
 	}
-	
+
 	public String getBaiduChannelId() {
 		return baiduChannelId;
 	}
@@ -50,7 +50,7 @@ public class BaiduRegistration extends Registration {
 
 	@Override
 	public int hashCode() {
-		String channel = (baiduUserId == null ? "" : baiduUserId) + "-" + (baiduChannelId == null ? "" : baiduChannelId);		
+		String channel = (baiduUserId == null ? "" : baiduUserId) + "-" + (baiduChannelId == null ? "" : baiduChannelId);
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime
@@ -67,7 +67,7 @@ public class BaiduRegistration extends Registration {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		
+
 		BaiduRegistration other = (BaiduRegistration) obj;
 		return baiduUserId.equals(other.baiduUserId) && baiduChannelId.equals(other.baiduChannelId);
 	}
@@ -84,5 +84,4 @@ public class BaiduRegistration extends Registration {
 		buf.append(BAIDU_NATIVE_REGISTRATION4);
 		return buf.toString();
 	}
-
 }

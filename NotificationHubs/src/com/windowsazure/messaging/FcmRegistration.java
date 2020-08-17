@@ -15,7 +15,7 @@ public class FcmRegistration extends Registration {
 	private static final String FCM_NATIVE_REGISTRATION3 = "</GcmRegistrationId></GcmRegistrationDescription></content></entry>";
 
 	protected String fcmRegistrationId;
-	
+
 	public FcmRegistration() {
 		super();
 	}
@@ -24,7 +24,7 @@ public class FcmRegistration extends Registration {
 		super(registrationId);
 		this.fcmRegistrationId = fcmRegistrationId;
 	}
-	
+
 	public FcmRegistration(String fcmRegistrationId) {
 		super();
 		this.fcmRegistrationId = fcmRegistrationId;
@@ -59,12 +59,9 @@ public class FcmRegistration extends Registration {
 			return false;
 		FcmRegistration other = (FcmRegistration) obj;
 		if (fcmRegistrationId == null) {
-			if (other.fcmRegistrationId != null)
-				return false;
-		} else if (!fcmRegistrationId.equals(other.fcmRegistrationId))
-			return false;
-		return true;
-	}
+            return other.fcmRegistrationId == null;
+		} else return fcmRegistrationId.equals(other.fcmRegistrationId);
+    }
 
 	@Override
 	public String getXml() {
@@ -76,5 +73,4 @@ public class FcmRegistration extends Registration {
 		buf.append(FCM_NATIVE_REGISTRATION3);
 		return buf.toString();
 	}
-
 }

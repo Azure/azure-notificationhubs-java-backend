@@ -4,65 +4,56 @@
 
 package com.windowsazure.messaging;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
+import com.google.gson.GsonBuilder;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPatch;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.*;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.*;
+import org.apache.http.entity.mime.FormBodyPart;
+import org.apache.http.entity.mime.FormBodyPartBuilder;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.StringBody;
-
-import com.google.gson.GsonBuilder;
-
 import reactor.core.publisher.Mono;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.windowsazure.messaging.RetryUtil.getRetryPolicy;
 import static com.windowsazure.messaging.RetryUtil.withRetry;
 
 /**
- * 
+ *
  * Class implementing the INotificationHub interface.
  *
  */
-public class NotificationHub implements INotificationHub {
-		
-	private static final String APIVERSION = "?api-version=2020-06";
+public class NotificationHub implements NotificationHubClient {
+
+	private static final String API_VERSION = "?api-version=2020-06";
 	private static final String CONTENT_LOCATION_HEADER = "Location";
 	private static final String TRACKING_ID_HEADER = "TrackingId";
     private final RetryOptions retryOptions;
     private final RetryPolicy retryPolicy;
 	private String endpoint;
-	private String hubPath;
+	private final String hubPath;
 	private String SasKeyName;
-	private String SasKeyValue;	
-	
+	private String SasKeyValue;
+
 	public NotificationHub(String connectionString, String hubPath, RetryOptions retryOptions) {
 		this.hubPath = hubPath;
 
@@ -71,43 +62,43 @@ public class NotificationHub implements INotificationHub {
 			throw new RuntimeException("Error parsing connection string: "
 					+ connectionString);
 
-		for (int i = 0; i < parts.length; i++) {
-			if (parts[i].startsWith("Endpoint")) {
-				this.endpoint = "https" + parts[i].substring(11);
-			} else if (parts[i].startsWith("SharedAccessKeyName")) {
-				this.SasKeyName = parts[i].substring(20);
-			} else if (parts[i].startsWith("SharedAccessKey")) {
-				this.SasKeyValue = parts[i].substring(16);
-			}
-		}
-		
+        for (String part : parts) {
+            if (part.startsWith("Endpoint")) {
+                this.endpoint = "https" + part.substring(11);
+            } else if (part.startsWith("SharedAccessKeyName")) {
+                this.SasKeyName = part.substring(20);
+            } else if (part.startsWith("SharedAccessKey")) {
+                this.SasKeyValue = part.substring(16);
+            }
+        }
+
 		this.retryOptions = Objects.requireNonNull(retryOptions, "'retryOptions' cannot be null.");
 		this.retryPolicy = getRetryPolicy(retryOptions);
 	}
-	
+
 	@Override
 	public Mono<Registration> createRegistrationAsync(Registration registration){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/registrations"	+ APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/registrations"	+ API_VERSION);
 			final HttpPost post = new HttpPost(uri);
 			post.setHeader("Authorization", generateSasToken(uri));
-			
+
 			StringEntity entity = new StringEntity(registration.getXml(), ContentType.APPLICATION_ATOM_XML);
 			entity.setContentEncoding("utf-8");
 			post.setEntity(entity);
-			
+
 			return withRetry(Mono.create(sink -> {
 				HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
-			        	try{		        		       		
+			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
 			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}	
-			    			
+			    			}
+
 			        		sink.success(Registration.parse(response.getEntity().getContent()));
 				        	} catch (Exception e) {
-				        		sink.error(e);	        		
+				        		sink.error(e);
 				        	} finally {
 				    			post.releaseConnection();
 				    		}
@@ -122,12 +113,12 @@ public class NotificationHub implements INotificationHub {
 				        }
 					});
 				}), retryOptions.getTryTimeout(), retryPolicy);
-						
+
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
-		} 
+		}
 	}
-	
+
 	@Override
 	public Registration createRegistration(Registration registration)  throws NotificationHubsException{
 		return createRegistrationAsync(registration).block();
@@ -135,20 +126,20 @@ public class NotificationHub implements INotificationHub {
 
 	@Override
 	public Mono<String> createRegistrationIdAsync(){
-		try {			
-			URI uri = new URI(endpoint + hubPath + "/registrationids"+ APIVERSION);
+		try {
+			URI uri = new URI(endpoint + hubPath + "/registrationids"+ API_VERSION);
 			final HttpPost post = new HttpPost(uri);
 			post.setHeader("Authorization", generateSasToken(uri));
-			
-			return withRetry(Mono.create(sink -> {		    	
+
+			return withRetry(Mono.create(sink -> {
 				HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 201) {
 			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}	
-			        		
+			    			}
+
 				        	String location = response.getFirstHeader(CONTENT_LOCATION_HEADER).getValue();
 							Pattern extractId = Pattern.compile("(\\S+)/registrationids/([^?]+).*");
 							Matcher m = extractId.matcher(location);
@@ -156,7 +147,7 @@ public class NotificationHub implements INotificationHub {
 							String id = m.group(2);
 							sink.success(id);
 			        	} catch (Exception e) {
-			        		sink.error(e);	        		
+			        		sink.error(e);
 			        	} finally {
 			    			post.releaseConnection();
 			    		}
@@ -180,28 +171,28 @@ public class NotificationHub implements INotificationHub {
 	public String createRegistrationId()  throws NotificationHubsException{
 		return createRegistrationIdAsync().block();
 	}
-	
+
 	@Override
 	public Mono<Registration> updateRegistrationAsync(Registration registration){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + API_VERSION);
 			final HttpPut put = new HttpPut(uri);
 			put.setHeader("Authorization", generateSasToken(uri));
 			put.setHeader("If-Match", registration.getEtag() == null ? "*"	: "W/\"" + registration.getEtag() + "\"");
 			put.setEntity(new StringEntity(registration.getXml(), ContentType.APPLICATION_ATOM_XML));
-			
-			return withRetry(Mono.create(sink -> {		
+
+			return withRetry(Mono.create(sink -> {
 					HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
 				        public void completed(final HttpResponse response) {
 				        	try{
 				        		int httpStatusCode = response.getStatusLine().getStatusCode();
 				        		if (httpStatusCode != 200) {
 				        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-				    			}			    			
-				    			
+				    			}
+
 								sink.success(Registration.parse(response.getEntity().getContent()));
 				        	} catch (Exception e) {
-				        		sink.error(e);	        		
+				        		sink.error(e);
 				        	} finally {
 				        		put.releaseConnection();
 				    		}
@@ -214,22 +205,22 @@ public class NotificationHub implements INotificationHub {
 				        	put.releaseConnection();
 				        	sink.error(new RuntimeException("Operation was cancelled."));
 				        }
-				});				
-			}), retryOptions.getTryTimeout(), retryPolicy);			
+				});
+			}), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
 		}
 	}
-	
+
 	@Override
 	public Registration updateRegistration(Registration registration)  throws NotificationHubsException{
 		return updateRegistrationAsync(registration).block();
 	}
-	
+
 	@Override
 	public Mono<Registration> upsertRegistrationAsync(Registration registration){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + API_VERSION);
 			final HttpPut put = new HttpPut(uri);
 			put.setHeader("Authorization", generateSasToken(uri));
 			put.setEntity(new StringEntity(registration.getXml(), ContentType.APPLICATION_ATOM_XML));
@@ -241,11 +232,11 @@ public class NotificationHub implements INotificationHub {
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
 			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}			    			
-			    			
+			    			}
+
 			        		sink.success(Registration.parse(response.getEntity().getContent()));
 			        	} catch (Exception e) {
-			        		sink.error(e);       		
+			        		sink.error(e);
 			        	} finally {
 			        		put.releaseConnection();
 			    		}
@@ -258,13 +249,13 @@ public class NotificationHub implements INotificationHub {
 			        	put.releaseConnection();
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
-				});		
-			}), retryOptions.getTryTimeout(), retryPolicy);	
+				});
+			}), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
-		} 
+		}
 	}
-	
+
 	@Override
 	public Registration upsertRegistration(Registration registration)  throws NotificationHubsException{
 		return upsertRegistrationAsync(registration).block();
@@ -273,11 +264,11 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public Mono<Void> deleteRegistrationAsync(String registrationId){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + API_VERSION);
 			final HttpDelete delete = new HttpDelete(uri);
 			delete.setHeader("Authorization", generateSasToken(uri));
 			delete.setHeader("If-Match", "*");
-			
+
 			return withRetry(Mono.create(sink -> {
 				HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
@@ -285,11 +276,11 @@ public class NotificationHub implements INotificationHub {
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200 && httpStatusCode!=404) {
 			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}		    			
-			    			
+			    			}
+
 							sink.success();
 			        	} catch (Exception e) {
-			        		sink.error(e);	        		
+			        		sink.error(e);
 			        	} finally {
 			        		delete.releaseConnection();
 			    		}
@@ -306,31 +297,36 @@ public class NotificationHub implements INotificationHub {
 			}), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
-		} 
+		}
 	}
-	
+
 	@Override
 	public void deleteRegistration(Registration registration)  throws NotificationHubsException{
 		deleteRegistrationAsync(registration.getRegistrationId()).block();
+		deleteRegistrationAsync(registration.getRegistrationId()).subscribe(unused -> {
+
+        }, throwable -> {
+
+        });
 	}
-	
+
 	@Override
 	public Mono<Void> deleteRegistrationAsync(Registration registration){
 		return deleteRegistrationAsync(registration.getRegistrationId());
 	}
-	
+
 	@Override
 	public void deleteRegistration(String registrationId)  throws NotificationHubsException{
 		deleteRegistrationAsync(registrationId).block();
 	}
-	
+
 	@Override
 	public Mono<Registration> getRegistrationAsync(String registrationId){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + API_VERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
-			
+
 			return withRetry(Mono.create(sink -> {
 				HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
@@ -338,11 +334,11 @@ public class NotificationHub implements INotificationHub {
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
 			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}		    			
-			    			
+			    			}
+
 			        		sink.success(Registration.parse(response.getEntity().getContent()));
 			        	} catch (Exception e) {
-			        		sink.error(e);	        		
+			        		sink.error(e);
 			        	} finally {
 			        		get.releaseConnection();
 			    		}
@@ -355,13 +351,13 @@ public class NotificationHub implements INotificationHub {
 			        	get.releaseConnection();
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
-				});	
-			}), retryOptions.getTryTimeout(), retryPolicy); 
+				});
+			}), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
-		} 
+		}
 	}
-	
+
 	@Override
 	public Registration getRegistration(String registrationId)  throws NotificationHubsException{
 		return getRegistrationAsync(registrationId).block();
@@ -369,53 +365,53 @@ public class NotificationHub implements INotificationHub {
 
 	@Override
 	public Mono<CollectionResult> getRegistrationsAsync(int top, String continuationToken) {
-		String queryUri = endpoint + hubPath + "/registrations" + APIVERSION + getQueryString(top, continuationToken);
+		String queryUri = endpoint + hubPath + "/registrations" + API_VERSION + getQueryString(top, continuationToken);
 		return retrieveRegistrationCollectionAsync(queryUri);
 	}
-	
+
 	@Override
 	public CollectionResult getRegistrations(int top, String continuationToken)  throws NotificationHubsException{
-		String queryUri = endpoint + hubPath + "/registrations" + APIVERSION + getQueryString(top, continuationToken);
+		String queryUri = endpoint + hubPath + "/registrations" + API_VERSION + getQueryString(top, continuationToken);
 		return retrieveRegistrationCollectionAsync(queryUri).block();
 	}
-	
+
 	@Override
 	public CollectionResult getRegistrations()  throws NotificationHubsException{
 		return getRegistrations(0, null);
 	}
-	
+
 	@Override
 	public Mono<CollectionResult> getRegistrationsByTagAsync(String tag, int top,	String continuationToken) {
 		String queryUri = endpoint + hubPath + "/tags/" + tag
-				+ "/registrations" + APIVERSION
+				+ "/registrations" + API_VERSION
 				+ getQueryString(top, continuationToken);
 		return retrieveRegistrationCollectionAsync(queryUri);
 	}
-	
+
 	@Override
 	public CollectionResult getRegistrationsByTag(String tag, int top,	String continuationToken)  throws NotificationHubsException{
 		String queryUri = endpoint + hubPath + "/tags/" + tag
-				+ "/registrations" + APIVERSION
+				+ "/registrations" + API_VERSION
 				+ getQueryString(top, continuationToken);
 		return retrieveRegistrationCollectionAsync(queryUri).block();
 	}
-	
+
 	@Override
 	public Mono<CollectionResult> getRegistrationsByTagAsync(String tag) {
 		return getRegistrationsByTagAsync(tag, 0, null);
 	}
-	
+
 	@Override
 	public CollectionResult getRegistrationsByTag(String tag)  throws NotificationHubsException{
 		return getRegistrationsByTagAsync(tag).block();
 	}
-	
+
 	@Override
 	public Mono<CollectionResult> getRegistrationsByChannelAsync(String channel, int top, String continuationToken) {
 		String queryUri = null;
 		try {
 			String channelQuery = URLEncoder.encode("ChannelUri eq '" + channel	+ "'", "UTF-8");
-			queryUri = endpoint + hubPath + "/registrations" + APIVERSION
+			queryUri = endpoint + hubPath + "/registrations" + API_VERSION
 					+ "&$filter=" + channelQuery
 					+ getQueryString(top, continuationToken);
 		} catch (UnsupportedEncodingException e) {
@@ -433,12 +429,12 @@ public class NotificationHub implements INotificationHub {
 	public Mono<CollectionResult> getRegistrationsByChannelAsync(String channel) {
 		return getRegistrationsByChannelAsync(channel, 0, null);
 	}
-	
+
 	@Override
 	public CollectionResult getRegistrationsByChannel(String channel)  throws NotificationHubsException{
 		return getRegistrationsByChannelAsync(channel).block();
 	}
-	
+
 	private String getQueryString(int top, String continuationToken) {
 		StringBuffer buf = new StringBuffer();
 		if (top > 0) {
@@ -449,31 +445,31 @@ public class NotificationHub implements INotificationHub {
 		}
 		return buf.toString();
 	}
-	
+
 	private Mono<CollectionResult> retrieveRegistrationCollectionAsync(String queryUri) {
 		try {
 			URI uri = new URI(queryUri);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
-			
-			return withRetry(Mono.create(sink -> {		
+
+			return withRetry(Mono.create(sink -> {
 				HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
 			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}		    			
-			    			
+			    			}
+
 			        		CollectionResult result = Registration.parseRegistrations(response.getEntity().getContent());
 			    			Header contTokenHeader = response.getFirstHeader("X-MS-ContinuationToken");
 			    			if (contTokenHeader != null) {
 			    				result.setContinuationToken(contTokenHeader.getValue());
 			    			}
-			        		
+
 							sink.success(result);
 			        	} catch (Exception e) {
-			        		sink.error(e);	        		
+			        		sink.error(e);
 			        	} finally {
 			        		get.releaseConnection();
 			    		}
@@ -487,17 +483,17 @@ public class NotificationHub implements INotificationHub {
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
 				});
-			}), retryOptions.getTryTimeout(), retryPolicy);		
+			}), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
-		} 
+		}
 	}
-	
+
 	@Override
 	public Mono<Void> sendNotificationAsync(Notification notification) {
 		return scheduleNotificationAsync(notification, "", null);
 	}
-	
+
 	@Override
 	public NotificationOutcome sendNotification(Notification notification)  throws NotificationHubsException{
 		return scheduleNotificationWithResult(notification, "", null).block();
@@ -507,12 +503,12 @@ public class NotificationHub implements INotificationHub {
 	public Mono<Void> sendNotificationAsync(Notification notification, Set<String> tags) {
 		return scheduleNotificationAsync(notification, tags, null);
 	}
-	
+
 	@Override
 	public NotificationOutcome sendNotification(Notification notification, Set<String> tags)  throws NotificationHubsException{
 		return scheduleNotificationWithResult(notification, tags, null).block();
 	}
-	
+
 	@Override
 	public Mono<Void> sendNotificationAsync(Notification notification, String tagExpression) {
 		return scheduleNotificationAsync(notification, tagExpression, null);
@@ -522,22 +518,22 @@ public class NotificationHub implements INotificationHub {
 	public NotificationOutcome sendNotification(Notification notification, String tagExpression)  throws NotificationHubsException{
 		return scheduleNotificationWithResult(notification, tagExpression, null).block();
 	}
-	
+
 	@Override
 	public Mono<Void> scheduleNotificationAsync(Notification notification, Date scheduledTime) {
 		return scheduleNotificationAsync(notification, "", scheduledTime);
 	}
-	
+
 	@Override
-	public NotificationOutcome scheduleNotification(Notification notification,	Date scheduledTime)  throws NotificationHubsException{		
+	public NotificationOutcome scheduleNotification(Notification notification,	Date scheduledTime)  throws NotificationHubsException{
 		return scheduleNotificationWithResult(notification, "", scheduledTime).block();
 	}
-	
+
 	@Override
 	public Mono<Void> scheduleNotificationAsync(Notification notification, Set<String> tags, Date scheduledTime) {
 		return scheduleNotificationWithResult(notification, tags, scheduledTime).then();
 	}
-	
+
 	private Mono<NotificationOutcome> scheduleNotificationWithResult(Notification notification, Set<String> tags, Date scheduledTime) {
 		if (tags.isEmpty())
 			throw new IllegalArgumentException(
@@ -555,17 +551,17 @@ public class NotificationHub implements INotificationHub {
 
 	@Override
 	public NotificationOutcome scheduleNotification(Notification notification,	Set<String> tags, Date scheduledTime)  throws NotificationHubsException{
-		return scheduleNotificationWithResult(notification, tags, scheduledTime).block();		
+		return scheduleNotificationWithResult(notification, tags, scheduledTime).block();
 	}
 
 	private Mono<NotificationOutcome> scheduleNotificationWithResult(Notification notification, String tagExpression, Date scheduledTime){
 		try {
-			URI uri = new URI(endpoint + hubPath + (scheduledTime == null ? "/messages" : "/schedulednotifications") + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + (scheduledTime == null ? "/messages" : "/schedulednotifications") + API_VERSION);
 			final HttpPost post = new HttpPost(uri);
 			final String trackingId = java.util.UUID.randomUUID().toString();
 			post.setHeader("Authorization", generateSasToken(uri));
 			post.setHeader(TRACKING_ID_HEADER, trackingId);
-			
+
 			if(scheduledTime != null){
 				DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 				df.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -581,24 +577,24 @@ public class NotificationHub implements INotificationHub {
 				post.setHeader(header, notification.getHeaders().get(header));
 			}
 
-			post.setEntity(new StringEntity(notification.getBody(), notification.getContentType()));			
-					
-			return withRetry(process(post, trackingId), retryOptions.getTryTimeout(), retryPolicy);		
+			post.setEntity(new StringEntity(notification.getBody(), notification.getContentType()));
+
+			return withRetry(process(post, trackingId), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
-		} 
-	}	
+		}
+	}
 
 	@Override
 	public Mono<Void> scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime){
 		return scheduleNotificationWithResult(notification, tagExpression, scheduledTime).then();
-	}	
-	
+	}
+
 	@Override
 	public NotificationOutcome scheduleNotification(Notification notification,	String tagExpression, Date scheduledTime)  throws NotificationHubsException{
 		return scheduleNotificationWithResult(notification, tagExpression, scheduledTime).block();
-	}	
-	
+	}
+
 	@Override
 	public void cancelScheduledNotification(String notificationId) throws NotificationHubsException{
 		cancelScheduledNotificationAsync(notificationId).block();
@@ -607,22 +603,22 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public Mono<Void> cancelScheduledNotificationAsync(String notificationId) {
 		try {
-			URI uri = new URI(endpoint + hubPath + "/schedulednotifications/" + notificationId + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/schedulednotifications/" + notificationId + API_VERSION);
 			final HttpDelete delete = new HttpDelete(uri);
 			delete.setHeader("Authorization", generateSasToken(uri));
-						
-			return withRetry(Mono.create(sink -> {		
+
+			return withRetry(Mono.create(sink -> {
 				HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
 					public void completed(final HttpResponse response) {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200 && httpStatusCode!=404) {
 			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}		    			
-			    			
+			    			}
+
 							sink.success();
 			        	} catch (Exception e) {
-			        		sink.error(e);	        		
+			        		sink.error(e);
 			        	} finally {
 			        		delete.releaseConnection();
 			    		}
@@ -635,15 +631,15 @@ public class NotificationHub implements INotificationHub {
 			        	delete.releaseConnection();
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
-				});	
+				});
 			}), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
-		}		
+		}
 	}
-	
+
 	@Override
-	public NotificationOutcome sendDirectNotification(Notification notification, String deviceHandle)	throws NotificationHubsException {		
+	public NotificationOutcome sendDirectNotification(Notification notification, String deviceHandle)	throws NotificationHubsException {
 		return sendDirectNotificationWithResult(notification, deviceHandle).block();
 	}
 
@@ -656,45 +652,45 @@ public class NotificationHub implements INotificationHub {
 	public Mono<Void> sendDirectNotificationAsync(Notification notification, String deviceHandle) {
 		return sendDirectNotificationWithResult(notification, deviceHandle).then();
 	}
-	
+
 	private Mono<NotificationOutcome> sendDirectNotificationWithResult(Notification notification, String deviceHandle) {
 		try {
-			URI uri = new URI(endpoint + hubPath + "/messages" + APIVERSION + "&direct");
+			URI uri = new URI(endpoint + hubPath + "/messages" + API_VERSION + "&direct");
 			final HttpPost post = new HttpPost(uri);
 			final String trackingId = java.util.UUID.randomUUID().toString();
 			post.setHeader("ServiceBusNotification-DeviceHandle", deviceHandle);
 			post.setHeader("Authorization", generateSasToken(uri));
-			post.setHeader(TRACKING_ID_HEADER, trackingId);			
-			
+			post.setHeader(TRACKING_ID_HEADER, trackingId);
+
 			for (String header : notification.getHeaders().keySet()) {
 				post.setHeader(header, notification.getHeaders().get(header));
 			}
 
-			post.setEntity(new StringEntity(notification.getBody(), notification.getContentType()));			
-			
-			return withRetry(process(post, trackingId), retryOptions.getTryTimeout(), retryPolicy);	
+			post.setEntity(new StringEntity(notification.getBody(), notification.getContentType()));
+
+			return withRetry(process(post, trackingId), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
-		} 
+		}
 	}
 
 	@Override
 	public Mono<Void> sendDirectNotificationAsync(Notification notification, List<String> deviceHandles) {
 		return sendDirectNotificationWithResult(notification, deviceHandles).then();
 	}
-	
+
 	private Mono<NotificationOutcome> sendDirectNotificationWithResult(Notification notification, List<String> deviceHandles) {
 		try {
-			URI uri = new URI(endpoint + hubPath + "/messages/$batch" + APIVERSION + "&direct");
+			URI uri = new URI(endpoint + hubPath + "/messages/$batch" + API_VERSION + "&direct");
 			final HttpPost post = new HttpPost(uri);
 			final String trackingId = java.util.UUID.randomUUID().toString();
 			post.setHeader("Authorization", generateSasToken(uri));
-			post.setHeader(TRACKING_ID_HEADER, trackingId);			
-			
+			post.setHeader(TRACKING_ID_HEADER, trackingId);
+
 			for (String header : notification.getHeaders().keySet()) {
 				post.setHeader(header, notification.getHeaders().get(header));
 			}
-								
+
 			FormBodyPart notificationPart = FormBodyPartBuilder.create()
 			        .setName("notification")
 			        .addField("Content-Disposition", "inline; name=notification")
@@ -712,46 +708,46 @@ public class NotificationHub implements INotificationHub {
 					.addPart(notificationPart)
 					.addPart(devicesPart)
 			    	.build();
-			
-			post.setEntity(entity);			
-			return withRetry(process(post, trackingId), retryOptions.getTryTimeout(), retryPolicy);	
+
+			post.setEntity(entity);
+			return withRetry(process(post, trackingId), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
             return Mono.error(new RuntimeException(e));
-		} 
-		
+		}
+
 	}
 
 	private Mono<NotificationOutcome> process(HttpPost post, String trackingId){
-		return Mono.create(sink -> {		    	
+		return Mono.create(sink -> {
 	    	HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
-		        	try{					        		
-		        		int httpStatusCode = response.getStatusLine().getStatusCode();		        			        		
-		        		
+		        	try{
+		        		int httpStatusCode = response.getStatusLine().getStatusCode();
+
 		        		if (httpStatusCode != 201) {
 		    				String msg = "";
 		    				if (response.getEntity() != null&& response.getEntity().getContent() != null) {
 		    					msg = IOUtils.toString(response.getEntity().getContent());
 		    				}
-		    				
+
 		    				if (httpStatusCode == 429 || httpStatusCode == 403) {
 			        			throw new QuotaExceededException("Error: " + response.getStatusLine(), httpStatusCode, RetryUtil.parseRetryAfter(response));
 			        		}
-		    				
+
 		    				throw new NotificationHubsException("Error: " + response.getStatusLine()	+ " body: " + msg, httpStatusCode, RetryUtil.parseRetryAfter(response));
 		    			}
-		        		
+
 		        		String notificationId = null;
-		        		Header locationHeader = response.getFirstHeader(CONTENT_LOCATION_HEADER);		        		
+		        		Header locationHeader = response.getFirstHeader(CONTENT_LOCATION_HEADER);
 		        		if(locationHeader != null){
 		        			URI location = new URI(locationHeader.getValue());
 		        			String[] segments = location.getPath().split("/");
 		        			notificationId = segments[segments.length-1];
 		        		}
-		        		
+
 						sink.success(new NotificationOutcome(trackingId, notificationId));
 		        	} catch (Exception e) {
-			        	sink.error(e);        		
+			        	sink.error(e);
 		        	} finally {
 		        		post.releaseConnection();
 		    		}
@@ -767,7 +763,7 @@ public class NotificationHub implements INotificationHub {
 			});
 	    });
 	}
-	
+
 	@Override
 	public NotificationTelemetry getNotificationTelemetry(String notificationId)
 			throws NotificationHubsException {
@@ -777,22 +773,22 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public Mono<NotificationTelemetry> getNotificationTelemetryAsync(String notificationId) {
 		try {
-			URI uri = new URI(endpoint + hubPath + "/messages/"	+ notificationId + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/messages/"	+ notificationId + API_VERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
-			
-			return withRetry(Mono.create(sink -> {		
+
+			return withRetry(Mono.create(sink -> {
 				HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
 			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}		    			
-			    			
+			    			}
+
 							sink.success(NotificationTelemetry.parseOne(response.getEntity().getContent()));
 			        	} catch (Exception e) {
-			        		sink.error(e);	        		
+			        		sink.error(e);
 			        	} finally {
 			        		get.releaseConnection();
 			    		}
@@ -805,36 +801,36 @@ public class NotificationHub implements INotificationHub {
 			        	get.releaseConnection();
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
-				});			
-			}), retryOptions.getTryTimeout(), retryPolicy);		
+				});
+			}), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
-		} 
-	}	
-	
+		}
+	}
+
 	@Override
 	public Mono<Void> createOrUpdateInstallationAsync(Installation installation){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/installations/" + installation.getInstallationId() + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/installations/" + installation.getInstallationId() + API_VERSION);
 			final HttpPut put = new HttpPut(uri);
 			put.setHeader("Authorization", generateSasToken(uri));
-						
+
 			StringEntity entity = new StringEntity(installation.toJson(), ContentType.APPLICATION_JSON);
 			entity.setContentEncoding("utf-8");
 			put.setEntity(entity);
-			
-			return withRetry(Mono.create(sink -> {		
+
+			return withRetry(Mono.create(sink -> {
 				HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
 			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}		    			
-			    			
+			    			}
+
 			        		sink.success();
 			        	} catch (Exception e) {
-			        		sink.error(e);	        		
+			        		sink.error(e);
 			        	} finally {
 			        		put.releaseConnection();
 			    		}
@@ -848,22 +844,22 @@ public class NotificationHub implements INotificationHub {
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
 				});
-			}), retryOptions.getTryTimeout(), retryPolicy);				
+			}), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
-		} 
+		}
 	}
-	
+
 	@Override
 	public void createOrUpdateInstallation(Installation installation)  throws NotificationHubsException{
 		createOrUpdateInstallationAsync(installation).block();
 	}
-	
+
 	@Override
 	public Mono<Void> patchInstallationAsync(String installationId, PartialUpdateOperation... operations) {
 		return patchInstallationInternalAsync(installationId, PartialUpdateOperation.toJson(operations));
 	}
-	
+
 	@Override
 	public void patchInstallation(String installationId, PartialUpdateOperation... operations)  throws NotificationHubsException{
 		patchInstallationAsync(installationId, operations).block();
@@ -873,7 +869,7 @@ public class NotificationHub implements INotificationHub {
 	public Mono<Void> patchInstallationAsync(String installationId, List<PartialUpdateOperation> operations) {
 		return patchInstallationInternalAsync(installationId, PartialUpdateOperation.toJson(operations));
 	}
-	
+
 	@Override
 	public void patchInstallation(String installationId, List<PartialUpdateOperation> operations)  throws NotificationHubsException{
 		patchInstallationAsync(installationId, operations).block();
@@ -881,26 +877,26 @@ public class NotificationHub implements INotificationHub {
 
 	private Mono<Void> patchInstallationInternalAsync(String installationId, String operationsJson){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
 			final HttpPatch patch = new HttpPatch(uri);
 			patch.setHeader("Authorization", generateSasToken(uri));
-						
+
 			StringEntity entity = new StringEntity(operationsJson, ContentType.APPLICATION_JSON);
 			entity.setContentEncoding("utf-8");
 			patch.setEntity(entity);
 
-			return withRetry(Mono.create(sink -> {		
+			return withRetry(Mono.create(sink -> {
 				HttpClientManager.getHttpAsyncClient().execute(patch, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
 			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}		    			
-			    			
+			    			}
+
 			        		sink.success();
 			        	} catch (Exception e) {
-			        		sink.error(e);	        		
+			        		sink.error(e);
 			        	} finally {
 			        		patch.releaseConnection();
 			    		}
@@ -913,33 +909,33 @@ public class NotificationHub implements INotificationHub {
 			        	patch.releaseConnection();
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
-				});			
+				});
 			}), retryOptions.getTryTimeout(), retryPolicy);
-			
+
 		} catch (Exception e) {
 			 return Mono.error(new RuntimeException(e));
-		} 
-	}	
-	
+		}
+	}
+
 	@Override
 	public Mono<Void> deleteInstallationAsync(String installationId){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
 			final HttpDelete delete = new HttpDelete(uri);
 			delete.setHeader("Authorization", generateSasToken(uri));
-			
-			return withRetry(Mono.create(sink -> {		
+
+			return withRetry(Mono.create(sink -> {
 				HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 204) {
 			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}			    			
-			    			
+			    			}
+
 			        		sink.success();
 			        	} catch (Exception e) {
-			        		sink.error(e);	        		
+			        		sink.error(e);
 			        	} finally {
 			        		delete.releaseConnection();
 			    		}
@@ -952,14 +948,14 @@ public class NotificationHub implements INotificationHub {
 			        	delete.releaseConnection();
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
-				});			
-			}), retryOptions.getTryTimeout(), retryPolicy);	
-			
+				});
+			}), retryOptions.getTryTimeout(), retryPolicy);
+
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
-		} 
+		}
 	}
-	
+
 	@Override
 	public void deleteInstallation(String installationId)  throws NotificationHubsException{
 		deleteInstallationAsync(installationId).block();
@@ -968,21 +964,21 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public Mono<Installation> getInstallationAsync(String installationId){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
-			return withRetry(Mono.create(sink -> {		
+			return withRetry(Mono.create(sink -> {
 				HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
 			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}			    			
-			    			
+			    			}
+
 			        		sink.success(Installation.fromJson(response.getEntity().getContent()));
 			        	} catch (Exception e) {
-			        		sink.error(e);	        		
+			        		sink.error(e);
 			        	} finally {
 			        		get.releaseConnection();
 			    		}
@@ -995,41 +991,41 @@ public class NotificationHub implements INotificationHub {
 			        	get.releaseConnection();
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
-				});			
-			}), retryOptions.getTryTimeout(), retryPolicy);			
+				});
+			}), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
-		} 
+		}
 	}
-	
+
 	@Override
 	public Installation getInstallation(String installationId)  throws NotificationHubsException{
 		return getInstallationAsync(installationId).block();
 	}
-	
+
 	@Override
 	public Mono<NotificationHubJob> submitNotificationHubJobAsync(NotificationHubJob job){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/jobs" + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/jobs" + API_VERSION);
 			final HttpPost post = new HttpPost(uri);
 			post.setHeader("Authorization", generateSasToken(uri));
-			
+
 			StringEntity entity = new StringEntity(job.getXml(), ContentType.APPLICATION_ATOM_XML);
 			entity.setContentEncoding("utf-8");
 			post.setEntity(entity);
-			
-			return withRetry(Mono.create(sink -> {		
+
+			return withRetry(Mono.create(sink -> {
 				HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 201) {
 			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}	
-			        					        	
+			    			}
+
 							sink.success(NotificationHubJob.parseOne(response.getEntity().getContent()));
 			        	} catch (Exception e) {
-			        		sink.error(e);	        		
+			        		sink.error(e);
 			        	} finally {
 			    			post.releaseConnection();
 			    		}
@@ -1042,13 +1038,13 @@ public class NotificationHub implements INotificationHub {
 			        	post.releaseConnection();
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
-				});			
-			}), retryOptions.getTryTimeout(), retryPolicy);			
+				});
+			}), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
-		} 
+		}
 	}
-	
+
 	@Override
 	public NotificationHubJob submitNotificationHubJob(NotificationHubJob job)  throws NotificationHubsException{
 		return submitNotificationHubJobAsync(job).block();
@@ -1057,21 +1053,21 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public Mono<NotificationHubJob> getNotificationHubJobAsync(String jobId){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/jobs/"	+ jobId + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/jobs/"	+ jobId + API_VERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
-			return withRetry(Mono.create(sink -> {		
+			return withRetry(Mono.create(sink -> {
 				HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
 			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}		    			
-			    			
+			    			}
+
 			        		sink.success(NotificationHubJob.parseOne(response.getEntity().getContent()));
 			        	} catch (Exception e) {
-			        		sink.error(e);	        		
+			        		sink.error(e);
 			        	} finally {
 			        		get.releaseConnection();
 			    		}
@@ -1084,36 +1080,36 @@ public class NotificationHub implements INotificationHub {
 			        	get.releaseConnection();
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
-				});			
-			}), retryOptions.getTryTimeout(), retryPolicy);			
+				});
+			}), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			return Mono.error(new RuntimeException(e));
-		} 
+		}
 	}
-	
+
 	@Override
-	public NotificationHubJob getNotificationHubJob(String jobId)  throws NotificationHubsException{		
+	public NotificationHubJob getNotificationHubJob(String jobId)  throws NotificationHubsException{
 		return getNotificationHubJobAsync(jobId).block();
 	}
 
 	@Override
 	public Mono<List<NotificationHubJob>> getAllNotificationHubJobsAsync(){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/jobs" + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/jobs" + API_VERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
-			return withRetry(Mono.create(sink -> {		
+			return withRetry(Mono.create(sink -> {
 				HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 			        public void completed(final HttpResponse response) {
 			        	try{
 			        		int httpStatusCode = response.getStatusLine().getStatusCode();
 			        		if (httpStatusCode != 200) {
 			        			throw new NotificationHubsException(getErrorString(response), httpStatusCode, RetryUtil.parseRetryAfter(response));
-			    			}		    			
-			    			
+			    			}
+
 			        		sink.success(NotificationHubJob.parseCollection(response.getEntity().getContent()));
 			        	} catch (Exception e) {
-			        		sink.error(e);	        		
+			        		sink.error(e);
 			        	} finally {
 			        		get.releaseConnection();
 			    		}
@@ -1126,17 +1122,17 @@ public class NotificationHub implements INotificationHub {
 			        	get.releaseConnection();
 			        	sink.error(new RuntimeException("Operation was cancelled."));
 			        }
-				});			
-			}), retryOptions.getTryTimeout(), retryPolicy);			
+				});
+			}), retryOptions.getTryTimeout(), retryPolicy);
 		} catch (Exception e) {
 			 return Mono.error(new RuntimeException(e));
-		} 
+		}
 	}
-	
+
 	@Override
 	public List<NotificationHubJob> getAllNotificationHubJobs()  throws NotificationHubsException{
 		return getAllNotificationHubJobsAsync().block();
-	}	
+	}
 
 	private String getErrorString(HttpResponse response)
 			throws IllegalStateException, IOException {
@@ -1145,7 +1141,7 @@ public class NotificationHub implements INotificationHub {
 		String body = writer.toString();
 		return "Error: " + response.getStatusLine() + " - " + body;
 	}
-	
+
 	private String generateSasToken(URI uri) {
 		String targetUri;
 		try {
@@ -1159,7 +1155,7 @@ public class NotificationHub implements INotificationHub {
 			String toSign = targetUri + "\n" + expires;
 
 			// Get an hmac_sha1 key from the raw key bytes
-			byte[] keyBytes = SasKeyValue.getBytes("UTF-8");
+			byte[] keyBytes = SasKeyValue.getBytes(StandardCharsets.UTF_8);
 			SecretKeySpec signingKey = new SecretKeySpec(keyBytes, "HmacSHA256");
 
 			// Get an hmac_sha1 Mac instance and initialize with the signing key
@@ -1167,7 +1163,7 @@ public class NotificationHub implements INotificationHub {
 			mac.init(signingKey);
 
 			// Compute the hmac on input data bytes
-			byte[] rawHmac = mac.doFinal(toSign.getBytes("UTF-8"));
+			byte[] rawHmac = mac.doFinal(toSign.getBytes(StandardCharsets.UTF_8));
 
 			// Convert raw bytes to Hex
 			String signature = URLEncoder.encode(

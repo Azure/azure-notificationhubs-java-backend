@@ -17,9 +17,9 @@ import org.apache.commons.digester3.Digester;
 import org.xml.sax.SAXException;
 
 public class NotificationHubJob {
-	private static final String XML_HEADER="<?xml version=\"1.0\" encoding=\"utf-8\"?><entry xmlns=\"http://www.w3.org/2005/Atom\"><content type=\"application/atom+xml;type=entry;charset=utf-8\"><NotificationHubJob xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/netservices/2010/10/servicebus/connect\">"; 
+	private static final String XML_HEADER="<?xml version=\"1.0\" encoding=\"utf-8\"?><entry xmlns=\"http://www.w3.org/2005/Atom\"><content type=\"application/atom+xml;type=entry;charset=utf-8\"><NotificationHubJob xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/netservices/2010/10/servicebus/connect\">";
 	private static final String XML_FOOTER="</NotificationHubJob></content></entry>";
-	
+
 	private String jobId;
 	private double progress;
 	private NotificationHubJobType jobType;
@@ -30,18 +30,18 @@ public class NotificationHubJob {
 	private Map<String, String> outputProperties;
 	private Date createdAt;
 	private Date updatedAt;
-	
-	private static final AtomicReference<Digester> singleEntryParser = new AtomicReference<Digester>();
+
+	private static final AtomicReference<Digester> singleEntryParser = new AtomicReference<>();
 	private static final AtomicReference<Digester> collectionParser = new AtomicReference<Digester>();
-	
+
 	static {
-		singleEntryParser.set( new Digester());		
+		singleEntryParser.set( new Digester());
 		setupSingleEntryParser(singleEntryParser.get());
-		
-		collectionParser.set( new Digester());		
+
+		collectionParser.set( new Digester());
 		setupCollectionParser(collectionParser.get());
-	}	
-	
+	}
+
 	public String getJobId() {
 		return jobId;
 	}
@@ -61,7 +61,7 @@ public class NotificationHubJob {
 	public NotificationHubJobType getJobType() {
 		return jobType;
 	}
-	
+
 	public void setJobType(NotificationHubJobType jobType) {
 		this.jobType = jobType;
 	}
@@ -124,16 +124,16 @@ public class NotificationHubJob {
 
 	public void setUpdatedAtFromString(String updatedAt) {
 		this.updatedAt = javax.xml.bind.DatatypeConverter.parseDateTime(updatedAt).getTime();
-	}	
-		
+	}
+
 	public static NotificationHubJob parseOne(InputStream content) throws IOException,	SAXException {
 		return singleEntryParser.get().parse(content);
 	}
-	
+
 	public static List<NotificationHubJob> parseCollection(InputStream content) throws IOException,	SAXException {
 		return collectionParser.get().parse(content);
 	}
-	
+
 	public String getXml(){
 		StringBuffer buf = new StringBuffer();
 		buf.append(XML_HEADER);
@@ -142,14 +142,14 @@ public class NotificationHubJob {
 		if(this.importFileUri!=null) buf.append("<ImportFileUri>" + this.importFileUri + "</ImportFileUri>");
 		buf.append(XML_FOOTER);
 		return buf.toString();
-	}	
-	
-	private static void setupCollectionParser(Digester digester){	
+	}
+
+	private static void setupCollectionParser(Digester digester){
 		digester.addObjectCreate("*/feed", LinkedList.class);
 		setupSingleEntryParser(digester);
 		digester.addSetNext("*/entry", "add", NotificationHubJob.class.getName());
 	}
-	
+
 	private static void setupSingleEntryParser(Digester digester){
 		digester.addObjectCreate("*/entry", NotificationHubJob.class);
 		digester.addCallMethod("*/JobId", "setJobId",1);
@@ -169,7 +169,7 @@ public class NotificationHubJob {
 		digester.addCallMethod("*/CreatedAt", "setCreatedAtFromString",1);
 		digester.addCallParam("*/CreatedAt", 0);
 		digester.addCallMethod("*/UpdatedAt", "setUpdatedAtFromString",1);
-		digester.addCallParam("*/UpdatedAt", 0);		
+		digester.addCallParam("*/UpdatedAt", 0);
 		digester.addObjectCreate("*/OutputProperties", HashMap.class);
 		digester.addCallMethod("*/d3p1:KeyValueOfstringstring", "put",2);
 		digester.addCallParam("*/d3p1:Key", 0);

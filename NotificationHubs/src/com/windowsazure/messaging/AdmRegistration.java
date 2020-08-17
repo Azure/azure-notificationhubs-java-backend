@@ -10,7 +10,7 @@ public class AdmRegistration extends Registration {
 	private static final String ADM_NATIVE_REGISTRATION3 = "</AdmRegistrationId></AdmRegistrationDescription></content></entry>";
 
 	protected String admRegistrationId;
-	
+
 	public AdmRegistration() {
 		super();
 	}
@@ -19,7 +19,7 @@ public class AdmRegistration extends Registration {
 		super(registrationId);
 		this.admRegistrationId = admRegistrationId;
 	}
-	
+
 	public AdmRegistration(String admRegistrationId) {
 		super();
 		this.admRegistrationId = admRegistrationId;
@@ -54,12 +54,9 @@ public class AdmRegistration extends Registration {
 			return false;
 		AdmRegistration other = (AdmRegistration) obj;
 		if (admRegistrationId == null) {
-			if (other.admRegistrationId != null)
-				return false;
-		} else if (!admRegistrationId.equals(other.admRegistrationId))
-			return false;
-		return true;
-	}
+            return other.admRegistrationId == null;
+		} else return admRegistrationId.equals(other.admRegistrationId);
+    }
 
 	@Override
 	public String getXml() {

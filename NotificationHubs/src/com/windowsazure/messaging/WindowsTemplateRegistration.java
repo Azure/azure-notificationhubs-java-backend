@@ -20,13 +20,13 @@ public class WindowsTemplateRegistration extends WindowsRegistration {
 	private static final String WNS_TEMPLATE_REGISTRATION5 = "</WindowsTemplateRegistrationDescription></content></entry>";
 
 	private String bodyTemplate;
-	private Map<String, String> headers = new HashMap<String, String>();
+	private Map<String, String> headers = new HashMap<>();
 
 	public WindowsTemplateRegistration() {
 	}
-	
-	
-	
+
+
+
 	public WindowsTemplateRegistration(URI channelUri, String bodyTemplate,
 			Map<String, String> headers) {
 		super(channelUri);
@@ -34,7 +34,7 @@ public class WindowsTemplateRegistration extends WindowsRegistration {
 		this.headers = headers;
 	}
 
-	
+
 
 	@Override
 	public int hashCode() {
@@ -63,12 +63,9 @@ public class WindowsTemplateRegistration extends WindowsRegistration {
 		} else if (!bodyTemplate.equals(other.bodyTemplate))
 			return false;
 		if (headers == null) {
-			if (other.headers != null)
-				return false;
-		} else if (!headers.equals(other.headers))
-			return false;
-		return true;
-	}
+            return other.headers == null;
+		} else return headers.equals(other.headers);
+    }
 
 
 
@@ -89,7 +86,7 @@ public class WindowsTemplateRegistration extends WindowsRegistration {
 	public Map<String, String> getHeaders() {
 		return headers;
 	}
-	
+
 	public void addHeader(String name, String value) {
 		headers.put(name, value);
 	}

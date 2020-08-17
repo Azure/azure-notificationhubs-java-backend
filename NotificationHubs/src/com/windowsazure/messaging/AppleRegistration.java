@@ -5,7 +5,7 @@
 package com.windowsazure.messaging;
 
 /**
- * 
+ *
  * Class representing a native registration for a device using APNs.
  *
  */
@@ -13,12 +13,9 @@ public class AppleRegistration extends Registration {
 	private static final String APNS_NATIVE_REGISTRATION1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><entry xmlns=\"http://www.w3.org/2005/Atom\"><content type=\"application/xml\"><AppleRegistrationDescription xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/netservices/2010/10/servicebus/connect\">";
 	private static final String APNS_NATIVE_REGISTRATION2 = "<DeviceToken>";
 	private static final String APNS_NATIVE_REGISTRATION3 = "</DeviceToken></AppleRegistrationDescription></content></entry>";
-    
-	
+
 	protected String deviceToken;
-	
-	
-	
+
 	public AppleRegistration() {
 		super();
 	}
@@ -37,12 +34,9 @@ public class AppleRegistration extends Registration {
 		return deviceToken;
 	}
 
-
-
 	public void setDeviceToken(String deviceToken) {
 		this.deviceToken = deviceToken;
 	}
-
 
 	@Override
 	public int hashCode() {
@@ -63,12 +57,9 @@ public class AppleRegistration extends Registration {
 			return false;
 		AppleRegistration other = (AppleRegistration) obj;
 		if (deviceToken == null) {
-			if (other.deviceToken != null)
-				return false;
-		} else if (!deviceToken.equals(other.deviceToken))
-			return false;
-		return true;
-	}
+            return other.deviceToken == null;
+		} else return deviceToken.equals(other.deviceToken);
+    }
 
 	@Override
 	public String getXml() {

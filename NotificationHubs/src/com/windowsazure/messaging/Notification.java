@@ -10,13 +10,13 @@ import java.util.*;
 import org.apache.http.entity.ContentType;
 
 /**
- * 
+ *
  * Class representing a generic notification.
- * 
+ *
  */
 public class Notification {
 
-	Map<String, String> headers = new HashMap<String, String>();
+	Map<String, String> headers = new HashMap<>();
 	String body;
 	ContentType contentType;
 
@@ -25,9 +25,9 @@ public class Notification {
 	 * X-WNS-Type headers based on the body provided. If you want to send raw
 	 * notifications you have to set the X-WNS header and ContentType after creating this
 	 * notification or use createWindowsRawNotification method
-	 * 
-	 * @param body
-	 * @return
+	 *
+	 * @param body The body for the notification
+	 * @return a new Windows Notification.
 	 */
 	public static Notification createWindowsNotification(String body) {
 		Notification n = new Notification();
@@ -48,13 +48,13 @@ public class Notification {
 
 		return n;
 	}
-	
+
 	/**
 	 * Utility method to set up a native notification for WNS. Sets the
 	 * X-WNS-Type header to "wns/raw" in order of sending of raw notification.
-	 * 
-	 * @param body
-	 * @return
+	 *
+	 * @param body The b ody for the Windows Raw Notification
+	 * @return A native notification for WNS.
 	 */
 	public static Notification createWindowsRawNotification(String body) {
 		Notification n = new Notification();
@@ -68,8 +68,8 @@ public class Notification {
     /**
      * Utility method to set up a native notification for APNs.
      * An expiry Date of 1 day is set by default.
-     * @param body
-     * @return
+     * @param body the body for the Apple notification
+     * @return A native notification for APNS.
      */
     public static Notification createAppleNotification(String body) {
 
@@ -82,9 +82,9 @@ public class Notification {
 	/**
 	 * Utility method to set up a native notification for APNs.
 	 * Allows setting the APNS Headers - as per the new APNs protocol.
-	 * @param body
-	 * @param headers - APNs headers
-	 * @return
+	 * @param body the body for the APNS message
+	 * @param headers the APNS headers
+	 * @return a native APNS notification
 	 */
 	public static Notification createAppleNotification(String body, Map<String, String> headers) {
 		Notification n = new Notification();
@@ -94,14 +94,13 @@ public class Notification {
 		n.headers.put("ServiceBusNotification-Format", "apple");
 		return n;
 	}
-    
+
     /**
      * Utility method to set up a native notification for APNs.
      * Enables to set the expiry date of the notification for the APNs QoS.
-     * @param body
-     * @param expiry - the expiration date of this notification.
-     *               a null value will be interpreted as 0 seconds.
-     * @return
+     * @param body the body for the APNS notification.
+     * @param expiry the expiration date of this notification. A null value will be interpreted as 0 seconds.
+     * @return an APNS notification with expiration time.
      */
     public static Notification createAppleNotification(String body, Date expiry) {
         Notification n = new Notification();
@@ -124,9 +123,9 @@ public class Notification {
 	/**
 	 * Utility method to set up a native notification for GCM.
 	 * @deprecated use {@link #createFcmNotification(String)} instead.
-	 * 
-	 * @param body
-	 * @return
+	 *
+	 * @param body the body for the GCM message.
+	 * @return a GCM notification with the body
 	 */
 	@Deprecated
 	public static Notification createGcmNotification(String body) {
@@ -141,9 +140,9 @@ public class Notification {
 
 	/**
 	 * Utility method to set up a native notification for FCM.
-	 * 
-	 * @param body
-	 * @return
+	 *
+	 * @param body the body for the FCM notification
+	 * @return an FCM notification
 	 */
 	public static Notification createFcmNotification(String body) {
 		Notification n = new Notification();
@@ -152,12 +151,12 @@ public class Notification {
  		n.headers.put("ServiceBusNotification-Format", "gcm"); // TODO replace with "fcm" when new version of backend will be released
  		return n;
 	}
-	
+
 	/**
 	 * Utility method to set up a native notification for ADM.
-	 * 
-	 * @param body
-	 * @return
+	 *
+	 * @param body The body for the ADM notification.
+	 * @return an ADM notification with the given body.
 	 */
 	public static Notification createAdmNotification(String body) {
 		Notification n = new Notification();
@@ -168,12 +167,12 @@ public class Notification {
 
 		return n;
 	}
-	
+
 	/**
 	 * Utility method to set up a native notification for Baidu PNS.
-	 * 
-	 * @param body
-	 * @return
+	 *
+	 * @param body the body for the Baidu notification
+	 * @return a Baidu notification with the given body.
 	 */
 	public static Notification createBaiduNotification(String body) {
 		Notification n = new Notification();
@@ -189,9 +188,9 @@ public class Notification {
 	 * Utility method to set up a native notification for MPNS. Sets the
 	 * X-WindowsPhone-Target and X-NotificationClass headers based on the body
 	 * provided. Raw notifications are not supported for MPNS.
-	 * 
-	 * @param body
-	 * @return
+	 *
+	 * @param body the body for the MPNS notification.
+	 * @return an initialized MPNS notification
 	 */
 	public static Notification createMpnsNotification(String body) {
 		Notification n = new Notification();
@@ -217,9 +216,9 @@ public class Notification {
 
 	/**
 	 * Utility method to create a notification object representing a template notification.
-	 * 
-	 * @param properties
-	 * @return
+	 *
+	 * @param properties The properties for the template notification
+	 * @return a template notification with the associated properties.
 	 */
 	public static Notification createTemplateNotification(
 			Map<String, String> properties) {
