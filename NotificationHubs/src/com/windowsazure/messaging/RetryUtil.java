@@ -48,8 +48,10 @@ public class RetryUtil {
 
     /**
      * Given a {@link Flux} will apply the retry policy to it when the operation times out.
-     *
+     * @param <T> The type of the Flux source.
      * @param source The publisher to apply the retry policy to.
+     * @param operationTimeout The timeout of the operation
+     * @param retryPolicy The retry policy to apply to the retry operation
      * @return A publisher that returns the results of the {@link Flux} if any of the retry attempts are successful.
      *         Otherwise, propagates a {@link TimeoutException}.
      */
@@ -61,7 +63,10 @@ public class RetryUtil {
     /**
      * Given a {@link Mono} will apply the retry policy to it when the operation times out.
      *
+     * @param <T> The type of the Flux source.
      * @param source The publisher to apply the retry policy to.
+     * @param operationTimeout The timeout of the operation
+     * @param retryPolicy The retry policy to apply to the retry operation     
      * @return A publisher that returns the results of the {@link Flux} if any of the retry attempts are successful.
      *         Otherwise, propagates a {@link TimeoutException}.
      */

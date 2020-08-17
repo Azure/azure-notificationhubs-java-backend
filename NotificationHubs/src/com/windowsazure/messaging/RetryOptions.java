@@ -146,10 +146,12 @@ public class RetryOptions {
 
 	/**
 	 * Fetches whether or not to respect a server's indication to slow the rate of requests.
+     *
+     * This does nothing to change whether or not a server will actually respond to your requests, just how
+     * long you wait to ask again. It should be used when it is appropriate to wait longer than the server implied.
+     *
 	 * @return True if the server should be respected, false otherwise.
 	 *
-	 * @apiNote This does nothing to change whether or not a server will actually respond to your requests, just how
-	 * long you wait to ask again. It should be used when it is appropriate to wait longer than the server implied.
 	 */
 	public boolean getIgnoreThrottling() {
 		return ignoreThrottling;

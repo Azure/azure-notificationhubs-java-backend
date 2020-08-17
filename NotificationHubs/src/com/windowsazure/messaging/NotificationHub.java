@@ -1170,9 +1170,8 @@ public class NotificationHub implements NotificationHubClient {
 					Base64.encodeBase64String(rawHmac), "UTF-8");
 
 			// construct authorization string
-			String token = "SharedAccessSignature sr=" + targetUri + "&sig="
-					+ signature + "&se=" + expires + "&skn=" + SasKeyName;
-			return token;
+            return "SharedAccessSignature sr=" + targetUri + "&sig="
+                    + signature + "&se=" + expires + "&skn=" + SasKeyName;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
