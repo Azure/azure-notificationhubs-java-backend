@@ -323,7 +323,7 @@ while(true) {
 }
 ```
 	
-### et All jobs:
+### Get All jobs:
 
 ```java
 List<NotificationHubJob> jobs = hub.getAllNotificationHubJobs();
