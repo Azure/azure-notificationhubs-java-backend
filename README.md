@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/msazure/NotificationHubs/_apis/build/status/unknown-compliance/azure-notificationhubs-java-backend?branchName=master)](https://dev.azure.com/msazure/NotificationHubs/_build/latest?definitionId=152951&branchName=master)[ ![Download](https://api.bintray.com/packages/microsoftazuremobile/SDK/Notification-Hubs-Java-Backend-SDK/images/download.svg) ](https://bintray.com/microsoftazuremobile/SDK/Notification-Hubs-Java-Backend-SDK/_latestVersion)
+
 # Microsoft Azure Notification Hubs Java SDK
 
 This repository contains source code for the Java SDK for [Microsoft Azure Notification Hubs](https://azure.microsoft.com/en-us/services/notification-hubs/).
