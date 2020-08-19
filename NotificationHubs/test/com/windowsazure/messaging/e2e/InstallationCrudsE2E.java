@@ -29,7 +29,7 @@ public class InstallationCrudsE2E {
 		hubPath = "JavaSDK_" + UUID.randomUUID().toString();
 		namespaceManager = new NamespaceManager(connectionString, new RetryOptions());
 	 	NotificationHubDescription hubDescription = new NotificationHubDescription(hubPath);
-	 	namespaceManager.createNotificationHub(hubDescription);
+	 	namespaceManager.createNotificationHubAsync(hubDescription).block();
 		Thread.sleep(1000);
 
 		hub = new NotificationHub(connectionString, hubPath, new RetryOptions());
@@ -38,16 +38,16 @@ public class InstallationCrudsE2E {
 	@After
 	public void cleanUp() throws Exception {
 		assertNotNull(hubPath);
-		namespaceManager.deleteNotificationHub(hubPath);
+		namespaceManager.deleteNotificationHubAsync(hubPath).block();
 	}
 
 	@Test
 	public void BasicCrudScenarioTest() throws Exception{
 		Installation installation = new Installation("installation-id", NotificationPlatform.Adm, "adm-push-channel", "user-id");
-		hub.createOrUpdateInstallation(installation);
+		hub.createOrUpdateInstallationAsync(installation).block();
 		Thread.sleep(3000);
 
-		installation = hub.getInstallation(installation.getInstallationId());
+		installation = hub.getInstallationAsync(installation.getInstallationId()).block();
 		assertNotNull(installation);
 		assertEquals("installation-id", installation.getInstallationId());
 		assertEquals("user-id", installation.getUserId());
@@ -59,10 +59,10 @@ public class InstallationCrudsE2E {
 
 		installation.addTag("foo");
 		installation.addTemplate("template1", new InstallationTemplate("{\"data\":{\"key1\":\"value1\"}}"));
-		hub.createOrUpdateInstallation(installation);
+		hub.createOrUpdateInstallationAsync(installation).block();
 		Thread.sleep(3000);
 
-		installation = hub.getInstallation(installation.getInstallationId());
+		installation = hub.getInstallationAsync(installation.getInstallationId()).block();
 		assertEquals("installation-id", installation.getInstallationId());
 		assertEquals("user-id", installation.getUserId());
 		assertEquals(NotificationPlatform.Adm, installation.getPlatform());
@@ -83,10 +83,10 @@ public class InstallationCrudsE2E {
 		PartialUpdateOperation addTag = new PartialUpdateOperation(UpdateOperationType.Add, "/tags", "bar");
 		PartialUpdateOperation replaceTemplate = new PartialUpdateOperation(UpdateOperationType.Replace, "/templates/template1", new InstallationTemplate("{\"data\":{\"key2\":\"value2\"}}").toJson());
 		PartialUpdateOperation replaceUserId = new PartialUpdateOperation(UpdateOperationType.Replace, "/userId", "user-id-patched");
-		hub.patchInstallation(installation.getInstallationId(), addChannel, addTag, replaceTemplate, replaceUserId);
+		hub.patchInstallationAsync(installation.getInstallationId(), addChannel, addTag, replaceTemplate, replaceUserId).block();
 		Thread.sleep(3000);
 
-		installation = hub.getInstallation(installation.getInstallationId());
+		installation = hub.getInstallationAsync(installation.getInstallationId()).block();
 		assertNotNull(installation);
 		assertEquals("installation-id", installation.getInstallationId());
 		assertEquals("user-id-patched", installation.getUserId());
@@ -106,16 +106,16 @@ public class InstallationCrudsE2E {
 		assertNull(installation.getSecondaryTiles());
 
 		PartialUpdateOperation removeUserId = new PartialUpdateOperation(UpdateOperationType.Remove, "/userId");
-		hub.patchInstallation(installation.getInstallationId(), removeUserId);
+		hub.patchInstallationAsync(installation.getInstallationId(), removeUserId).block();
 		Thread.sleep(3000);
 
-		installation = hub.getInstallation(installation.getInstallationId());
+		installation = hub.getInstallationAsync(installation.getInstallationId()).block();
 		assertNotNull(installation);
 		assertNull(installation.getUserId());
 
-		hub.deleteInstallation(installation.getInstallationId());
+		hub.deleteInstallationAsync(installation.getInstallationId()).block();
 		Thread.sleep(3000);
 
-		assertEquals(0, hub.getRegistrationsByTag("$InstallationId:%7B"+ installation.getInstallationId() +"%7D").getRegistrations().size());
+		assertEquals(0, hub.getRegistrationsByTagAsync("$InstallationId:%7B"+ installation.getInstallationId() +"%7D").block().getRegistrations().size());
 	}
 }

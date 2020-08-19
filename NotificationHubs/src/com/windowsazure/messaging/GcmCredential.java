@@ -11,36 +11,36 @@ import java.util.List;
 /**
  * @deprecated use {@link com.windowsazure.messaging.FcmCredential#FcmCredential()} instead.
  */
- 
+
 @Deprecated
-public final class GcmCredential extends PnsCredential {	
+public final class GcmCredential extends PnsCredential {
 	private String googleApiKey;
-	
+
 	public GcmCredential(){
 		this(null);
 	}
-		
+
 	public GcmCredential(String googleApiKey){
 		super();
 		this.setGoogleApiKey(googleApiKey);
 	}
-	
+
 	public String getGoogleApiKey() {
 		return googleApiKey;
 	}
 
-   	public void setgoogleApiKey(String googleApiKey) {
+   	public void setoogleApiKey(String googleApiKey) {
         	this.googleApiKey = googleApiKey; // fix for reflection that's calling 'setgoogleApiKey' instead of 'setGoogleApiKey'.
     	}
 
 	public void setGoogleApiKey(String googleApiKey) {
 		this.googleApiKey = googleApiKey;
-	}	
-		
+	}
+
 	@Override
 	public List<SimpleEntry<String, String>> getProperties() {
-		ArrayList<SimpleEntry<String, String>> result = new ArrayList<SimpleEntry<String, String>>();
-		result.add(new SimpleEntry<String, String>("GoogleApiKey",getGoogleApiKey()));
+		ArrayList<SimpleEntry<String, String>> result = new ArrayList<>();
+		result.add(new SimpleEntry<>("GoogleApiKey", getGoogleApiKey()));
 		return result;
 	}
 

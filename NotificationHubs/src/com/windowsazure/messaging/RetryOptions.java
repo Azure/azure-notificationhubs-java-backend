@@ -16,7 +16,7 @@ public class RetryOptions {
 	private boolean ignoreThrottling;
 
     /**
-     * Creates an instance with the default retry options set (note: trottling retry has its own default values for options).
+     * Creates an instance with the default retry options set (note: throttling retry has its own default values for options).
      */
     public RetryOptions() {
         maxRetries = 3;

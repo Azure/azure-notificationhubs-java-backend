@@ -33,8 +33,8 @@ public class FixedRetryPolicy extends RetryPolicy {
     @Override
     protected Duration calculateRetryDelay(int retryCount, Duration baseDelay, Duration baseJitter,
                                            ThreadLocalRandom random) {
-        final Double jitterNanos = random.nextDouble() * baseJitter.getSeconds() * RetryPolicy.NANOS_PER_SECOND;
-        final Duration jitter = Duration.ofNanos(jitterNanos.longValue());
+        final double jitterNanos = random.nextDouble() * baseJitter.getSeconds() * RetryPolicy.NANOS_PER_SECOND;
+        final Duration jitter = Duration.ofNanos(Double.valueOf(jitterNanos).longValue());
 
         return baseDelay.plus(jitter);
     }

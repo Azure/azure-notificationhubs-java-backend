@@ -60,14 +60,12 @@ public class AdmTemplateRegistration extends AdmRegistration {
 
 	@Override
 	public String getXml() {
-		StringBuffer buf = new StringBuffer();
-		buf.append(ADM_TEMPLATE_REGISTRATION1);
-		buf.append(getTagsXml());
-		buf.append(ADM_TEMPLATE_REGISTRATION2);
-		buf.append(admRegistrationId);
-		buf.append(ADM_TEMPLATE_REGISTRATION3);
-		buf.append(bodyTemplate);
-		buf.append(ADM_TEMPLATE_REGISTRATION4);
-		return buf.toString();
+        return ADM_TEMPLATE_REGISTRATION1 +
+            getTagsXml() +
+            ADM_TEMPLATE_REGISTRATION2 +
+            admRegistrationId +
+            ADM_TEMPLATE_REGISTRATION3 +
+            bodyTemplate +
+            ADM_TEMPLATE_REGISTRATION4;
 	}
 }
