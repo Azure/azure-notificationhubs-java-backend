@@ -6,7 +6,6 @@ package com.windowsazure.messaging;
 
 /**
  * Class representing a native registration for devices using FCM.
- *
  */
 public class FcmRegistration extends Registration {
 	// TODO replace content to FCM* when new version of backend will be released
@@ -16,24 +15,44 @@ public class FcmRegistration extends Registration {
 
 	protected String fcmRegistrationId;
 
+    /**
+     * Creates a new FCM credential.
+     */
 	public FcmRegistration() {
 		super();
 	}
 
+    /**
+     * Creates a new FCM credential with registration ID and FCM registration ID.
+     * @param registrationId The registration ID.
+     * @param fcmRegistrationId The FCM registration ID.
+     */
 	public FcmRegistration(String registrationId, String fcmRegistrationId) {
 		super(registrationId);
 		this.fcmRegistrationId = fcmRegistrationId;
 	}
 
+    /**
+     * Creates a new FCM credential with the FM registration ID.
+     * @param fcmRegistrationId The FCM registration ID.
+     */
 	public FcmRegistration(String fcmRegistrationId) {
 		super();
 		this.fcmRegistrationId = fcmRegistrationId;
 	}
 
+    /**
+     * Gets the FCM registration ID.
+     * @return The FCM registration ID.
+     */
 	public String getFcmRegistrationId() {
 		return fcmRegistrationId;
 	}
 
+    /**
+     * Sets the FCM registration ID.
+     * @param fcmRegistrationId The FCM registration ID.
+     */
 	public void setFcmRegistrationId(String fcmRegistrationId) {
 		this.fcmRegistrationId = fcmRegistrationId;
 	}
@@ -65,12 +84,10 @@ public class FcmRegistration extends Registration {
 
 	@Override
 	public String getXml() {
-		StringBuffer buf = new StringBuffer();
-		buf.append(FCM_NATIVE_REGISTRATION1);
-		buf.append(getTagsXml());
-		buf.append(FCM_NATIVE_REGISTRATION2);
-		buf.append(fcmRegistrationId);
-		buf.append(FCM_NATIVE_REGISTRATION3);
-		return buf.toString();
+        return FCM_NATIVE_REGISTRATION1 +
+            getTagsXml() +
+            FCM_NATIVE_REGISTRATION2 +
+            fcmRegistrationId +
+            FCM_NATIVE_REGISTRATION3;
 	}
 }

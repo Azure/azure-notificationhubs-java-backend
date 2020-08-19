@@ -15,7 +15,7 @@ import org.apache.commons.digester3.Digester;
 import org.xml.sax.SAXException;
 
 public class NotificationTelemetry {
-	
+
 	private String notificationId;
 	private String location;
 	private NotificationStatus notificationStatus;
@@ -31,19 +31,19 @@ public class NotificationTelemetry {
 	private Map<String, Integer> fcmOutcomeCounts;
 	private Map<String, Integer> admOutcomeCounts;
 	private Map<String, Integer> baiduOutcomeCounts;
-	private String pnsErrorDetailsUri;	
-	
-	private static final AtomicReference<Digester> parser = new AtomicReference<Digester>();
-	
+	private String pnsErrorDetailsUri;
+
+	private static final AtomicReference<Digester> parser = new AtomicReference<>();
+
 	static {
-		parser.set( new Digester());		
+		parser.set( new Digester());
 		setupParser(parser.get());
 	}
-	
+
 	public static NotificationTelemetry parseOne(InputStream content) throws IOException,	SAXException {
 		return parser.get().parse(content);
 	}
-	
+
 	public String getNotificationId() {
 		return notificationId;
 	}
@@ -67,7 +67,7 @@ public class NotificationTelemetry {
 	public void setNotificationStatusFromString(String status) {
 		this.notificationStatus = Enum.valueOf(NotificationStatus.class, status);
 	}
-	
+
 	public void setNotificationStatus(NotificationStatus notificationStatus) {
 		this.notificationStatus = notificationStatus;
 	}
@@ -75,10 +75,10 @@ public class NotificationTelemetry {
 	public Date getEnqueueTime() {
 		return enqueueTime;
 	}
-	
+
 	public void setEnqueueTimeFromString(String enqueueTime) {
 		this.enqueueTime = javax.xml.bind.DatatypeConverter.parseDateTime(enqueueTime).getTime();
-	}	
+	}
 
 	public void setEnqueueTime(Date enqueueTime) {
 		this.enqueueTime = enqueueTime;
@@ -87,10 +87,10 @@ public class NotificationTelemetry {
 	public Date getStartTime() {
 		return startTime;
 	}
-	
+
 	public void setStartTimeFromString(String startTime) {
 		this.startTime = javax.xml.bind.DatatypeConverter.parseDateTime(startTime).getTime();
-	}	
+	}
 
 	public void setStartTime(Date startTime) {
 		this.startTime = startTime;
@@ -99,10 +99,10 @@ public class NotificationTelemetry {
 	public Date getEndTime() {
 		return endTime;
 	}
-	
+
 	public void setEndTimeFromString(String endTime) {
 		this.endTime = javax.xml.bind.DatatypeConverter.parseDateTime(endTime).getTime();
-	}	
+	}
 
 	public void setEndTime(Date endTime) {
 		this.endTime = endTime;
@@ -187,7 +187,7 @@ public class NotificationTelemetry {
 	public void setPnsErrorDetailsUri(String pnsErrorDetailsUri) {
 		this.pnsErrorDetailsUri = pnsErrorDetailsUri;
 	}
-	
+
 	private static void setupParser(Digester digester){
 		digester.addObjectCreate("*/NotificationDetails", NotificationTelemetry.class);
 		digester.addCallMethod("*/NotificationId", "setNotificationId",1);
@@ -208,44 +208,44 @@ public class NotificationTelemetry {
 		digester.addCallParam("*/TargetPlatforms", 0);
 		digester.addCallMethod("*/PnsErrorDetailsUri", "setPnsErrorDetailsUri",1);
 		digester.addCallParam("*/PnsErrorDetailsUri", 0);
-		
-		digester.addObjectCreate("*/ApnsOutcomeCounts", HashMap.class);		
+
+		digester.addObjectCreate("*/ApnsOutcomeCounts", HashMap.class);
 		digester.addCallMethod("*/Outcome", "put",2, new Class[]{String.class, Integer.class} );
 		digester.addCallParam("*/Name", 0);
 		digester.addCallParam("*/Count", 1);
 		digester.addSetNext("*/ApnsOutcomeCounts", "setApnsOutcomeCounts", Map.class.getName());
-		
-		digester.addObjectCreate("*/MpnsOutcomeCounts", HashMap.class);		
+
+		digester.addObjectCreate("*/MpnsOutcomeCounts", HashMap.class);
 		digester.addCallMethod("*/Outcome", "put",2, new Class[]{String.class, Integer.class} );
 		digester.addCallParam("*/Name", 0);
 		digester.addCallParam("*/Count", 1);
 		digester.addSetNext("*/MpnsOutcomeCounts", "setMpnsOutcomeCounts", Map.class.getName());
-		
-		digester.addObjectCreate("*/WnsOutcomeCounts", HashMap.class);		
+
+		digester.addObjectCreate("*/WnsOutcomeCounts", HashMap.class);
 		digester.addCallMethod("*/Outcome", "put",2, new Class[]{String.class, Integer.class} );
 		digester.addCallParam("*/Name", 0);
 		digester.addCallParam("*/Count", 1);
 		digester.addSetNext("*/WnsOutcomeCounts", "setWnsOutcomeCounts", Map.class.getName());
-		
-		digester.addObjectCreate("*/GcmOutcomeCounts", HashMap.class);		
+
+		digester.addObjectCreate("*/GcmOutcomeCounts", HashMap.class);
 		digester.addCallMethod("*/Outcome", "put",2, new Class[]{String.class, Integer.class} );
 		digester.addCallParam("*/Name", 0);
 		digester.addCallParam("*/Count", 1);
 		digester.addSetNext("*/GcmOutcomeCounts", "setGcmOutcomeCounts", Map.class.getName());
-		
-		digester.addObjectCreate("*/FcmOutcomeCounts", HashMap.class);		
+
+		digester.addObjectCreate("*/FcmOutcomeCounts", HashMap.class);
 		digester.addCallMethod("*/Outcome", "put",2, new Class[]{String.class, Integer.class} );
 		digester.addCallParam("*/Name", 0);
 		digester.addCallParam("*/Count", 1);
 		digester.addSetNext("*/FcmOutcomeCounts", "setFcmOutcomeCounts", Map.class.getName());
 
-		digester.addObjectCreate("*/AdmOutcomeCounts", HashMap.class);		
+		digester.addObjectCreate("*/AdmOutcomeCounts", HashMap.class);
 		digester.addCallMethod("*/Outcome", "put",2, new Class[]{String.class, Integer.class} );
 		digester.addCallParam("*/Name", 0);
 		digester.addCallParam("*/Count", 1);
 		digester.addSetNext("*/AdmOutcomeCounts", "setAdmOutcomeCounts", Map.class.getName());
 
-		digester.addObjectCreate("*/BaiduOutcomeCounts", HashMap.class);		
+		digester.addObjectCreate("*/BaiduOutcomeCounts", HashMap.class);
 		digester.addCallMethod("*/Outcome", "put",2, new Class[]{String.class, Integer.class} );
 		digester.addCallParam("*/Name", 0);
 		digester.addCallParam("*/Count", 1);

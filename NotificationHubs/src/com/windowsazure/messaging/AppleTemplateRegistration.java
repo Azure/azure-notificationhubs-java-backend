@@ -4,13 +4,11 @@
 
 package com.windowsazure.messaging;
 
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Class representing a registration for template notifications for devices using APNs.
- *
  */
 public class AppleTemplateRegistration extends AppleRegistration {
 	private static final String APNS_TEMPLATE_REGISTRATION1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><entry xmlns=\"http://www.w3.org/2005/Atom\"><content type=\"application/xml\"><AppleTemplateRegistrationDescription xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/netservices/2010/10/servicebus/connect\">";
@@ -21,49 +19,94 @@ public class AppleTemplateRegistration extends AppleRegistration {
 
 	private String bodyTemplate;
 	private String expiry;
-	private Map<String, String> headers = new HashMap<String, String>();
+	private Map<String, String> headers = new HashMap<>();
 
+    /**
+     * Creates an Apple template registration.
+     */
 	public AppleTemplateRegistration() {
 		super();
 	}
 
+    /**
+     * Creates an Apple registration with registration ID, device token and body template.
+     * @param registrationId The registration ID.
+     * @param deviceToken The APNS device token.
+     * @param bodyTemplate The body template.
+     */
 	public AppleTemplateRegistration(String registrationId, String deviceToken,
 			String bodyTemplate) {
 		super(registrationId, deviceToken);
 		this.bodyTemplate = bodyTemplate;
 	}
 
+    /**
+     * Creates an Apple template registration with device token and body template.
+     * @param deviceToken The APNS device token.
+     * @param bodyTemplate The body template.
+     */
 	public AppleTemplateRegistration(String deviceToken, String bodyTemplate) {
 		super(deviceToken);
 		this.bodyTemplate = bodyTemplate;
 	}
 
+    /**
+     * Creates an Apple template registration with device token, body template and headers.
+     * @param deviceToken The APNS device token.
+     * @param bodyTemplate The body template.
+     * @param headers The APNS headers.
+     */
 	public AppleTemplateRegistration(String deviceToken, String bodyTemplate, Map<String, String> headers) {
 		super(deviceToken);
 		this.bodyTemplate = bodyTemplate;
 		this.headers = headers;
 	}
 
+    /**
+     * Gets the body template.
+     * @return The body template.
+     */
 	public String getBodyTemplate() {
 		return bodyTemplate;
 	}
 
+    /**
+     * Sets the body template.
+     * @param bodyTemplate The body template.
+     */
 	public void setBodyTemplate(String bodyTemplate) {
 		this.bodyTemplate = bodyTemplate;
 	}
 
+    /**
+     * Gets the expiration for the template registration.
+     * @return The expiration for the template registration.
+     */
 	public String getExpiry() {
 		return expiry;
 	}
 
+    /**
+     * Sets the expiration for the template registration.
+     * @param expiry The expiration for the template registration.
+     */
 	public void setExpiry(String expiry) {
 		this.expiry = expiry;
 	}
 
+    /**
+     * Gets the headers for the template registration.
+     * @return The headers for the template registration.
+     */
 	public Map<String, String> getHeaders() {
 		return headers;
 	}
 
+    /**
+     * Adds a header to the template registration headers.
+     * @param name The header name to add.
+     * @param value The header value to add.
+     */
 	public void addHeader(String name, String value) {
 		headers.put(name, value);
 	}
@@ -98,31 +141,26 @@ public class AppleTemplateRegistration extends AppleRegistration {
 		} else if (!expiry.equals(other.expiry))
 			return false;
 		if (headers == null) {
-				if (other.headers != null)
-					return false;
-			} else if (!headers.equals(other.headers))
-				return false;
-		return true;
-	}
+            return other.headers == null;
+			} else return headers.equals(other.headers);
+    }
 
 	@Override
 	public String getXml() {
-		StringBuffer buf = new StringBuffer();
-		buf.append(APNS_TEMPLATE_REGISTRATION1);
-		buf.append(getTagsXml());
-		buf.append(APNS_TEMPLATE_REGISTRATION2);
-		buf.append(deviceToken);
-		buf.append(APNS_TEMPLATE_REGISTRATION3);
-		buf.append(bodyTemplate);
-		buf.append(APNS_TEMPLATE_REGISTRATION4);
-		buf.append(getExpiryXml());
-		buf.append(getHeadersXml());
-		buf.append(APNS_TEMPLATE_REGISTRATION5);
-		return buf.toString();
+        return APNS_TEMPLATE_REGISTRATION1 +
+            getTagsXml() +
+            APNS_TEMPLATE_REGISTRATION2 +
+            deviceToken +
+            APNS_TEMPLATE_REGISTRATION3 +
+            bodyTemplate +
+            APNS_TEMPLATE_REGISTRATION4 +
+            getExpiryXml() +
+            getHeadersXml() +
+            APNS_TEMPLATE_REGISTRATION5;
 	}
 
 	private String getHeadersXml() {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		if (!headers.isEmpty()) {
 			buf.append("<ApnsHeaders>");
 			for (String key : headers.keySet()) {

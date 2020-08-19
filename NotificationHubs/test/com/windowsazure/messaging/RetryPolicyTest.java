@@ -65,7 +65,7 @@ public class RetryPolicyTest {
                 });
 
         try {
-            manager.getNotificationHub("hubname");
+            manager.getNotificationHubAsync("hubname").block();
         } catch (Exception e) {
             assertEquals(Exceptions.unwrap(e).getClass(), NotificationHubsException.class);
         }
@@ -94,7 +94,7 @@ public class RetryPolicyTest {
                 });
 
         try {
-            manager.getNotificationHub("hubname");
+            manager.getNotificationHubAsync("hubname").block();;
         } catch (Exception e) {
             assertEquals(Exceptions.unwrap(e).getClass(), NotificationHubsException.class);
         }
@@ -124,7 +124,7 @@ public class RetryPolicyTest {
                 });
 
         try {
-            manager.getNotificationHub("hubname");
+            manager.getNotificationHubAsync("hubname").block();;
         } catch (Exception e) {
             assertEquals(Exceptions.unwrap(e).getClass(), NotificationHubsException.class);
         }

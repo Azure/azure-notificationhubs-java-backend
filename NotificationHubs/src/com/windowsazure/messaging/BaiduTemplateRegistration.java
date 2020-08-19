@@ -4,6 +4,9 @@
 
 package com.windowsazure.messaging;
 
+/**
+ * This class represents a Baidu template registration.
+ */
 public class BaiduTemplateRegistration extends BaiduRegistration {
 	private static final String BAIDU_NATIVE_REGISTRATION1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><entry xmlns=\"http://www.w3.org/2005/Atom\"><content type=\"application/xml\"><BaiduTemplateRegistrationDescription xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/netservices/2010/10/servicebus/connect\">";
 	private static final String BAIDU_NATIVE_REGISTRATION2 = "<BaiduUserId>";
@@ -13,23 +16,47 @@ public class BaiduTemplateRegistration extends BaiduRegistration {
 
 	private String bodyTemplate;
 
+    /**
+     * Creates a Baidu template registration.
+     */
 	public BaiduTemplateRegistration() {
 		this(null, null, null);
 	}
 
+    /**
+     * Creates a Baidu template registration with Baidu user ID, channel ID and body template.
+     * @param baiduUserId The Baidu user ID.
+     * @param baiduChannelId The Baidu channel ID.
+     * @param bodyTemplate The template body.
+     */
 	public BaiduTemplateRegistration(String baiduUserId, String baiduChannelId, String bodyTemplate) {
 		this(null, baiduUserId, baiduChannelId, bodyTemplate);
 	}
 
+    /**
+     * Creates a Baidu template registration with registration ID, Baidu user ID and channel ID, and template body.
+     * @param registrationId The registration ID.
+     * @param baiduUserId The Baidu user ID.
+     * @param baiduChannelId The Baidu channel ID.
+     * @param bodyTemplate The template body.
+     */
 	public BaiduTemplateRegistration(String registrationId, String baiduUserId, String baiduChannelId, String bodyTemplate) {
 		super(registrationId, baiduUserId, baiduChannelId);
 		this.bodyTemplate = bodyTemplate;
 	}
 
+    /**
+     * Gets the template body.
+     * @return The template body.
+     */
 	public String getBodyTemplate() {
 		return bodyTemplate;
 	}
 
+    /**
+     * Sets the body template.
+     * @param bodyTemplate The body template.
+     */
 	public void setBodyTemplate(String bodyTemplate) {
 		this.bodyTemplate = bodyTemplate;
 	}
@@ -59,17 +86,15 @@ public class BaiduTemplateRegistration extends BaiduRegistration {
 
 	@Override
 	public String getXml() {
-		StringBuffer buf = new StringBuffer();
-		buf.append(BAIDU_NATIVE_REGISTRATION1);
-		buf.append(getTagsXml());
-		buf.append(BAIDU_NATIVE_REGISTRATION2);
-		buf.append(baiduUserId);
-		buf.append(BAIDU_NATIVE_REGISTRATION3);
-		buf.append(baiduChannelId);
-		buf.append(BAIDU_NATIVE_REGISTRATION4);
-		buf.append(bodyTemplate);
-		buf.append(BAIDU_NATIVE_REGISTRATION5);
-		return buf.toString();
+        return BAIDU_NATIVE_REGISTRATION1 +
+            getTagsXml() +
+            BAIDU_NATIVE_REGISTRATION2 +
+            baiduUserId +
+            BAIDU_NATIVE_REGISTRATION3 +
+            baiduChannelId +
+            BAIDU_NATIVE_REGISTRATION4 +
+            bodyTemplate +
+            BAIDU_NATIVE_REGISTRATION5;
 	}
 
 }

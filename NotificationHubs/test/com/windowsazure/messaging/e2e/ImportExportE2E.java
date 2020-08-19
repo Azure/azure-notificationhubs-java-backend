@@ -51,7 +51,7 @@ public class ImportExportE2E {
 		hubPath = "JavaSDK_" + UUID.randomUUID().toString();
 		namespaceManager = new NamespaceManager(connectionString, new RetryOptions());
 	 	NotificationHubDescription hubDescription = new NotificationHubDescription(hubPath);
-	 	namespaceManager.createNotificationHub(hubDescription);
+	 	namespaceManager.createNotificationHubAsync(hubDescription).block();
 		Thread.sleep(1000);
 
 		hub = new NotificationHub(connectionString, hubPath, new RetryOptions());
@@ -60,7 +60,7 @@ public class ImportExportE2E {
 	@After
 	public void cleanUp() throws Exception {
 		assertNotNull(hubPath);
-		namespaceManager.deleteNotificationHub(hubPath);
+		namespaceManager.deleteNotificationHubAsync(hubPath).block();
 	}
 
 	public static String createSasSignedUrl(String accountName, String accountKey, String containerName, String fileName, String permissions, Date expirationTimeUtc) throws Exception {
@@ -108,24 +108,24 @@ public class ImportExportE2E {
 		job.setImportFileUri(createSasSignedUrl(storageAccountName, storageAccountKey, storageContainer, storageImportFile, "r", c.getTime()));
 		job.setOutputContainerUri(createSasSignedUrl(storageAccountName, storageAccountKey, storageContainer, null, "rwl", c.getTime()));
 
-		job = hub.submitNotificationHubJob(job);
+		job = hub.submitNotificationHubJobAsync(job).block();
 		assertNotNull(job);
 		assertNotNull(job.getJobId());
 
 		// Check if get all works
-		List<NotificationHubJob> jobs = hub.getAllNotificationHubJobs();
+		List<NotificationHubJob> jobs = hub.getAllNotificationHubJobsAsync().block();
 		assertNotNull(jobs);
 		assertEquals(1, jobs.size());
 
 		// Wait until job is done
 		int n = 0;
-		while(true){
+		while (true) {
 			Thread.sleep(1000);
 			assertTrue(++n<10);
-			job = hub.getNotificationHubJob(job.getJobId());
+			job = hub.getNotificationHubJobAsync(job.getJobId()).block();
 			assertNotNull(job);
 			assertNotNull(job.getJobId());
-			if(job.getJobStatus() == NotificationHubJobStatus.Completed)
+			if (job.getJobStatus() == NotificationHubJobStatus.Completed)
 				break;
 		}
 	}
@@ -140,21 +140,21 @@ public class ImportExportE2E {
 		NotificationHubJob job = new NotificationHubJob();
 		job.setJobType(NotificationHubJobType.ExportRegistrations);
 		job.setOutputContainerUri(createSasSignedUrl(storageAccountName, storageAccountKey, storageContainer, null, "rwl", c.getTime()));
-		job = hub.submitNotificationHubJob(job);
+		job = hub.submitNotificationHubJobAsync(job).block();
 		assertNotNull(job);
 		assertNotNull(job.getJobId());
 
 		// Check if get all works
-		List<NotificationHubJob> jobs = hub.getAllNotificationHubJobs();
+		List<NotificationHubJob> jobs = hub.getAllNotificationHubJobsAsync().block();
 		assertNotNull(jobs);
 		assertEquals(1, jobs.size());
 
 		// Wait until job is done
 		int n = 0;
-		while(true){
+		while (true) {
 			Thread.sleep(1000);
 			assertTrue(++n<10);
-			job = hub.getNotificationHubJob(job.getJobId());
+			job = hub.getNotificationHubJobAsync(job.getJobId()).block();
 			assertNotNull(job);
 			assertNotNull(job.getJobId());
 			if(job.getJobStatus() == NotificationHubJobStatus.Completed)
