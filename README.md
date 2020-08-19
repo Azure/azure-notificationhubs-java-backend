@@ -22,14 +22,9 @@ To get started, you can find all the classes in the `com.windowsazure.messaging`
 import com.windowsazure.messaging.NotificationHub;
 ```
 
-The Azure Notification Hubs SDK for Java support both synchrnous and asynchrnous operations on `NotificationHub/NotificationHubClient` and `NamespaceManager/NamespaceManagerClient`.  The asynchronous APIs are supported using the [Reactor](https://projectreactor.io/) Framework.  We will show synchrnous examples, however you can utilize the async methods, which are suffixed with `Async` such as the following:
+The Azure Notification Hubs SDK for Java support both synchrnous and asynchrnous operations on `NotificationHub/NotificationHubClient` and `NamespaceManager/NamespaceManagerClient`.  The asynchronous APIs are supported using the [Reactor](https://projectreactor.io/) Framework. 
 
 ```java
-// Synchronous
-NotificationHubDescription hub = new NotificationHubDescription("hubname");
-hub.setWindowsCredential(new WindowsCredential("sid","key"));
-hub = namespaceManager.createNotificationHub(hub);
-
 // Asynchronous
 NotificationHubDescription hub = new NotificationHubDescription("hubname");
 hub.setWindowsCredential(new WindowsCredential("sid","key"));
@@ -59,26 +54,27 @@ NamespaceManagerClient namespaceManager = new NamespaceManager("connection strin
 ```java
 NotificationHubDescription hub = new NotificationHubDescription("hubname");
 hub.setWindowsCredential(new WindowsCredential("sid","key"));
-hub = namespaceManager.createNotificationHub(hub);
+Disposable subscription = namespaceManager.createNotificationHubAsync(hub)
 ```
 
 ### Get a Azure Notification Hub:
 
 ```java	
-hub = namespaceManager.getNotificationHub("hubname");
+Disposable subscription = namespaceManager.getNotificationHubAsync("hubname")
+
 ```	
 
 ### Update an Azure Notification Hub:
 
 ```java
 hub.setMpnsCredential(new MpnsCredential("mpnscert", "mpnskey"));
-hub = namespaceManager.updateNotificationHub(hub);
+Disposable subscription = namespaceManager.updateNotificationHubAsync(hub);
 ```
 
 ### Delete an Azure Notification Hub:
 
 ```java
-namespaceManager.deleteNotificationHub("hubname");
+Disposable subscription = namespaceManager.deleteNotificationHubAsync("hubname");
 ```
 
 ## Azure Notification Hubs Operations
@@ -105,7 +101,7 @@ Using this SDK, you can do these Installation API operations.  For example, we c
 
 ```java
 Installation installation = new Installation("installation-id", NotificationPlatform.Adm, "adm-push-channel");
-hub.createOrUpdateInstallation(installation);
+Disposable subscription = hub.createOrUpdateInstallationAsync(installation);
 ```
 	
 An installation can have multiple tags and multiple templates with its own set of tags and headers.
@@ -114,7 +110,7 @@ An installation can have multiple tags and multiple templates with its own set o
 installation.addTag("foo");
 installation.addTemplate("template1", new InstallationTemplate("{\"data\":{\"key1\":\"$(value1)\"}}","tag-for-template1"));
 installation.addTemplate("template2", new InstallationTemplate("{\"data\":{\"key2\":\"$(value2)\"}}","tag-for-template2"));
-hub.createOrUpdateInstallation(installation);
+Disposable subscription = hub.createOrUpdateInstallationAsync(installation);
 ```
 
 For advanced scenarios we have partial update capability which allows to modify only particular properties of the installation object. Basically partial update is subset of [JSON Patch](https://tools.ietf.org/html/rfc6902/) operations you can run against Installation object.
@@ -123,13 +119,13 @@ For advanced scenarios we have partial update capability which allows to modify 
 PartialUpdateOperation addChannel = new PartialUpdateOperation(UpdateOperationType.Add, "/pushChannel", "adm-push-channel2");
 PartialUpdateOperation addTag = new PartialUpdateOperation(UpdateOperationType.Add, "/tags", "bar");
 PartialUpdateOperation replaceTemplate = new PartialUpdateOperation(UpdateOperationType.Replace, "/templates/template1", new InstallationTemplate("{\"data\":{\"key3\":\"$(value3)\"}}","tag-for-template1")).toJson());
-hub.patchInstallation("installation-id", addChannel, addTag, replaceTemplate);
+Disposable subscription = hub.patchInstallationAsync("installation-id", addChannel, addTag, replaceTemplate);
 ```
 
 **Delete an Installation:**
 
 ```java
-hub.deleteInstallation(installation.getInstallationId());
+Disposable subscription = hub.deleteInstallationAsync(installation.getInstallationId());
 ```
 	
 Keep in mind that CreateOrUpdate, Patch and Delete are eventually consistent with Get. In fact operation just goes to the system queue during the call and will be executed in background. Moreover Get is not designed for main runtime scenario but just for debug and troubleshooting purposes, it is tightly throttled by the service.
@@ -144,7 +140,7 @@ A registration associates the Platform Notification Service (PNS) handle for a d
 WindowsRegistration reg = new WindowsRegistration(new URI(CHANNELURI));
 reg.getTags().add("myTag");
 reg.getTags().add("myOtherTag");	
-hub.createRegistration(reg);
+Disposable subscription = hub.createRegistrationAsync(reg);
 ```
 
 ### Create an Apple Registration:
@@ -153,7 +149,7 @@ hub.createRegistration(reg);
 AppleRegistration reg = new AppleRegistration(DEVICETOKEN);
 reg.getTags().add("myTag");
 reg.getTags().add("myOtherTag");
-hub.createRegistration(reg);
+Disposable subscription = hub.createRegistrationAsync(reg);
 ```
 
 Analogous for Android (GCM), Windows Phone (MPNS), and Kindle Fire (ADM).
@@ -163,7 +159,7 @@ Analogous for Android (GCM), Windows Phone (MPNS), and Kindle Fire (ADM).
 ```java
 WindowsTemplateRegistration reg = new WindowsTemplateRegistration(new URI(CHANNELURI), WNSBODYTEMPLATE);
 reg.getHeaders().put("X-WNS-Type", "wns/toast");
-hub.createRegistration(reg);
+Disposable subscription = hub.createRegistrationAsync(reg);
 ```
 
 Create registrations using create registrationid+upsert pattern (removes duplicates deriving from lost responses if registration ids are stored on the device):
@@ -171,25 +167,32 @@ Create registrations using create registrationid+upsert pattern (removes duplica
 ```java
 String id = hub.createRegistrationId();
 WindowsRegistration reg = new WindowsRegistration(id, new URI(CHANNELURI));
-hub.upsertRegistration(reg);
+Disposable subscription = hub.upsertRegistrationAsync(reg);
 ```
 
 ### Update a Registration:
 
 ```java
-hub.updateRegistration(reg);
+Disposable subscription = hub.updateRegistrationAsync(reg);
 ```
 
 ### Delete a Registration:
 
 ```java
-hub.deleteRegistration(regid);
+Disposable subscription = hub.deleteRegistrationAsync(regid);
 ```
 
 ### Get a Single Registration:
 
 ```java
-Registration registration = hub.getRegistration(regid);
+Disposable subscription = hub.getRegistrationAsync(regid)
+    .subscribe(
+        registration -> {
+            // Handle success 
+        },
+        throwable -> {
+            // Handle failure
+        });
 ```
 
 All collection queries support $top and continuation tokens.
@@ -197,19 +200,40 @@ All collection queries support $top and continuation tokens.
 ### Get All Registrations in an Azure Notification Hub:
 
 ```java
-CollectionResult registrations = hub.getRegistrations();
+Disposable subscription = hub.getRegistrationsAsync()
+    .subscribe(
+        registrations -> {
+            // Handle success 
+        },
+        throwable -> {
+            // Handle failure
+        });
 ```
 
 ### Get Registrations With a Given Tag:
 
 ```java
-CollectionResult registratons = hub.getRegistrationsByTag("myTag");
+Disposable subscription = hub.getRegistrationsByTagAsync("myTag")
+    .subscribe(
+        registrations -> {
+            // Handle success 
+        },
+        throwable -> {
+            // Handle failure
+        });
 ```
 
 ### Get Registrations By Channel:
 
 ```java
-CollectionResult registratons = hub.getRegistrationsByChannel("devicetoken");
+Disposable subscription = hub.getRegistrationsByChannelAsync("devicetoken")
+    .subscribe(
+        registrations -> {
+            // Handle success 
+        },
+        throwable -> {
+            // Handle failure
+        });
 ```
 
 ## Send Notifications
@@ -222,7 +246,7 @@ The Notification object is simply a body with headers, some utility methods help
 Notification n = Notification.createWindowsNotification("WNS body");
 
 // broadcast
-hub.sendNotification(n);
+Disposable subscription = hub.sendNotificationAsync(n);
 
 // send to tags	
 Set<String> tags = new HashSet<String>();
@@ -231,14 +255,14 @@ tags.add("foo");
 hub.sendNotification(n, tags);
 
 // send to tag expression		
-hub.sendNotification(n, "foo && ! bar");
+Disposable subscription = hub.sendNotificationAsync(n, "foo && ! bar");
 ```
 
 ### Send an Apple Push Notification:
 
 ```java
 Notification n = Notification.createAppleNotifiation("APNS body");
-hub.sendNotification(n);
+Disposable subscription = hub.sendNotificationAsync(n);
 ```
 
 Analogous for Android, Windows Phone, Kindle Fire and Baidu PNS.
@@ -251,7 +275,7 @@ prop.put("prop1", "v1");
 prop.put("prop2", "v2");
 Notification n = Notification.createTemplateNotification(prop);
 
-hub.sendNotification(n);
+Disposable subscription = hub.sendNotificationAsync(n);
 ```
 
 ### Send To An Installation ID:
@@ -260,7 +284,14 @@ Send flow for Installations is the same as for Registrations. We've just introdu
 
 ```java
 Notification n = Notification.createWindowsNotification("WNS body");
-hub.sendNotification(n, "InstallationId:{installation-id}");
+Disposable subscription = hub.sendNotificationAsync(n, "InstallationId:{installation-id}")
+    .subscribe(
+        outcome -> {
+            // Handle success 
+        },
+        throwable -> {
+            // Handle failure
+        });
 ```
 
 ### Send To An Installation Template For An Installation:
@@ -269,7 +300,14 @@ hub.sendNotification(n, "InstallationId:{installation-id}");
 Map<String, String> prop =  new HashMap<String, String>();
 prop.put("value3", "some value");
 Notification n = Notification.createTemplateNotification(prop);
-hub.sendNotification(n, "InstallationId:{installation-id} && tag-for-template1");
+Disposable subscription = hub.sendNotificationAsync(n, "InstallationId:{installation-id} && tag-for-template1")
+    .subscribe(
+        outcome -> {
+            // Handle success 
+        },
+        throwable -> {
+            // Handle failure
+        });
 ```
 
 ## Scheduled Send Operations
@@ -286,7 +324,14 @@ c.add(Calendar.DATE, 1);
 
 Notification n = Notification.createWindowsNotification("WNS body");
 
-hub.scheduleNotification(n, c.getTime());
+Disposable subscription = hub.scheduleNotificationAsync(n, c.getTime())
+    .subscribe(
+        outcome -> {
+            // Handle success 
+        },
+        throwable -> {
+            // Handle failure
+        });
 ```
 	
 ## Import and Export Registrations
@@ -301,7 +346,14 @@ Sometimes it is required to perform bulk operation against registrations. Usuall
 NotificationHubJob job = new NotificationHubJob();
 job.setJobType(NotificationHubJobType.ExportRegistrations);
 job.setOutputContainerUri("container uri with SAS signature");
-job = hub.submitNotificationHubJob(job);
+Disposable subscription = hub.submitNotificationHubJobAsync(job)
+    .subscribe(
+        submittedJob -> {
+            // Handle success 
+        },
+        throwable -> {
+            // Handle failure
+        });
 ```
 
 ### Submit an Import Job:
@@ -311,7 +363,14 @@ NotificationHubJob job = new NotificationHubJob();
 job.setJobType(NotificationHubJobType.ImportCreateRegistrations);
 job.setImportFileUri("input file uri with SAS signature");
 job.setOutputContainerUri("container uri with SAS signature");
-job = hub.submitNotificationHubJob(job);
+Disposable subscription = hub.submitNotificationHubJob(job)
+    .subscribe(
+        submittedJob -> {
+            // Handle success 
+        },
+        throwable -> {
+            // Handle failure
+        });
 ```
 	
 ### Wait for Job Completion:
@@ -319,7 +378,7 @@ job = hub.submitNotificationHubJob(job);
 ```java
 while(true) {
 	Thread.sleep(1000);
-	job = hub.getNotificationHubJob(job.getJobId());
+	job = hub.getNotificationHubJobAsync(job.getJobId()).block();
 	if(job.getJobStatus() == NotificationHubJobStatus.Completed) {
 		break;
 	}
@@ -329,7 +388,14 @@ while(true) {
 ### Get All jobs:
 
 ```java
-List<NotificationHubJob> jobs = hub.getAllNotificationHubJobs();
+Disposable subscription = hub.getAllNotificationHubJobs()
+    .subscribe(
+        allJobs -> {
+            // Handle success 
+        },
+        throwable -> {
+            // Handle failure
+        });
 ```
 
 ## References:
