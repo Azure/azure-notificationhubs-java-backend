@@ -1,133 +1,326 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.io.IOUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.commons.io.IOUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+
+/**
+ * Represents an installation for Azure Notification Hubs
+ */
 public class Installation {
-	        private String installationId;
-	        private NotificationPlatform platform;
-	        private String pushChannel;
-	        private boolean pushChannelExpired;
-	        private String expirationTime;
-	        private List<String> tags;
-	        private Map<String, InstallationTemplate> templates;
-	        private Map<String, WnsSecondaryTile> secondaryTiles;
-	        
-	        public Installation(){
-	        	this(null);
-	        }
-	        
-	        public Installation(String installationId){
-	        	this(installationId, (String[])null);
-	        }
-	        
-	        public Installation(String installationId, String... tags){
-	        	this(installationId, null, null, (String[])null);
-	        }
-	        
-	        public Installation(String installationId, NotificationPlatform platform, String pushChannel){
-	        	this(installationId, platform, pushChannel, (String[])null);
-	        }
-	        
-	        public Installation(String installationId, NotificationPlatform platform, String pushChannel, String... tags){
-	        	this.installationId = installationId;
-	        	this.platform = platform;
-	        	this.pushChannel = pushChannel;
-	        	if(tags != null){		
-	    			for(String tag : tags){
-	    				this.addTag(tag);
-	    			}
-	    		}
-	        }
 
-			public String getInstallationId() {
-				return installationId;
+	private String installationId;
+	private String userId;
+	private NotificationPlatform platform;
+	private String pushChannel;
+	private String expirationTime;
+	private List<String> tags;
+	private Map<String, InstallationTemplate> templates;
+	private Map<String, WnsSecondaryTile> secondaryTiles;
+
+	/**
+	 * Creates a new installation.
+	 */
+	public Installation() {
+		this(null);
+	}
+
+	/**
+	 * Creates a new installation with the given installation ID.
+	 * @param installationId The ID for the installation.
+	 */
+	public Installation(String installationId) {
+		this(installationId, (String[])null);
+	}
+
+	/**
+	 * Creates an installation from the Installation ID and tags.
+	 * @param installationId The ID for the installation.
+	 * @param tags The tags for the installation.
+	 */
+	public Installation(String installationId, String... tags){
+		this(installationId, null, null, null, tags);
+	}
+
+	/**
+	 * Creates an installation with an installation ID, platform and push channel.
+	 * @param installationId The ID for the installation.
+	 * @param platform The platform for the installation.
+	 * @param pushChannel The PNS specific channel for device.
+	 */
+	public Installation(String installationId, NotificationPlatform platform, String pushChannel) {
+		this(installationId, platform, pushChannel, null, (String[])null);
+	}
+
+	public Installation(String installationId, NotificationPlatform platform, String pushChannel, String userId, String... tags) {
+		// Validate that this is not FCM
+		validateNotificationPlatform(platform);
+
+		this.installationId = installationId;
+		this.userId = userId;
+		this.platform = platform;
+		this.pushChannel = pushChannel;
+		if (tags != null) {
+			for (String tag : tags) {
+				this.addTag(tag);
 			}
+		}
+	}
 
-			public void setInstallationId(String installationId) {
-				this.installationId = installationId;
-			}
+	/**
+	 * Validates that the platform is not FCM. Currently Notification Hubs supports FCM Legacy as NotificationPlatform.Gcm
+	 * Full support for FCM is not currently supported. See https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-gcm-to-fcm
+	 * @param notificationPlatform The notification platform to verify that it is not FCM.
+	 */
+	private static void validateNotificationPlatform(NotificationPlatform notificationPlatform) {
+		if (notificationPlatform == NotificationPlatform.Fcm) {
+			throw new RuntimeException("FCM is currently not supported, use NotificationPlatform.Gcm which uses FCM Legacy Mode. See https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-gcm-to-fcm");
+		}
+	}
 
-			public String getPushChannel() {
-				return pushChannel;
-			}
+	/**
+	 * Gets the ID for the installation.
+	 * @return The ID for the installation.
+	 */
+	public String getInstallationId() {
+		return installationId;
+	}
 
-			public void setPushChannel(String pushChannel) {
-				this.pushChannel = pushChannel;
-			}
+	/**
+	 * Sets the ID for the installation.
+	 * @param installationId The ID for the installation.
+	 */
+	public void setInstallationId(String installationId) {
+		this.installationId = installationId;
+	}
 
-			public boolean isPushChannelExpired() {
-				return pushChannelExpired;
-			}	
+	/**
+	 * Gets the PNS specific push channel for the installation.
+	 * @return The PNS specific push channel for the installation.
+	 */
+	public String getPushChannel() {
+		return pushChannel;
+	}
 
-			public Date getExpirationTime() {
-				return javax.xml.bind.DatatypeConverter.parseDateTime(expirationTime).getTime();
-			}			
+	/**
+	 * Sets the PNS specific push channel for the installation.
+	 * @param pushChannel The PNS specific push channel for the installation
+	 */
+	public void setPushChannel(String pushChannel) {
+		this.pushChannel = pushChannel;
+	}
 
-			public NotificationPlatform getPlatform() {
-				return platform;
-			}
+	/**
+	 * Gets the expiration time for the installation.
+	 * @return The installation expiration time.
+	 */
+	public Date getExpirationTime() {
+		return javax.xml.bind.DatatypeConverter.parseDateTime(expirationTime).getTime();
+	}
 
-			public void setPlatform(NotificationPlatform platform) {
-				this.platform = platform;
-			}
+	/**
+	 * Sets the expiration time for the installation in "yyyy-MM-dd'T'HH:mm:ss'.'SSS'Z'" format.
+	 * @param expirationTime The expiration time in "yyyy-MM-dd'T'HH:mm:ss'.'SSS'Z'" format.
+	 */
+	public void setExpirationTime(String expirationTime) {
+		this.expirationTime = expirationTime;
+	}
 
-			public List<String> getTags() {
-				return tags;
-			}
+	/**
+	 * Gets the platform for the installation.
+	 * @return The platform for the installation.
+	 */
+	public NotificationPlatform getPlatform() {
+		return platform;
+	}
 
-			public void addTag(String tag) {
-				if(this.tags == null){
-					this.tags = new ArrayList<String>();
-				}
-				
-				this.tags.add(tag);
-			}
+	/**
+	 * Sets the platform for the installation. Note that FCM is currently not supported, only GCM which is FCM Legacy.
+	 * See https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-gcm-to-fcm for more details.
+	 * @param platform The platform for the installation.
+	 */
+	public void setPlatform(NotificationPlatform platform) {
+		// Validate that this is not FCM
+		validateNotificationPlatform(platform);
 
-			public Map<String, InstallationTemplate> getTemplates() {
-				return templates;
-			}
+		this.platform = platform;
+	}
 
-			public void addTemplate(String templateName, InstallationTemplate template) {
-				if(this.templates == null){
-					this.templates = new HashMap<String, InstallationTemplate>();
-				}
-				
-				this.templates.put(templateName, template);
-			}
+	/**
+	 * Gets the user ID for the installation.
+	 * @return The user ID for the installation.
+	 */
+	public String getUserId() {
+		return userId;
+	}
 
-			public Map<String, WnsSecondaryTile> getSecondaryTiles() {
-				return secondaryTiles;
-			}
+	/**
+	 * Sets the user ID for the installation.
+	 * @param userId The user ID for the installation.
+	 */
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
 
-			public void addSecondaryTile(String tileName, WnsSecondaryTile tile) {
-				if(this.templates == null){
-					this.secondaryTiles = new HashMap<String, WnsSecondaryTile>();
-				}
-				
-				this.secondaryTiles.put(tileName, tile);
-			}     
-			
-			public static Installation fromJson(String json){
-				return new Gson().fromJson(json, Installation.class);
-			}
-			
-			public static Installation fromJson(InputStream json) throws IOException{
-				return Installation.fromJson(IOUtils.toString(json));
-			}
-			
-			public String toJson(){
-				return new GsonBuilder().disableHtmlEscaping().create().toJson(this);
-			}
+	/**
+	 * Gets the tags for the installation.
+	 * @return The tags for the installation.
+	 */
+	public List<String> getTags() {
+		return tags;
+	}
 
+	/**
+	 * Adds a tag to the installation.
+	 * @param tag The tag to add to the installation;
+	 */
+	public void addTag(String tag) {
+		if (this.tags == null) {
+			this.tags = new ArrayList<>();
+		}
+
+		this.tags.add(tag);
+	}
+
+	/**
+	 * Removes a tag from the installation.
+	 * @param tag The tag to remove from the installation.
+	 */
+	public void removeTag(String tag) {
+		if (this.tags == null) {
+			return;
+		}
+
+		this.tags.remove(tag);
+	}
+
+	/**
+	 * Clears the tags for the installation.
+	 */
+	public void clearTags() {
+		if (this.tags == null) {
+			return;
+		}
+
+		this.tags.clear();
+	}
+
+	/**
+	 * Gets the installation templates for the installation.
+	 * @return The installation templates for the installation.
+	 */
+	public Map<String, InstallationTemplate> getTemplates() {
+		return templates;
+	}
+
+	/**
+	 * Adds an installation template by name to the installation.
+	 * @param templateName The name for the installation template.
+	 * @param template The template to add to the installation.
+	 */
+	public void addTemplate(String templateName, InstallationTemplate template) {
+		if (this.templates == null) {
+			this.templates = new HashMap<>();
+		}
+
+		this.templates.put(templateName, template);
+	}
+
+	/**
+	 * Removes an installation template based upon the template name.
+	 * @param templateName The name of the installation template to remove.
+	 */
+	public void removeTemplate(String templateName) {
+		if (this.templates == null) {
+			return;
+		}
+
+		this.templates.remove(templateName);
+	}
+
+	/**
+	 * Clears the installation templates.
+	 */
+	public void clearTemplates() {
+		if (this.templates == null) {
+			return;
+		}
+
+		this.templates.clear();
+	}
+
+	/**
+	 * Gets the secondary tiles for WNS
+	 * @return The secondary tiles for WNS.
+	 */
+	public Map<String, WnsSecondaryTile> getSecondaryTiles() {
+		return secondaryTiles;
+	}
+
+	/**
+	 * Adds a secondary tile to the installation template.
+	 * @param tileName The name for the tile.
+	 * @param tile THe WNS secondary tile.
+	 */
+	public void addSecondaryTile(String tileName, WnsSecondaryTile tile) {
+		if (this.templates == null) {
+			this.secondaryTiles = new HashMap<>();
+		}
+
+		this.secondaryTiles.put(tileName, tile);
+	}
+
+	public void removeSecondaryTile(String tileName) {
+		if (this.templates == null) {
+			return;
+		}
+
+		this.secondaryTiles.remove(tileName);
+	}
+
+	/**
+	 * Clears the WNS secondary tiles.
+	 */
+	public void clearSecondaryTiles() {
+		if (this.templates == null) {
+			return;
+		}
+
+		this.secondaryTiles.clear();
+	}
+
+	/**
+	 * Creates an installation from the JSON string.
+	 * @param json The JSON string that represents the installation.
+	 * @return An installation created from the JSON string.
+	 */
+	public static Installation fromJson(String json){
+		return new Gson().fromJson(json, Installation.class);
+	}
+
+	/**
+	 * Creates an installation from the JSON stream.
+	 * @param json The JSON string that represents the installation.
+	 * @return An installation created from the JSON stream.
+	 * @throws IOException An exception reading from the stream occurred.
+	 */
+	public static Installation fromJson(InputStream json) throws IOException{
+		return Installation.fromJson(IOUtils.toString(json));
+	}
+
+	/**
+	 * Converts the installation to a JSON string.
+	 * @return The JSON string representation of the installation.
+	 */
+	public String toJson() {
+		return new GsonBuilder().disableHtmlEscaping().create().toJson(this);
+	}
 }

@@ -1,4 +1,9 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
+
 import static org.junit.Assert.*;
 
 import java.io.IOException;

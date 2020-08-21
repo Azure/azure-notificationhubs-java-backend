@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 import java.net.URI;
@@ -6,7 +10,6 @@ import java.util.Map;
 
 /**
  * Class representing a registration for template notifications for devices using MPNS.
- *
  */
 public class MpnsTemplateRegistration extends MpnsRegistration {
 	private static final String MPNS_TEMPLATE_REGISTRATION1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><entry xmlns=\"http://www.w3.org/2005/Atom\"><content type=\"application/xml\"><MpnsTemplateRegistrationDescription xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/netservices/2010/10/servicebus/connect\">";
@@ -16,45 +19,70 @@ public class MpnsTemplateRegistration extends MpnsRegistration {
 	private static final String MPNS_TEMPLATE_REGISTRATION5 = "</MpnsTemplateRegistrationDescription></content></entry>";
 
 	private String bodyTemplate;
-	private Map<String, String> headers = new HashMap<String, String>();
+	private Map<String, String> headers = new HashMap<>();
 
+	/**
+	 * Creates a Windows Phone template registration.
+	 */
 	public MpnsTemplateRegistration() {
 	}
-	
-	
-	
+
+	/**
+	 * Creates a Windows Phone template registration with a channel URI, body template and headers.
+	 * @param channelUri The channel URI.
+	 * @param bodyTemplate The template body.
+	 * @param headers The headers for the registration.
+	 */
 	public MpnsTemplateRegistration(URI channelUri, String bodyTemplate,
-			Map<String, String> headers) {
+									Map<String, String> headers) {
 		super(channelUri);
 		this.bodyTemplate = bodyTemplate;
 		this.headers = headers;
 	}
 
-
-
+	/**
+	 * Creates a Windows Phone template registration with a channel URI and template body.
+	 * @param channelUri The Windows Phone channel URI.
+	 * @param bodyTemplate The template body.
+	 */
 	public MpnsTemplateRegistration(URI channelUri,
-			String bodyTemplate) {
+									String bodyTemplate) {
 		super(channelUri);
 		this.bodyTemplate = bodyTemplate;
 	}
 
+	/**
+	 * Gets the template body.
+	 * @return The template body.
+	 */
 	public String getBodyTemplate() {
 		return bodyTemplate;
 	}
 
+	/**
+	 * Sets the template body.
+	 * @param bodyTemplate The template body.
+	 */
 	public void setBodyTemplate(String bodyTemplate) {
 		this.bodyTemplate = bodyTemplate;
 	}
 
+	/**
+	 * Gets the template registration headers.
+	 * @return The template registration headers.
+	 */
 	public Map<String, String> getHeaders() {
 		return headers;
 	}
-	
+
+	/**
+	 * Adds a header to the Windows Phone template registration
+	 * @param name The name of the header to set.
+	 * @param value The value of the header to set.s
+	 */
 	public void addHeader(String name, String value) {
 		headers.put(name, value);
 	}
-	
-	
 
 	@Override
 	public int hashCode() {
@@ -83,32 +111,27 @@ public class MpnsTemplateRegistration extends MpnsRegistration {
 		} else if (!bodyTemplate.equals(other.bodyTemplate))
 			return false;
 		if (headers == null) {
-			if (other.headers != null)
-				return false;
-		} else if (!headers.equals(other.headers))
-			return false;
-		return true;
+			return other.headers == null;
+		} else return headers.equals(other.headers);
 	}
 
 
 
 	@Override
 	public String getXml() {
-		StringBuffer buf = new StringBuffer();
-		buf.append(MPNS_TEMPLATE_REGISTRATION1);
-		buf.append(getTagsXml());
-		buf.append(MPNS_TEMPLATE_REGISTRATION2);
-		buf.append(channelUri.toString());
-		buf.append(MPNS_TEMPLATE_REGISTRATION3);
-		buf.append(bodyTemplate);
-		buf.append(MPNS_TEMPLATE_REGISTRATION4);
-		buf.append(getHeadersXml());
-		buf.append(MPNS_TEMPLATE_REGISTRATION5);
-		return buf.toString();
+		return MPNS_TEMPLATE_REGISTRATION1 +
+				getTagsXml() +
+				MPNS_TEMPLATE_REGISTRATION2 +
+				channelUri.toString() +
+				MPNS_TEMPLATE_REGISTRATION3 +
+				bodyTemplate +
+				MPNS_TEMPLATE_REGISTRATION4 +
+				getHeadersXml() +
+				MPNS_TEMPLATE_REGISTRATION5;
 	}
 
 	private String getHeadersXml() {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		if (!headers.isEmpty()) {
 			buf.append("<MpnsHeaders>");
 			for (String key : headers.keySet()) {

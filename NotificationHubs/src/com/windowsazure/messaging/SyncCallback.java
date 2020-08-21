@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 import java.util.concurrent.CountDownLatch;
@@ -8,7 +12,7 @@ public class SyncCallback<T> implements FutureCallback<T> {
 	private T result;
 	private RuntimeException runtimeException;
 	private NotificationHubsException nhException; 
-	private CountDownLatch waitLatch = new CountDownLatch(1);
+	private final CountDownLatch waitLatch = new CountDownLatch(1);
 	    
     public T getResult() throws NotificationHubsException { 
     	try {
@@ -17,12 +21,15 @@ public class SyncCallback<T> implements FutureCallback<T> {
 			throw new RuntimeException(e);
 		}
     	
-    	if(this.runtimeException != null)	
-    		throw this.runtimeException;
+    	if (this.runtimeException != null) {
+			throw this.runtimeException;
+		}
+
     	
-    	if(this.nhException !=null )
-    		throw this.nhException;
-    	
+    	if (this.nhException != null) {
+			throw this.nhException;
+		}
+
     	return result; 
     }
     
@@ -43,8 +50,7 @@ public class SyncCallback<T> implements FutureCallback<T> {
 		
 		this.waitLatch.countDown();
     }
-	
-    
+
 	@Override
     public void cancelled() {
 		runtimeException = new RuntimeException("Operation was cancelled.");      

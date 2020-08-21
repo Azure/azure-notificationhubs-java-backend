@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 import java.io.IOException;
@@ -37,19 +41,23 @@ import org.apache.http.entity.mime.content.StringBody;
 import com.google.gson.GsonBuilder;
 /**
  * 
- * Class implementing the INotificationHub interface.
- *
+ * This class represents all actions that can be done on an Azure Notification Hub.
  */
-public class NotificationHub implements INotificationHub {
+public class NotificationHub implements NotificationHubClient {
 		
-	private static final String APIVERSION = "?api-version=2015-04";
+	private static final String API_VERSION = "?api-version=2020-06";
 	private static final String CONTENT_LOCATION_HEADER = "Location";
 	private static final String TRACKING_ID_HEADER = "TrackingId";
 	private String endpoint;
-	private String hubPath;
+	private final String hubPath;
 	private String SasKeyName;
-	private String SasKeyValue;	
-	
+	private String SasKeyValue;
+
+	/**
+	 * Creates a new instance of the notification hub with hub path and connection string.
+	 * @param connectionString The connection string from the access policy.
+	 * @param hubPath The path of the notification hub.
+	 */
 	public NotificationHub(String connectionString, String hubPath) {
 		this.hubPath = hubPath;
 
@@ -58,13 +66,13 @@ public class NotificationHub implements INotificationHub {
 			throw new RuntimeException("Error parsing connection string: "
 					+ connectionString);
 
-		for (int i = 0; i < parts.length; i++) {
-			if (parts[i].startsWith("Endpoint")) {
-				this.endpoint = "https" + parts[i].substring(11);
-			} else if (parts[i].startsWith("SharedAccessKeyName")) {
-				this.SasKeyName = parts[i].substring(20);
-			} else if (parts[i].startsWith("SharedAccessKey")) {
-				this.SasKeyValue = parts[i].substring(16);
+		for (String part : parts) {
+			if (part.startsWith("Endpoint")) {
+				this.endpoint = "https" + part.substring(11);
+			} else if (part.startsWith("SharedAccessKeyName")) {
+				this.SasKeyName = part.substring(20);
+			} else if (part.startsWith("SharedAccessKey")) {
+				this.SasKeyValue = part.substring(16);
 			}
 		}
 	}
@@ -72,7 +80,7 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public void createRegistrationAsync(Registration registration, final FutureCallback<Registration> callback){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/registrations"	+ APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/registrations"	+ API_VERSION);
 			final HttpPost post = new HttpPost(uri);
 			post.setHeader("Authorization", generateSasToken(uri));
 			
@@ -120,7 +128,7 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public void createRegistrationIdAsync(final FutureCallback<String> callback){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/registrationids"+ APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/registrationids"+ API_VERSION);
 			final HttpPost post = new HttpPost(uri);
 			post.setHeader("Authorization", generateSasToken(uri));
 			
@@ -169,7 +177,7 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public void updateRegistrationAsync(Registration registration, final FutureCallback<Registration> callback){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + API_VERSION);
 			final HttpPut put = new HttpPut(uri);
 			put.setHeader("Authorization", generateSasToken(uri));
 			put.setHeader("If-Match", registration.getEtag() == null ? "*"	: "W/\"" + registration.getEtag() + "\"");
@@ -215,7 +223,7 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public void upsertRegistrationAsync(Registration registration, final FutureCallback<Registration> callback){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + API_VERSION);
 			final HttpPut put = new HttpPut(uri);
 			put.setHeader("Authorization", generateSasToken(uri));
 			put.setEntity(new StringEntity(registration.getXml(), ContentType.APPLICATION_ATOM_XML));
@@ -272,7 +280,7 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public void deleteRegistrationAsync(String registrationId, final FutureCallback<Object> callback){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + API_VERSION);
 			final HttpDelete delete = new HttpDelete(uri);
 			delete.setHeader("Authorization", generateSasToken(uri));
 			delete.setHeader("If-Match", "*");
@@ -317,7 +325,7 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public void getRegistrationAsync(String registrationId, final FutureCallback<Registration> callback){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + API_VERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
 			
@@ -359,8 +367,13 @@ public class NotificationHub implements INotificationHub {
 	}
 
 	@Override
+	public void getRegistrationsAsync(FutureCallback<CollectionResult> callback) {
+		getRegistrationsAsync(0, null, callback);
+	}
+
+	@Override
 	public void getRegistrationsAsync(int top, String continuationToken, final FutureCallback<CollectionResult> callback) {
-		String queryUri = endpoint + hubPath + "/registrations" + APIVERSION + getQueryString(top, continuationToken);
+		String queryUri = endpoint + hubPath + "/registrations" + API_VERSION + getQueryString(top, continuationToken);
 		retrieveRegistrationCollectionAsync(queryUri, callback);
 	}
 	
@@ -379,7 +392,7 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public void getRegistrationsByTagAsync(String tag, int top,	String continuationToken, final FutureCallback<CollectionResult> callback) {
 		String queryUri = endpoint + hubPath + "/tags/" + tag
-				+ "/registrations" + APIVERSION
+				+ "/registrations" + API_VERSION
 				+ getQueryString(top, continuationToken);
 		retrieveRegistrationCollectionAsync(queryUri, callback);
 	}
@@ -408,7 +421,7 @@ public class NotificationHub implements INotificationHub {
 		String queryUri = null;
 		try {
 			String channelQuery = URLEncoder.encode("ChannelUri eq '" + channel	+ "'", "UTF-8");
-			queryUri = endpoint + hubPath + "/registrations" + APIVERSION
+			queryUri = endpoint + hubPath + "/registrations" + API_VERSION
 					+ "&$filter=" + channelQuery
 					+ getQueryString(top, continuationToken);
 		} catch (UnsupportedEncodingException e) {
@@ -563,7 +576,7 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public void scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime, final FutureCallback<NotificationOutcome> callback){
 		try {
-			URI uri = new URI(endpoint + hubPath + (scheduledTime == null ? "/messages" : "/schedulednotifications") + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + (scheduledTime == null ? "/messages" : "/schedulednotifications") + API_VERSION);
 			final HttpPost post = new HttpPost(uri);
 			final String trackingId = java.util.UUID.randomUUID().toString();
 			post.setHeader("Authorization", generateSasToken(uri));
@@ -645,7 +658,7 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public void cancelScheduledNotificationAsync(String notificationId,	final FutureCallback<Object> callback) {
 		try {
-			URI uri = new URI(endpoint + hubPath + "/schedulednotifications/" + notificationId + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/schedulednotifications/" + notificationId + API_VERSION);
 			final HttpDelete delete = new HttpDelete(uri);
 			delete.setHeader("Authorization", generateSasToken(uri));
 								
@@ -697,7 +710,7 @@ public class NotificationHub implements INotificationHub {
 	public void sendDirectNotificationAsync(Notification notification,
 			String deviceHandle, final FutureCallback<NotificationOutcome> callback) {
 		try {
-			URI uri = new URI(endpoint + hubPath + "/messages" + APIVERSION + "&direct");
+			URI uri = new URI(endpoint + hubPath + "/messages" + API_VERSION + "&direct");
 			final HttpPost post = new HttpPost(uri);
 			final String trackingId = java.util.UUID.randomUUID().toString();
 			post.setHeader("ServiceBusNotification-DeviceHandle", deviceHandle);
@@ -755,7 +768,7 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public void sendDirectNotificationAsync(Notification notification, List<String> deviceHandles, final FutureCallback<NotificationOutcome> callback) {
 		try {
-			URI uri = new URI(endpoint + hubPath + "/messages/$batch" + APIVERSION + "&direct");
+			URI uri = new URI(endpoint + hubPath + "/messages/$batch" + API_VERSION + "&direct");
 			final HttpPost post = new HttpPost(uri);
 			final String trackingId = java.util.UUID.randomUUID().toString();
 			post.setHeader("Authorization", generateSasToken(uri));
@@ -839,7 +852,7 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public void getNotificationTelemetryAsync(String notificationId, final FutureCallback<NotificationTelemetry> callback) {
 		try {
-			URI uri = new URI(endpoint + hubPath + "/messages/"	+ notificationId + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/messages/"	+ notificationId + API_VERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
 			
@@ -876,7 +889,7 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public void createOrUpdateInstallationAsync(Installation installation, final FutureCallback<Object> callback){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/installations/" + installation.getInstallationId() + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/installations/" + installation.getInstallationId() + API_VERSION);
 			final HttpPut put = new HttpPut(uri);
 			put.setHeader("Authorization", generateSasToken(uri));
 						
@@ -947,7 +960,7 @@ public class NotificationHub implements INotificationHub {
 
 	private void patchInstallationInternalAsync(String installationId, String operationsJson, final FutureCallback<Object> callback){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
 			final HttpPatch patch = new HttpPatch(uri);
 			patch.setHeader("Authorization", generateSasToken(uri));
 						
@@ -988,7 +1001,7 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public void deleteInstallationAsync(String installationId, final FutureCallback<Object> callback){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
 			final HttpDelete delete = new HttpDelete(uri);
 			delete.setHeader("Authorization", generateSasToken(uri));
 			
@@ -1032,7 +1045,7 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public void getInstallationAsync(String installationId, final FutureCallback<Installation> callback){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
 			
@@ -1076,7 +1089,7 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public void submitNotificationHubJobAsync(NotificationHubJob job, final FutureCallback<NotificationHubJob> callback){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/jobs" + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/jobs" + API_VERSION);
 			final HttpPost post = new HttpPost(uri);
 			post.setHeader("Authorization", generateSasToken(uri));
 			
@@ -1124,7 +1137,7 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public void getNotificationHubJobAsync(String jobId, final FutureCallback<NotificationHubJob> callback){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/jobs/"	+ jobId + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/jobs/"	+ jobId + API_VERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
 			
@@ -1168,7 +1181,7 @@ public class NotificationHub implements INotificationHub {
 	@Override
 	public void getAllNotificationHubJobsAsync(final FutureCallback<List<NotificationHubJob>> callback){
 		try {
-			URI uri = new URI(endpoint + hubPath + "/jobs" + APIVERSION);
+			URI uri = new URI(endpoint + hubPath + "/jobs" + API_VERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader("Authorization", generateSasToken(uri));
 			

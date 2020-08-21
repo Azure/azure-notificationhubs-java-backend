@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.windowsazure</groupId>
 	<artifactId>Notification-Hubs-java-sdk</artifactId>
-	<version>0.1.0</version>
+	<version>0.3.0</version>
 	<name>Windows Azure Notification Hubs - Java REST wrapper</name>
 	<build>
 		<sourceDirectory>src</sourceDirectory>

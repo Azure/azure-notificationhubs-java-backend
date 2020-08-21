@@ -12,7 +12,7 @@ public abstract class PnsCredential {
 	private static final String PROPERTY_END="</Value></Property>";
 	private static final String PROPERTIES_END="</Properties>";
 	
-    public static void setupDigister(Digester digester){
+    public static void setupDigester(Digester digester){
 		digester.addCallMethod("*/Property", "setProperty",2);
 		digester.addCallParam("*/Name", 0);
 		digester.addCallParam("*/Value", 1);
