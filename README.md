@@ -62,10 +62,10 @@ namespaceManager.createNotificationHubAsync(hub, new FutureCallback<Notification
 
 By default, the Azure Notification Hubs SDK for Java by default does not have any retry behavior.  You can add this behavior to the SDK by introducing libraries such as [Failsafe](https://jodah.net/failsafe/) or reactive libraries such as RxJava or Reactor.  
 
-The SDK will throw a `NotificationHubsException` if there is anything but a successful HTTP operation such as 200 (OK)`, 201 (Created) or 204 (No Content).
+The SDK will throw a `NotificationHubsException` if there is anything but a successful HTTP operation such as 200 (OK), 201 (Created) or 204 (No Content).  The `NotificationHubsException` class has two properties worth noting, `getIsTransient` to determine whether the failure is transient, and `getRetryAfter` which gives the value from the `Retry-After` header which tells you in how many seconds to retry.
 
 The following HTTP status codes can be retried for the SDK:
-- 403 (Legacy Throttling)
+- 403 (Quota Exceeded)
 - 408 (RequestTimeout)
 - 429 (Throttling)
 - 500 (ServerError)
@@ -75,23 +75,14 @@ The following HTTP status codes can be retried for the SDK:
 The following HTTP status codes should not be retried: 400 (Bad Request), 401 (Unauthorized), 404 (Not Found), 405 (Method Not Allowed) , 409 (Conflict), 410 (Gone), 412 (Precondition Failed), 413 (Request Entity Too Large).
 
 ```java
-private static bool canRetryOperation(int statusCode) {
-    return statusCode == 403 ||
-        statusCode == 408 ||
-        statusCode == 429 ||
-        statusCode == 500 ||
-        statusCode == 503 ||
-        statusCode == 504;
-}
-
 // Create an execution policy
 RetryPolicy<Installation> retryPolicy = new RetryPolicy<>()
     .handle(NotificationHubsException.class)
     .handleIf(error -> {
         NotificationHubsException ex = (NotificationHubsException)err;
-        return canRetryOperation(ex.getStatusCode());
+        return ex.getIsTransient();
     })
-    .withDelay(Duration.ofSeconds(1))
+    .withDelay(Duration.ofSeconds(5))
     .withMaxRetries(3);
 
 // Initialize installation

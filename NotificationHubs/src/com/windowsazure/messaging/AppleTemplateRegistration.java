@@ -34,8 +34,7 @@ public class AppleTemplateRegistration extends AppleRegistration {
 	 * @param deviceToken The APNS device token.
 	 * @param bodyTemplate The body template.
 	 */
-	public AppleTemplateRegistration(String registrationId, String deviceToken,
-									 String bodyTemplate) {
+	public AppleTemplateRegistration(String registrationId, String deviceToken, String bodyTemplate) {
 		super(registrationId, deviceToken);
 		this.bodyTemplate = bodyTemplate;
 	}
