@@ -12,7 +12,7 @@ import org.apache.http.entity.ContentType;
 /**
  * Class representing a generic notification.
  */
-public class Notification {
+public class Notification implements NativeNotification {
 
 	Map<String, String> headers = new HashMap<>();
 	String body;
@@ -220,7 +220,7 @@ public class Notification {
 	public static Notification createTemplateNotification(
 			Map<String, String> properties) {
 		Notification n = new Notification();
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append("{");
 		for (Iterator<String> iterator = properties.keySet().iterator(); iterator
 				.hasNext();) {

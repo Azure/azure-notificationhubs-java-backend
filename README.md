@@ -62,7 +62,7 @@ namespaceManager.createNotificationHubAsync(hub, new FutureCallback<Notification
 
 By default, the Azure Notification Hubs SDK for Java by default does not have any retry behavior.  You can add this behavior to the SDK by introducing libraries such as [Failsafe](https://jodah.net/failsafe/) or reactive libraries such as RxJava or Reactor.  
 
-The SDK will throw a `NotificationHubsException` if there is anything but a successful HTTP operation such as 200 (OK), 201 (Created) or 204 (No Content).  The `NotificationHubsException` class has two properties worth noting, `getIsTransient` to determine whether the failure is transient, and `getRetryAfter` which gives the value from the `Retry-After` header which tells you in how many seconds to retry.
+The SDK will throw a `NotificationHubsException` if there is anything but a successful HTTP operation such as 200 (OK), 201 (Created) or 204 (No Content).  The `NotificationHubsException` class has two properties worth noting, `isTransient` to determine whether the failure is transient, and `retryAfter` which gives the value from the `Retry-After` header which tells you in how many seconds to retry.
 
 The following HTTP status codes can be retried for the SDK:
 - 403 (Quota Exceeded)
@@ -80,7 +80,7 @@ RetryPolicy<Installation> retryPolicy = new RetryPolicy<>()
     .handle(NotificationHubsException.class)
     .handleIf(error -> {
         NotificationHubsException ex = (NotificationHubsException)err;
-        return ex.getIsTransient();
+        return ex.isTransient();
     })
     .withDelay(Duration.ofSeconds(5))
     .withMaxRetries(3);
@@ -116,7 +116,6 @@ hub = namespaceManager.createNotificationHub(hub)
 
 ```java	
 NotificationHubDescription hub = namespaceManager.getNotificationHub("hubname")
-
 ```	
 
 ### Update an Azure Notification Hub:

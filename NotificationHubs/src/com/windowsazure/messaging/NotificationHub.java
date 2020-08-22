@@ -605,7 +605,7 @@ public class NotificationHub implements NotificationHubClient {
                 post.setHeader("ServiceBusNotification-ScheduleTime", scheduledTimeHeader);
             }
 
-            if (tagExpression != null && !"".equals(tagExpression)) {
+            if (tagExpression != null && !tagExpression.isEmpty()) {
                 post.setHeader("ServiceBusNotification-Tags", tagExpression);
             }
 
