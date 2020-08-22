@@ -82,7 +82,8 @@ public class NotificationHub implements NotificationHubClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode));
                             return;
                         }
 
@@ -128,7 +129,8 @@ public class NotificationHub implements NotificationHubClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 201) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode));
                             return;
                         }
 
@@ -182,7 +184,8 @@ public class NotificationHub implements NotificationHubClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode));
                             return;
                         }
 
@@ -229,7 +232,8 @@ public class NotificationHub implements NotificationHubClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode));
                             return;
                         }
 
@@ -288,7 +292,8 @@ public class NotificationHub implements NotificationHubClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 200 && httpStatusCode != 404) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode));
                             return;
                         }
 
@@ -334,7 +339,8 @@ public class NotificationHub implements NotificationHubClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode));
                             return;
                         }
 
@@ -476,7 +482,8 @@ public class NotificationHub implements NotificationHubClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode));
                             return;
                         }
 
@@ -625,7 +632,8 @@ public class NotificationHub implements NotificationHubClient {
                                 msg = IOUtils.toString(response.getEntity().getContent());
                             }
                             String errorMessage = "Error: " + response.getStatusLine() + " body: " + msg;
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode, errorMessage));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode, errorMessage));
                             return;
                         }
 
@@ -687,7 +695,8 @@ public class NotificationHub implements NotificationHubClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 200 && httpStatusCode != 404) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode));
                             return;
                         }
 
@@ -758,7 +767,8 @@ public class NotificationHub implements NotificationHubClient {
                             }
 
                             String errorMessage = "Error: " + response.getStatusLine() + " body: " + msg;
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode, errorMessage));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode, errorMessage));
 
                             return;
                         }
@@ -832,7 +842,8 @@ public class NotificationHub implements NotificationHubClient {
                             }
 
                             String errorMessage = "Error: " + response.getStatusLine() + " body: " + msg;
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode, errorMessage));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode, errorMessage));
 
                             return;
                         }
@@ -888,7 +899,8 @@ public class NotificationHub implements NotificationHubClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode));
                             return;
                         }
 
@@ -931,7 +943,8 @@ public class NotificationHub implements NotificationHubClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode));
                             return;
                         }
 
@@ -1009,7 +1022,8 @@ public class NotificationHub implements NotificationHubClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode));
 
                             return;
                         }
@@ -1049,7 +1063,8 @@ public class NotificationHub implements NotificationHubClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 204) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode));
 
                             return;
                         }
@@ -1096,7 +1111,8 @@ public class NotificationHub implements NotificationHubClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode));
                             return;
                         }
 
@@ -1147,7 +1163,8 @@ public class NotificationHub implements NotificationHubClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 201) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode));
                             return;
                         }
 
@@ -1193,7 +1210,8 @@ public class NotificationHub implements NotificationHubClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode));
                             return;
                         }
 
@@ -1239,7 +1257,8 @@ public class NotificationHub implements NotificationHubClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                    httpStatusCode));
                             return;
                         }
 

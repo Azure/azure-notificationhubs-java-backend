@@ -24,7 +24,7 @@ public class TokenProvider {
             long expires = expiresOnDate / 1000;
             String toSign = targetUri + "\n" + expires;
 
-            // Get an HMAC SHA1  key from the raw key bytes
+            // Get an HMAC SHA1 key from the raw key bytes
             byte[] keyBytes = sasKeyValue.getBytes(StandardCharsets.UTF_8);
             SecretKeySpec signingKey = new SecretKeySpec(keyBytes, "HmacSHA256");
 
@@ -40,7 +40,7 @@ public class TokenProvider {
 
             // construct authorization string
             return "SharedAccessSignature sr=" + targetUri + "&sig=" + signature + "&se=" + expires + "&skn="
-                + sasKeyName;
+                    + sasKeyName;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

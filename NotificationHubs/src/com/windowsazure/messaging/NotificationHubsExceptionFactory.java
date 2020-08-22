@@ -17,16 +17,11 @@ import java.util.Optional;
 public class NotificationHubsExceptionFactory {
 
     static boolean isTransientStatusCode(int httpStatusCode) {
-        return httpStatusCode == 403 ||
-            httpStatusCode == 408 ||
-            httpStatusCode == 429 ||
-            httpStatusCode == 500 ||
-            httpStatusCode == 503 ||
-            httpStatusCode == 504;
+        return httpStatusCode == 403 || httpStatusCode == 408 || httpStatusCode == 429 || httpStatusCode == 500
+                || httpStatusCode == 503 || httpStatusCode == 504;
     }
 
-    static Optional<Duration> parseRetryAfter(HttpResponse response)
-    {
+    static Optional<Duration> parseRetryAfter(HttpResponse response) {
         Header retryAfter = response.getFirstHeader(HttpHeaders.RETRY_AFTER);
         if (retryAfter == null) {
             return Optional.empty();
@@ -39,9 +34,9 @@ public class NotificationHubsExceptionFactory {
         try {
             long retryAfterSeconds = Long.parseLong(retryAfterValue);
             return Optional.of(Duration.ofSeconds(retryAfterSeconds));
-        }
-        catch (NumberFormatException e) {
-            throw new UnsupportedOperationException(String.format("\"%s\" must be an integer number of seconds", retryAfterValue));
+        } catch (NumberFormatException e) {
+            throw new UnsupportedOperationException(
+                    String.format("\"%s\" must be an integer number of seconds", retryAfterValue));
         }
     }
 
@@ -52,17 +47,20 @@ public class NotificationHubsExceptionFactory {
         return "Error: " + response.getStatusLine() + " - " + body;
     }
 
-    public static NotificationHubsException createNotificationHubException(HttpResponse response, int httpStatusCode) throws IOException {
+    public static NotificationHubsException createNotificationHubException(HttpResponse response, int httpStatusCode)
+            throws IOException {
         Optional<Duration> retryAfter = parseRetryAfter(response);
         boolean isTransient = isTransientStatusCode(httpStatusCode);
         if (retryAfter.isPresent()) {
-            return new NotificationHubsException(getErrorString(response), httpStatusCode, isTransient, retryAfter.get());
+            return new NotificationHubsException(getErrorString(response), httpStatusCode, isTransient,
+                    retryAfter.get());
         } else {
             return new NotificationHubsException(getErrorString(response), httpStatusCode, isTransient);
         }
     }
 
-    public static NotificationHubsException createNotificationHubException(HttpResponse response, int httpStatusCode, String message) throws IOException {
+    public static NotificationHubsException createNotificationHubException(HttpResponse response, int httpStatusCode,
+            String message) throws IOException {
         Optional<Duration> retryAfter = parseRetryAfter(response);
         boolean isTransient = isTransientStatusCode(httpStatusCode);
         if (retryAfter.isPresent()) {
