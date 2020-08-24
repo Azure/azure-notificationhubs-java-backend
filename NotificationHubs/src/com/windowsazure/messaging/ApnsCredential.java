@@ -12,9 +12,24 @@ import java.util.List;
  * This represents a set of APNS credentials.
  */
 public final class ApnsCredential extends PnsCredential {
+    /**
+     * The production endpoint for APNS V1 send operations.  This is the current default.
+     */
     public static final String PROD_ENDPOINT = "gateway.push.apple.com";
+
+    /**
+     * The sandbox endpoint for APNS V1 operations.
+     */
     public static final String SANDBOX_ENDPOINT = "gateway.sandbox.push.apple.com";
+
+    /**
+     * The production endpoint for APNS V2 operations.
+     */
     public static final String APNS2_PROD_ENDPOINT = "https://api.push.apple.com:443/3/device";
+
+    /**
+     * The development endpoint for APNS V2 operations.
+     */
     public static final String APNS2_DEV_ENDPOINT = "https://api.development.push.apple.com:443/3/device";
 
     private String endpoint;

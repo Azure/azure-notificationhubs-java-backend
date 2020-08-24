@@ -18,7 +18,7 @@ public class CollectionResult {
      * Creates a new collection result.
      */
     public CollectionResult() {
-        // TODO Auto-generated constructor stub
+
     }
 
     /**
