@@ -12,7 +12,7 @@ import org.apache.http.entity.ContentType;
 /**
  * Class representing a generic notification.
  */
-public class Notification implements NativeNotification {
+public class Notification {
 
     Map<String, String> headers = new HashMap<>();
     String body;
