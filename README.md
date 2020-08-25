@@ -192,8 +192,8 @@ A registration associates the Platform Notification Service (PNS) handle for a d
 
 ```java
 WindowsRegistration reg = new WindowsRegistration(new URI(CHANNELURI));
-reg.getTags().add("myTag");
-reg.getTags().add("myOtherTag");	
+reg.addTag("platform_uwp");
+reg.addTag("os_windows10");	
 Registration created = hub.createRegistrationAsync(reg);
 ```
 
@@ -201,8 +201,8 @@ Registration created = hub.createRegistrationAsync(reg);
 
 ```java
 AppleRegistration reg = new AppleRegistration(DEVICETOKEN);
-reg.getTags().add("myTag");
-reg.getTags().add("myOtherTag");
+reg.addTag("platform_ios");
+reg.addTag("os_tvos");
 Registration created = hub.createRegistrationAsync(reg);
 ```
 
@@ -212,7 +212,7 @@ Analogous for Android (GCM), Windows Phone (MPNS), and Kindle Fire (ADM).
 
 ```java
 WindowsTemplateRegistration reg = new WindowsTemplateRegistration(new URI(CHANNELURI), WNSBODYTEMPLATE);
-reg.getHeaders().put("X-WNS-Type", "wns/toast");
+reg.addHeader("X-WNS-Type", "wns/toast");
 Registration created = hub.createRegistration(reg);
 ```
 
@@ -253,7 +253,7 @@ List<Registration> registrations = hub.getRegistrations();
 ### Get Registrations With a Given Tag:
 
 ```java
-List<Registration> registrations = hub.getRegistrationsByTag("myTag");
+List<Registration> registrations = hub.getRegistrationsByTag("platform_ios");
 ```
 
 ### Get Registrations By Channel:
@@ -276,12 +276,12 @@ NotificationOutcome outcome = hub.sendNotification(n);
 
 // send to tags	
 Set<String> tags = new HashSet<String>();
-tags.add("boo");
-tags.add("foo");
+tags.add("platform_ios");
+tags.add("platform_android");
 hub.sendNotification(n, tags);
 
 // send to tag expression		
-NotificationOutcome outcome = hub.sendNotification(n, "foo && ! bar");
+NotificationOutcome outcome = hub.sendNotification(n, "platform_ios && ! platform_android");
 ```
 
 ### Send an Apple Push Notification:
