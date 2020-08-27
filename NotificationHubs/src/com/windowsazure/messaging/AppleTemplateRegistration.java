@@ -197,8 +197,10 @@ public class AppleTemplateRegistration extends AppleRegistration {
                 buf.append(key).append("</Header><Value>");
                 buf.append(headers.get(key)).append("</Value></ApnsHeader>");
             }
+
+            buf.append("</ApnsHeaders>");
         }
-        buf.append("</ApnsHeaders>");
+
         return buf.toString();
     }
 

@@ -4,14 +4,15 @@
 
 package com.windowsazure.messaging;
 
+import org.apache.commons.digester3.Digester;
+import org.xml.sax.SAXException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.digester3.Digester;
-import org.xml.sax.SAXException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This class represents the notification telemetry.
@@ -35,17 +36,11 @@ public class NotificationTelemetry {
     private Map<String, Integer> baiduOutcomeCounts;
     private String pnsErrorDetailsUri;
 
-    private static final ThreadLocal<Digester> parser;
+    private static final AtomicReference<Digester> parser = new AtomicReference<>();
 
     static {
-        parser = new ThreadLocal<Digester>() {
-            @Override
-            protected Digester initialValue() {
-                Digester instance = new Digester();
-                setupParser(instance);
-                return instance;
-            }
-        };
+        parser.set(new Digester());
+        setupParser(parser.get());
     }
 
     /**
@@ -408,43 +403,43 @@ public class NotificationTelemetry {
         digester.addCallParam("*/PnsErrorDetailsUri", 0);
 
         digester.addObjectCreate("*/ApnsOutcomeCounts", HashMap.class);
-        digester.addCallMethod("*/Outcome", "put", 2, new Class[] { String.class, Integer.class });
+        digester.addCallMethod("*/Outcome", "put", 2, new Class[]{String.class, Integer.class});
         digester.addCallParam("*/Name", 0);
         digester.addCallParam("*/Count", 1);
         digester.addSetNext("*/ApnsOutcomeCounts", "setApnsOutcomeCounts", Map.class.getName());
 
         digester.addObjectCreate("*/MpnsOutcomeCounts", HashMap.class);
-        digester.addCallMethod("*/Outcome", "put", 2, new Class[] { String.class, Integer.class });
+        digester.addCallMethod("*/Outcome", "put", 2, new Class[]{String.class, Integer.class});
         digester.addCallParam("*/Name", 0);
         digester.addCallParam("*/Count", 1);
         digester.addSetNext("*/MpnsOutcomeCounts", "setMpnsOutcomeCounts", Map.class.getName());
 
         digester.addObjectCreate("*/WnsOutcomeCounts", HashMap.class);
-        digester.addCallMethod("*/Outcome", "put", 2, new Class[] { String.class, Integer.class });
+        digester.addCallMethod("*/Outcome", "put", 2, new Class[]{String.class, Integer.class});
         digester.addCallParam("*/Name", 0);
         digester.addCallParam("*/Count", 1);
         digester.addSetNext("*/WnsOutcomeCounts", "setWnsOutcomeCounts", Map.class.getName());
 
         digester.addObjectCreate("*/GcmOutcomeCounts", HashMap.class);
-        digester.addCallMethod("*/Outcome", "put", 2, new Class[] { String.class, Integer.class });
+        digester.addCallMethod("*/Outcome", "put", 2, new Class[]{String.class, Integer.class});
         digester.addCallParam("*/Name", 0);
         digester.addCallParam("*/Count", 1);
         digester.addSetNext("*/GcmOutcomeCounts", "setGcmOutcomeCounts", Map.class.getName());
 
         digester.addObjectCreate("*/FcmOutcomeCounts", HashMap.class);
-        digester.addCallMethod("*/Outcome", "put", 2, new Class[] { String.class, Integer.class });
+        digester.addCallMethod("*/Outcome", "put", 2, new Class[]{String.class, Integer.class});
         digester.addCallParam("*/Name", 0);
         digester.addCallParam("*/Count", 1);
         digester.addSetNext("*/FcmOutcomeCounts", "setFcmOutcomeCounts", Map.class.getName());
 
         digester.addObjectCreate("*/AdmOutcomeCounts", HashMap.class);
-        digester.addCallMethod("*/Outcome", "put", 2, new Class[] { String.class, Integer.class });
+        digester.addCallMethod("*/Outcome", "put", 2, new Class[]{String.class, Integer.class});
         digester.addCallParam("*/Name", 0);
         digester.addCallParam("*/Count", 1);
         digester.addSetNext("*/AdmOutcomeCounts", "setAdmOutcomeCounts", Map.class.getName());
 
         digester.addObjectCreate("*/BaiduOutcomeCounts", HashMap.class);
-        digester.addCallMethod("*/Outcome", "put", 2, new Class[] { String.class, Integer.class });
+        digester.addCallMethod("*/Outcome", "put", 2, new Class[]{String.class, Integer.class});
         digester.addCallParam("*/Name", 0);
         digester.addCallParam("*/Count", 1);
         digester.addSetNext("*/BaiduOutcomeCounts", "setBaiduOutcomeCounts", Map.class.getName());

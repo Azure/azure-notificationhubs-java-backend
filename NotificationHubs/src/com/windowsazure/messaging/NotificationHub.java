@@ -140,6 +140,8 @@ public class NotificationHub implements NotificationHubClient {
                         if (m.matches()) {
                             String id = m.group(2);
                             callback.completed(id);
+                        } else {
+                            callback.failed(new RuntimeException("Invalid registration data returned"));
                         }
                     } catch (Exception e) {
                         callback.failed(e);

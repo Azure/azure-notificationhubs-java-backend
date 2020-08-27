@@ -23,7 +23,7 @@ public final class WindowsCredential extends PnsCredential {
     }
 
     /**
-     * Creates a WNS credential with package SDI and secret key.
+     * Creates a WNS credential with package SID and secret key.
      *
      * @param packageSid The package SID for the WNS credentials.
      * @param secretKey  The secret key for the WNS credentials.
@@ -44,9 +44,9 @@ public final class WindowsCredential extends PnsCredential {
     }
 
     /**
-     * Sets the package SDI for the WNS credentials.
+     * Sets the package SID for the WNS credentials.
      *
-     * @param packageSid The package SDI for the WNS credentials.
+     * @param packageSid The package SID for the WNS credentials.
      */
     public void setPackageSid(String packageSid) {
         this.packageSid = packageSid;
