@@ -58,6 +58,6 @@ public final class FcmCredential extends PnsCredential {
 
     @Override
     public String getRootTagName() {
-        return "GcmCredential"; // TODO rename to FcmCredential when new version of backend will be released
+        return "GcmCredential";
     }
 }

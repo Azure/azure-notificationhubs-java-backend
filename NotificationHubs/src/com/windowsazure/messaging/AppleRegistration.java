@@ -70,17 +70,21 @@ public class AppleRegistration extends Registration {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (!super.equals(obj))
+        }
+        if (!super.equals(obj)) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         AppleRegistration other = (AppleRegistration) obj;
         if (deviceToken == null) {
             return other.deviceToken == null;
-        } else
+        } else {
             return deviceToken.equals(other.deviceToken);
+        }
     }
 
     @Override

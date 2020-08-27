@@ -35,6 +35,7 @@ public final class ApnsCredential extends PnsCredential {
     private String endpoint;
     private String apnsCertificate;
     private String certificateKey;
+    private String thumbprint;
     private String token;
     private String keyId;
     private String appName;
@@ -76,9 +77,38 @@ public final class ApnsCredential extends PnsCredential {
      */
     public ApnsCredential(String apnsCertificate, String certificateKey, String endpoint) {
         super();
-        this.setApnsCertificate(apnsCertificate);
-        this.setCertificateKey(certificateKey);
-        this.setEndpoint(endpoint);
+        this.apnsCertificate = apnsCertificate;
+        this.certificateKey = certificateKey;
+        this.endpoint = endpoint;
+    }
+
+    /**
+     * Creates an APNS credential with token, key ID, app ID and app name.
+     *
+     * @param token   The APNS token from the P8 file.
+     * @param keyId   The push key ID.
+     * @param appId   The app ID.
+     * @param appName The app name.
+     */
+    public ApnsCredential(String token, String keyId, String appId, String appName) {
+        this(token, keyId, appId, appName, PROD_ENDPOINT);
+    }
+
+    /**
+     * Creates an APNS credential with token, key ID, app ID and app name.
+     *
+     * @param token    The APNS token from the P8 file.
+     * @param keyId    The push key ID.
+     * @param appId    The app ID.
+     * @param appName  The app name.
+     * @param endpoint The API endpoint
+     */
+    public ApnsCredential(String token, String keyId, String appId, String appName, String endpoint) {
+        this.token = token;
+        this.keyId = keyId;
+        this.appId = appId;
+        this.appName = appName;
+        this.endpoint = endpoint;
     }
 
     /**
@@ -115,6 +145,24 @@ public final class ApnsCredential extends PnsCredential {
      */
     public void setApnsCertificate(String apnsCertificate) {
         this.apnsCertificate = apnsCertificate;
+    }
+
+    /**
+     * Gets the certificate thumbprint.
+     *
+     * @return The certificate thumbprint.
+     */
+    public String getThumbprint() {
+        return this.thumbprint;
+    }
+
+    /**
+     * Sets the certificate Thumbprint
+     *
+     * @param value The certificate thumbprint.
+     */
+    public void setThumbprint(String value) {
+        this.thumbprint = value;
     }
 
     /**
@@ -213,6 +261,11 @@ public final class ApnsCredential extends PnsCredential {
         result.add(new SimpleEntry<>("Endpoint", getEndpoint()));
         result.add(new SimpleEntry<>("ApnsCertificate", getApnsCertificate()));
         result.add(new SimpleEntry<>("CertificateKey", getCertificateKey()));
+        result.add(new SimpleEntry<>("Thumbprint", getThumbprint()));
+        result.add(new SimpleEntry<>("Token", getToken()));
+        result.add(new SimpleEntry<>("KeyId", getKeyId()));
+        result.add(new SimpleEntry<>("AppName", getAppName()));
+        result.add(new SimpleEntry<>("AppId", getAppId()));
         return result;
     }
 

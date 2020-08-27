@@ -19,6 +19,6 @@ A clear explanation of why is this not a bug or a feature request?
  - Version of the Library used
  
  **Information Checklist**
- Kindly make sure that you have added all the following information above and checkoff the required fields otherwise we will treat the issuer as an incomplete report
+ Kindly make sure that you have added all the following information above and checkoff the required fields otherwise we will treat the issue as an incomplete report.  Please do not provide any private information in this bug report.
 - [ ] Query Added
 - [ ] Setup information Added

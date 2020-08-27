@@ -38,7 +38,7 @@ public class InstallationTemplate {
      * @param body The body for the installation template.
      */
     public InstallationTemplate(String body) {
-        this(body, (String) null);
+        this(body, null);
     }
 
     /**
@@ -47,7 +47,7 @@ public class InstallationTemplate {
      * @param body The installation template body
      * @param tags The installation template tags .
      */
-    public InstallationTemplate(String body, String... tags) {
+    public InstallationTemplate(String body, List<String> tags) {
         this.body = body;
         if (tags != null) {
             for (String tag : tags) {

@@ -8,7 +8,6 @@ package com.windowsazure.messaging;
  * A class which represents a Firebase Cloud Messaging Template Registration
  */
 public class FcmTemplateRegistration extends FcmRegistration {
-    // TODO replace content to FCM* when new version of backend will be released
     private static final String FCM_TEMPLATE_REGISTRATION1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><entry xmlns=\"http://www.w3.org/2005/Atom\"><content type=\"application/xml\"><GcmTemplateRegistrationDescription xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/netservices/2010/10/servicebus/connect\">";
     private static final String FCM_TEMPLATE_REGISTRATION2 = "<GcmRegistrationId>";
     private static final String FCM_TEMPLATE_REGISTRATION3 = "</GcmRegistrationId><BodyTemplate><![CDATA[";
@@ -85,8 +84,9 @@ public class FcmTemplateRegistration extends FcmRegistration {
         FcmTemplateRegistration other = (FcmTemplateRegistration) obj;
         if (bodyTemplate == null) {
             return other.bodyTemplate == null;
-        } else
+        } else {
             return bodyTemplate.equals(other.bodyTemplate);
+        }
     }
 
     @Override

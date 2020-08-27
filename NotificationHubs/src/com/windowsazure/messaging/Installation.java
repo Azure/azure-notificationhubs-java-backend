@@ -64,7 +64,7 @@ public class Installation {
     }
 
     public Installation(String installationId, NotificationPlatform platform, String pushChannel, String userId,
-            String... tags) {
+                        String... tags) {
         // Validate that this is not FCM
         validateNotificationPlatform(platform);
 
@@ -82,8 +82,7 @@ public class Installation {
     /**
      * Validates that the platform is not FCM. Currently Notification Hubs supports
      * FCM Legacy as NotificationPlatform.Gcm Full support for FCM is not currently
-     * supported. See
-     * https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-gcm-to-fcm
+     * supported. See https://aka.ms/AA9dpaz
      *
      * @param notificationPlatform The notification platform to verify that it is
      *                             not FCM.
@@ -91,7 +90,7 @@ public class Installation {
     private static void validateNotificationPlatform(NotificationPlatform notificationPlatform) {
         if (notificationPlatform == NotificationPlatform.Fcm) {
             throw new RuntimeException(
-                    "FCM is currently not supported, use NotificationPlatform.Gcm which uses FCM Legacy Mode. See https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-gcm-to-fcm");
+                "FCM is currently not supported, use NotificationPlatform.Gcm which uses FCM Legacy Mode. See https://aka.ms/AA9dpaz");
         }
     }
 
@@ -162,8 +161,7 @@ public class Installation {
 
     /**
      * Sets the platform for the installation. Note that FCM is currently not
-     * supported, only GCM which is FCM Legacy. See
-     * https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-gcm-to-fcm
+     * supported, only GCM which is FCM Legacy. See https://aka.ms/AA9dpaz
      * for more details.
      *
      * @param platform The platform for the installation.

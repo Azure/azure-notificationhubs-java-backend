@@ -26,14 +26,12 @@ public enum NotificationPlatform {
     @SerializedName("mpns")
     Mpns,
     /**
-     * The FCM Legacy Platform, see
-     * https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-gcm-to-fcm
+     * The FCM Legacy Platform, see https://aka.ms/AA9dpaz
      */
     @SerializedName("gcm")
     Gcm,
     /**
-     * The FCM platform which is currently NOT supported, see
-     * https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-gcm-to-fcm
+     * The FCM platform which is currently NOT supported, see https://aka.ms/AA9dpaz
      */
     @SerializedName("fcm")
     Fcm,

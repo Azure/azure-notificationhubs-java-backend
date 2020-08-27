@@ -34,7 +34,7 @@ If applicable, add screenshots to help explain your problem.
 Add any other context about the problem here.
 
 **Information Checklist**
-Kindly make sure that you have added all the following information above and checkoff the required fields otherwise we will treat the issuer as an incomplete report
+Kindly make sure that you have added all the following information above and checkoff the required fields otherwise we will treat the issue as an incomplete report.  Please do not provide any private information in this bug report.
 - [ ] Bug Description Added
 - [ ] Repro Steps Added
 - [ ] Setup information Added

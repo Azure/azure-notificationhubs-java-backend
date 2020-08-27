@@ -122,6 +122,22 @@ public class AppleTemplateRegistration extends AppleRegistration {
         headers.put(name, value);
     }
 
+    /**
+     * Removes a header from the template registration.
+     *
+     * @param name The header name to remove.
+     */
+    public void removeHeader(String name) {
+        headers.remove(name);
+    }
+
+    /**
+     * Clears the template registration headers.
+     */
+    public void clearHeaders() {
+        headers.clear();
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -134,34 +150,42 @@ public class AppleTemplateRegistration extends AppleRegistration {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (!super.equals(obj))
+        }
+        if (!super.equals(obj)) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         AppleTemplateRegistration other = (AppleTemplateRegistration) obj;
         if (bodyTemplate == null) {
-            if (other.bodyTemplate != null)
+            if (other.bodyTemplate != null) {
                 return false;
-        } else if (!bodyTemplate.equals(other.bodyTemplate))
+            }
+        } else if (!bodyTemplate.equals(other.bodyTemplate)) {
             return false;
+        }
         if (expiry == null) {
-            if (other.expiry != null)
+            if (other.expiry != null) {
                 return false;
-        } else if (!expiry.equals(other.expiry))
+            }
+        } else if (!expiry.equals(other.expiry)) {
             return false;
+        }
         if (headers == null) {
             return other.headers == null;
-        } else
+        } else {
             return headers.equals(other.headers);
+        }
     }
 
     @Override
     public String getXml() {
         return APNS_TEMPLATE_REGISTRATION1 + getTagsXml() + APNS_TEMPLATE_REGISTRATION2 + deviceToken
-                + APNS_TEMPLATE_REGISTRATION3 + bodyTemplate + APNS_TEMPLATE_REGISTRATION4 + getExpiryXml()
-                + getHeadersXml() + APNS_TEMPLATE_REGISTRATION5;
+            + APNS_TEMPLATE_REGISTRATION3 + bodyTemplate + APNS_TEMPLATE_REGISTRATION4 + getExpiryXml()
+            + getHeadersXml() + APNS_TEMPLATE_REGISTRATION5;
     }
 
     private String getHeadersXml() {

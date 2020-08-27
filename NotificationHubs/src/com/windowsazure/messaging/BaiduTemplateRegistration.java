@@ -78,17 +78,21 @@ public class BaiduTemplateRegistration extends BaiduRegistration {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (!super.equals(obj))
+        }
+        if (!super.equals(obj)) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         BaiduTemplateRegistration other = (BaiduTemplateRegistration) obj;
         if (bodyTemplate == null) {
             return other.bodyTemplate == null;
-        } else
+        } else {
             return bodyTemplate.equals(other.bodyTemplate);
+        }
     }
 
     @Override

@@ -44,7 +44,7 @@ public final class AdmCredential extends PnsCredential {
     }
 
     /**
-     * Sets the ADm client ID.
+     * Sets the ADM client ID.
      *
      * @param clientId The ADM client ID.
      */
