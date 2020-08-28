@@ -84,7 +84,6 @@ public class Notification {
      * @return A native notification for APNS.
      */
     public static Notification createAppleNotification(String body) {
-
         Date now = new Date();
         Date tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
         return createAppleNotification(body, tomorrow);
@@ -99,16 +98,13 @@ public class Notification {
      * @return a native APNS notification
      */
     public static Notification createAppleNotification(String body, Map<String, String> headers) {
-        Notification n = new Notification();
-        n.body = body;
-        n.contentType = ContentType.APPLICATION_JSON;
-        n.headers = headers;
-        n.headers.put("ServiceBusNotification-Format", "apple");
-        return n;
+        Date now = new Date();
+        Date tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+        return createAppleNotification(body, tomorrow, headers);
     }
 
     /**
-     * Utility method to set up a native notification for APNs. Enabless to set the
+     * Utility method to set up a native notification for APNs. Enables to set the
      * expiry date of the notification for the APNs QoS.
      *
      * @param body   the body for the APNS notification.
@@ -117,6 +113,20 @@ public class Notification {
      * @return an APNS notification with expiration time.
      */
     public static Notification createAppleNotification(String body, Date expiry) {
+        return createAppleNotification(body, expiry, null);
+    }
+
+    /**
+     * Utility method to set up a native notification for APNs. Enables to set the
+     * expiry date of the notification for the APNs QoS.
+     *
+     * @param body   the body for the APNS notification.
+     * @param expiry the expiration date of this notification. A null value will be
+     *               interpreted as 0 seconds.
+     * @param headers the APNS headers
+     * @return an APNS notification with expiration time and headers.
+     */
+    public static Notification createAppleNotification(String body, Date expiry, Map<String, String> headers) {
         Notification n = new Notification();
         n.body = body;
         n.contentType = ContentType.APPLICATION_JSON;
@@ -129,6 +139,10 @@ public class Notification {
             String expiryString = formatter.format(expiry.getTime());
 
             n.headers.put("ServiceBusNotification-Apns-Expiry", expiryString);
+        }
+
+        if (headers != null) {
+            n.headers = headers;
         }
 
         return n;
@@ -195,6 +209,18 @@ public class Notification {
 
     /**
      * Utility method to set up a native notification for ADM.
+     * @deprecated use {@link #createAdmNotification(String)} instead.
+     *
+     * @param body The body for the ADM notification.
+     * @return an ADM notification with the given body.
+     */
+    @Deprecated
+    public static Notification createAdmNotifiation(String body) {
+        return createAdmNotification(body);
+    }
+
+    /**
+     * Utility method to set up a native notification for ADM.
      *
      * @param body The body for the ADM notification.
      * @return an ADM notification with the given body.
@@ -211,6 +237,18 @@ public class Notification {
 
     /**
      * Utility method to set up a native notification for Baidu PNS.
+     * @deprecated use {@link #createBaiduNotifiation(String)} instead.
+     *
+     * @param body the body for the Baidu notification
+     * @return a Baidu notification with the given body.
+     */
+    @Deprecated
+    public static Notification createBaiduNotifiation(String body) {
+        return createBaiduNotification(body);
+    }
+
+    /**
+     * Utility method to set up a native notification for Baidu PNS.
      *
      * @param body the body for the Baidu notification
      * @return a Baidu notification with the given body.
@@ -223,6 +261,20 @@ public class Notification {
         n.headers.put("ServiceBusNotification-Format", "baidu");
 
         return n;
+    }
+
+    /**
+     * Utility method to set up a native notification for MPNS. Sets the
+     * X-WindowsPhone-Target and X-NotificationClass headers based on the body
+     * provided. Raw notifications are not supported for MPNS.
+     * @deprecated use {@link #createMpnsNotification(String)} instead.
+     *
+     * @param body the body for the MPNS notification.
+     * @return an initialized MPNS notification
+     */
+    @Deprecated
+    public static Notification createMpnsNotifiation(String body) {
+        return createMpnsNotification(body);
     }
 
     /**
