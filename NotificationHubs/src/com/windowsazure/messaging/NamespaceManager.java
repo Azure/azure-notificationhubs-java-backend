@@ -148,22 +148,6 @@ public class NamespaceManager implements NamespaceManagerClient {
     @Override
     public void createNotificationHubAsync(NotificationHubDescription hubDescription,
             final FutureCallback<NotificationHubDescription> callback) {
-        createOrUpdateNotificationHubAsync(hubDescription, false, new FutureCallback<NotificationHubDescription>() {
-            @Override
-            public void completed(NotificationHubDescription result) {
-
-            }
-
-            @Override
-            public void failed(Exception ex) {
-
-            }
-
-            @Override
-            public void cancelled() {
-
-            }
-        });
         createOrUpdateNotificationHubAsync(hubDescription, false, callback);
     }
 

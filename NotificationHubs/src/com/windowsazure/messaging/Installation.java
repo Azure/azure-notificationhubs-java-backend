@@ -10,6 +10,7 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -49,7 +50,7 @@ public class Installation {
      * @param tags           The tags for the installation.
      */
     public Installation(String installationId, String... tags) {
-        this(installationId, null, null, null, tags);
+        this(installationId, null, null, tags);
     }
 
     /**
@@ -60,16 +61,14 @@ public class Installation {
      * @param pushChannel    The PNS specific channel for device.
      */
     public Installation(String installationId, NotificationPlatform platform, String pushChannel) {
-        this(installationId, platform, pushChannel, null, (String[]) null);
+        this(installationId, platform, pushChannel, (String[]) null);
     }
 
-    public Installation(String installationId, NotificationPlatform platform, String pushChannel, String userId,
-                        String... tags) {
+    public Installation(String installationId, NotificationPlatform platform, String pushChannel, String... tags) {
         // Validate that this is not FCM
         validateNotificationPlatform(platform);
 
         this.installationId = installationId;
-        this.userId = userId;
         this.platform = platform;
         this.pushChannel = pushChannel;
         if (tags != null) {
@@ -140,14 +139,13 @@ public class Installation {
     }
 
     /**
-     * Sets the expiration time for the installation in
-     * "yyyy-MM-dd'T'HH:mm:ss'.'SSS'Z'" format.
+     * Sets the expiration time for the installation.
      *
-     * @param expirationTime The expiration time in "yyyy-MM-dd'T'HH:mm:ss'.'SSS'Z'"
-     *                       format.
+     * @param expirationTime The expiration time for the installation.
      */
-    public void setExpirationTime(String expirationTime) {
-        this.expirationTime = expirationTime;
+    public void setExpirationTime(Date expirationTime) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.'SSS'Z'");
+        this.expirationTime = formatter.format(expirationTime);
     }
 
     /**

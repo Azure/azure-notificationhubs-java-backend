@@ -64,6 +64,19 @@ public class Notification {
     }
 
     /**
+     * @deprecated Typo in name, use createAppleNotification instead.
+     * Utility method to set up a native notification for APNs. An expiry Date of 1
+     * day is set by default.
+     *
+     * @param body the body for the Apple notification
+     * @return A native notification for APNS.
+     */
+    @Deprecated
+    public static Notification createAppleNotifiation(String body) {
+        return createAppleNotification(body);
+    }
+
+    /**
      * Utility method to set up a native notification for APNs. An expiry Date of 1
      * day is set by default.
      *
@@ -130,6 +143,19 @@ public class Notification {
      * @return a GCM notification with the body
      */
     @Deprecated
+    public static Notification createGcmNotifiation(String body) {
+        return createGcmNotification(body);
+    }
+
+    /**
+     * Utility method to set up a native notification for GCM.
+     *
+     * @deprecated use {@link #createFcmNotification(String)} instead.
+     *
+     * @param body the body for the GCM message.
+     * @return a GCM notification with the body
+     */
+    @Deprecated
     public static Notification createGcmNotification(String body) {
         Notification n = new Notification();
         n.body = body;
@@ -143,6 +169,19 @@ public class Notification {
     /**
      * Utility method to set up a native notification for FCM.
      *
+     * @deprecated use {@link #createFcmNotification(String)} instead.
+     *
+     * @param body the body for the FCM message.
+     * @return a FCM notification with the body
+     */
+    @Deprecated
+    public static Notification createFcmNotifiation(String body) {
+        return createFcmNotification(body);
+    }
+
+    /**
+     * Utility method to set up a native notification for FCM.
+     *
      * @param body the body for the FCM notification
      * @return an FCM notification
      */
@@ -150,8 +189,7 @@ public class Notification {
         Notification n = new Notification();
         n.body = body;
         n.contentType = ContentType.APPLICATION_JSON;
-        n.headers.put("ServiceBusNotification-Format", "gcm"); // TODO replace with "fcm" when new version of backend
-                                                               // will be released
+        n.headers.put("ServiceBusNotification-Format", "gcm");
         return n;
     }
 

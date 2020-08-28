@@ -6,9 +6,9 @@ This repository contains source code for the Java SDK for [Microsoft Azure Notif
 
 ### Note on FCM and GCM Support
 
-The Azure Notification Hubs SDK has support for Firebase Cloud Messaging (FCM) via the Legacy HTTP APIs which is compatible with GCM.  For registrations, use the `FirebaseRegistration` to create registrations, as the `GcmRegistration` class has been deprecated.  For more information, read the [Azure Notification Hubs and Google Firebase Cloud Messaging migration](https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-gcm-to-fcm)
+The Azure Notification Hubs SDK has support for Firebase Cloud Messaging (FCM) via the Legacy HTTP API which is compatible with GCM.  For registrations, use the `FirebaseRegistration` to create registrations, as the `GcmRegistration` class has been deprecated.  For more information, read the [Azure Notification Hubs and Google Firebase Cloud Messaging migration](https://aka.ms/AA9dpaz)
 
-For installations, use the `NotificationPlatform.Gcm` for all FCM registrations which use the legacy HTTP APIs.  Currently, we do not have full support for FCM and calling `NotificationPlatform.Fcm` will result in an exception.
+For installations, use the `NotificationPlatform.Gcm` for all FCM registrations which use the legacy HTTP API.  Currently, we do not have full support for FCM and calling `NotificationPlatform.Fcm` will result in an exception.
 
 ```java
 Installation i = new Installation();
