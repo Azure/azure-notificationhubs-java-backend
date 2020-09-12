@@ -36,6 +36,7 @@ public class NotificationHub implements NotificationHubClient {
     private static final String API_VERSION = "?api-version=2020-06";
     private static final String CONTENT_LOCATION_HEADER = "Location";
     private static final String TRACKING_ID_HEADER = "TrackingId";
+    private static final String USER_AGENT = "NHub/2020-06 (api-origin=JavaSDK;os=%s;os-version=%s)";
     private String endpoint;
     private final String hubPath;
     private String SasKeyName;
@@ -72,6 +73,7 @@ public class NotificationHub implements NotificationHubClient {
             URI uri = new URI(endpoint + hubPath + "/registrations" + API_VERSION);
             final HttpPost post = new HttpPost(uri);
             post.setHeader("Authorization", TokenProvider.generateSasToken(SasKeyName, SasKeyValue, uri));
+            post.setHeader("User-Agent", getUserAgent());
 
             StringEntity entity = new StringEntity(registration.getXml(), ContentType.APPLICATION_ATOM_XML);
             entity.setContentEncoding("utf-8");
@@ -123,6 +125,7 @@ public class NotificationHub implements NotificationHubClient {
             URI uri = new URI(endpoint + hubPath + "/registrationids" + API_VERSION);
             final HttpPost post = new HttpPost(uri);
             post.setHeader("Authorization", TokenProvider.generateSasToken(SasKeyName, SasKeyValue, uri));
+            post.setHeader("User-Agent", getUserAgent());
 
             HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
                 public void completed(final HttpResponse response) {
@@ -179,6 +182,8 @@ public class NotificationHub implements NotificationHubClient {
             final HttpPut put = new HttpPut(uri);
             put.setHeader("Authorization", TokenProvider.generateSasToken(SasKeyName, SasKeyValue, uri));
             put.setHeader("If-Match", registration.getEtag() == null ? "*" : "W/\"" + registration.getEtag() + "\"");
+            put.setHeader("User-Agent", getUserAgent());
+
             put.setEntity(new StringEntity(registration.getXml(), ContentType.APPLICATION_ATOM_XML));
 
             HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
@@ -227,6 +232,8 @@ public class NotificationHub implements NotificationHubClient {
             URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + API_VERSION);
             final HttpPut put = new HttpPut(uri);
             put.setHeader("Authorization", TokenProvider.generateSasToken(SasKeyName, SasKeyValue, uri));
+            put.setHeader("User-Agent", getUserAgent());
+
             put.setEntity(new StringEntity(registration.getXml(), ContentType.APPLICATION_ATOM_XML));
 
             HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
@@ -288,6 +295,7 @@ public class NotificationHub implements NotificationHubClient {
             final HttpDelete delete = new HttpDelete(uri);
             delete.setHeader("Authorization", TokenProvider.generateSasToken(SasKeyName, SasKeyValue, uri));
             delete.setHeader("If-Match", "*");
+            delete.setHeader("User-Agent", getUserAgent());
 
             HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
                 public void completed(final HttpResponse response) {
@@ -335,6 +343,7 @@ public class NotificationHub implements NotificationHubClient {
             URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + API_VERSION);
             final HttpGet get = new HttpGet(uri);
             get.setHeader("Authorization", TokenProvider.generateSasToken(SasKeyName, SasKeyValue, uri));
+            get.setHeader("User-Agent", getUserAgent());
 
             HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
                 public void completed(final HttpResponse response) {
@@ -465,10 +474,10 @@ public class NotificationHub implements NotificationHubClient {
     private String getQueryString(int top, String continuationToken) {
         StringBuilder buf = new StringBuilder();
         if (top > 0) {
-            buf.append("&$top=" + top);
+            buf.append("&$top=").append(top);
         }
         if (continuationToken != null) {
-            buf.append("&ContinuationToken=" + continuationToken);
+            buf.append("&ContinuationToken=").append(continuationToken);
         }
         return buf.toString();
     }
@@ -935,6 +944,7 @@ public class NotificationHub implements NotificationHubClient {
             URI uri = new URI(endpoint + hubPath + "/installations/" + installation.getInstallationId() + API_VERSION);
             final HttpPut put = new HttpPut(uri);
             put.setHeader("Authorization", TokenProvider.generateSasToken(SasKeyName, SasKeyValue, uri));
+            put.setHeader("User-Agent", getUserAgent());
 
             StringEntity entity = new StringEntity(installation.toJson(), ContentType.APPLICATION_JSON);
             entity.setContentEncoding("utf-8");
@@ -1014,6 +1024,7 @@ public class NotificationHub implements NotificationHubClient {
             URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
             final HttpPatch patch = new HttpPatch(uri);
             patch.setHeader("Authorization", TokenProvider.generateSasToken(SasKeyName, SasKeyValue, uri));
+            patch.setHeader("User-Agent", getUserAgent());
 
             StringEntity entity = new StringEntity(operationsJson, ContentType.APPLICATION_JSON);
             entity.setContentEncoding("utf-8");
@@ -1059,6 +1070,7 @@ public class NotificationHub implements NotificationHubClient {
             URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
             final HttpDelete delete = new HttpDelete(uri);
             delete.setHeader("Authorization", TokenProvider.generateSasToken(SasKeyName, SasKeyValue, uri));
+            delete.setHeader("User-Agent", getUserAgent());
 
             HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
                 public void completed(final HttpResponse response) {
@@ -1107,6 +1119,7 @@ public class NotificationHub implements NotificationHubClient {
             URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
             final HttpGet get = new HttpGet(uri);
             get.setHeader("Authorization", TokenProvider.generateSasToken(SasKeyName, SasKeyValue, uri));
+            get.setHeader("User-Agent", getUserAgent());
 
             HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
                 public void completed(final HttpResponse response) {
@@ -1155,6 +1168,7 @@ public class NotificationHub implements NotificationHubClient {
             URI uri = new URI(endpoint + hubPath + "/jobs" + API_VERSION);
             final HttpPost post = new HttpPost(uri);
             post.setHeader("Authorization", TokenProvider.generateSasToken(SasKeyName, SasKeyValue, uri));
+            post.setHeader("User-Agent", getUserAgent());
 
             StringEntity entity = new StringEntity(job.getXml(), ContentType.APPLICATION_ATOM_XML);
             entity.setContentEncoding("utf-8");
@@ -1206,6 +1220,7 @@ public class NotificationHub implements NotificationHubClient {
             URI uri = new URI(endpoint + hubPath + "/jobs/" + jobId + API_VERSION);
             final HttpGet get = new HttpGet(uri);
             get.setHeader("Authorization", TokenProvider.generateSasToken(SasKeyName, SasKeyValue, uri));
+            get.setHeader("User-Agent", getUserAgent());
 
             HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
                 public void completed(final HttpResponse response) {
@@ -1253,6 +1268,7 @@ public class NotificationHub implements NotificationHubClient {
             URI uri = new URI(endpoint + hubPath + "/jobs" + API_VERSION);
             final HttpGet get = new HttpGet(uri);
             get.setHeader("Authorization", TokenProvider.generateSasToken(SasKeyName, SasKeyValue, uri));
+            get.setHeader("User-Agent", getUserAgent());
 
             HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
                 public void completed(final HttpResponse response) {
@@ -1292,5 +1308,11 @@ public class NotificationHub implements NotificationHubClient {
         SyncCallback<List<NotificationHubJob>> callback = new SyncCallback<>();
         getAllNotificationHubJobsAsync(callback);
         return callback.getResult();
+    }
+
+    private static String getUserAgent() {
+        String os = System.getProperty("os.name");
+        String osVersion = System.getProperty("os.version");
+        return String.format(USER_AGENT, os, osVersion);
     }
 }
