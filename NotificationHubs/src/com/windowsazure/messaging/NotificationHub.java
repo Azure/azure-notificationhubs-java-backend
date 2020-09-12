@@ -21,6 +21,7 @@ import org.apache.http.entity.mime.content.StringBody;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -640,7 +641,7 @@ public class NotificationHub implements NotificationHubClient {
                         if (httpStatusCode != 201) {
                             String msg = "";
                             if (response.getEntity() != null && response.getEntity().getContent() != null) {
-                                msg = IOUtils.toString(response.getEntity().getContent());
+                                msg = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
                             }
                             String errorMessage = "Error: " + response.getStatusLine() + " body: " + msg;
                             callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
@@ -774,7 +775,7 @@ public class NotificationHub implements NotificationHubClient {
                         if (httpStatusCode != 201) {
                             String msg = "";
                             if (response.getEntity() != null && response.getEntity().getContent() != null) {
-                                msg = IOUtils.toString(response.getEntity().getContent());
+                                msg = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
                             }
 
                             String errorMessage = "Error: " + response.getStatusLine() + " body: " + msg;
@@ -849,7 +850,7 @@ public class NotificationHub implements NotificationHubClient {
                         if (httpStatusCode != 201) {
                             String msg = "";
                             if (response.getEntity() != null && response.getEntity().getContent() != null) {
-                                msg = IOUtils.toString(response.getEntity().getContent());
+                                msg = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
                             }
 
                             String errorMessage = "Error: " + response.getStatusLine() + " body: " + msg;
