@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 public class FcmTemplateRegistration extends FcmRegistration {
@@ -31,7 +35,7 @@ public class FcmTemplateRegistration extends FcmRegistration {
 	public void setBodyTemplate(String bodyTemplate) {
 		this.bodyTemplate = bodyTemplate;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

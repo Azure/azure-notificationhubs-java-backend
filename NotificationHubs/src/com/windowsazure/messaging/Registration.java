@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 import java.io.IOException;
@@ -22,10 +26,10 @@ public abstract class Registration implements Cloneable {
 	protected Set<String> tags = new HashSet<String>();
 	protected String etag;
 	protected Date expirationTime;
-	
+
 	private static final ThreadLocal<Digester> singleRegParser;
 	private static final ThreadLocal<Digester> multiRegParser;
-	
+
 	static {
 		singleRegParser = new ThreadLocal<Digester>(){
 			@Override protected Digester initialValue() {
@@ -34,7 +38,7 @@ public abstract class Registration implements Cloneable {
                 return instance;
              }
 		};
-		
+
 		multiRegParser = new ThreadLocal<Digester>(){
 			@Override protected Digester initialValue() {
 				Digester instance = new Digester();
@@ -47,13 +51,13 @@ public abstract class Registration implements Cloneable {
 
 	public Registration() {
 	}
-	
-	public Registration clone(){  
+
+	public Registration clone(){
 	    try {
 			return (Registration) super.clone();
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException(e);
-		}  
+		}
 	}
 
 	public Registration(String registrationId) {
@@ -112,7 +116,7 @@ public abstract class Registration implements Cloneable {
 			buf.append("</Tags>");
 		}
 		return buf.toString();
-	}	
+	}
 
 	public Date getExpirationTime() {
 		return expirationTime;
@@ -122,10 +126,10 @@ public abstract class Registration implements Cloneable {
 		this.expirationTime = expirationTime;
 	}
 
-	public void setExpirationTimeFromString(String expirationTimeString) throws ParseException {		
+	public void setExpirationTimeFromString(String expirationTimeString) throws ParseException {
 		this.expirationTime = javax.xml.bind.DatatypeConverter.parseDateTime(expirationTimeString).getTime();
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

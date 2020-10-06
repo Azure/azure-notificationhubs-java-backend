@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 import java.text.SimpleDateFormat;
@@ -6,9 +10,9 @@ import java.util.*;
 import org.apache.http.entity.ContentType;
 
 /**
- * 
+ *
  * Class representing a generic notification.
- * 
+ *
  */
 public class Notification {
 
@@ -21,7 +25,7 @@ public class Notification {
 	 * X-WNS-Type headers based on the body provided. If you want to send raw
 	 * notifications you have to set the X-WNS header and ContentType after creating this
 	 * notification or use createWindowsRawNotification method
-	 * 
+	 *
 	 * @param body
 	 * @return
 	 */
@@ -44,11 +48,11 @@ public class Notification {
 
 		return n;
 	}
-	
+
 	/**
 	 * Utility method to set up a native notification for WNS. Sets the
 	 * X-WNS-Type header to "wns/raw" in order of sending of raw notification.
-	 * 
+	 *
 	 * @param body
 	 * @return
 	 */
@@ -104,7 +108,7 @@ public class Notification {
 	/**
 	 * Utility method to set up a native notification for GCM.
 	 * @deprecated use {@link #createFcmNotifiation(String)} instead.
-	 * 
+	 *
 	 * @param body
 	 * @return
 	 */
@@ -121,7 +125,7 @@ public class Notification {
 
 	/**
 	 * Utility method to set up a native notification for FCM.
-	 * 
+	 *
 	 * @param body
 	 * @return
 	 */
@@ -132,10 +136,10 @@ public class Notification {
  		n.headers.put("ServiceBusNotification-Format", "gcm"); // TODO replace with "fcm" when new version of backend will be released
  		return n;
 	}
-	
+
 	/**
 	 * Utility method to set up a native notification for ADM.
-	 * 
+	 *
 	 * @param body
 	 * @return
 	 */
@@ -148,10 +152,10 @@ public class Notification {
 
 		return n;
 	}
-	
+
 	/**
 	 * Utility method to set up a native notification for Baidu PNS.
-	 * 
+	 *
 	 * @param body
 	 * @return
 	 */
@@ -169,7 +173,7 @@ public class Notification {
 	 * Utility method to set up a native notification for MPNS. Sets the
 	 * X-WindowsPhone-Target and X-NotificationClass headers based on the body
 	 * provided. Raw notifications are not supported for MPNS.
-	 * 
+	 *
 	 * @param body
 	 * @return
 	 */
@@ -197,7 +201,7 @@ public class Notification {
 
 	/**
 	 * Utility method to create a notification object representing a template notification.
-	 * 
+	 *
 	 * @param properties
 	 * @return
 	 */

@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 /**
@@ -11,7 +15,7 @@ public class FcmRegistration extends Registration {
 	private static final String FCM_NATIVE_REGISTRATION3 = "</GcmRegistrationId></GcmRegistrationDescription></content></entry>";
 
 	protected String fcmRegistrationId;
-	
+
 	public FcmRegistration() {
 		super();
 	}
@@ -20,7 +24,7 @@ public class FcmRegistration extends Registration {
 		super(registrationId);
 		this.fcmRegistrationId = fcmRegistrationId;
 	}
-	
+
 	public FcmRegistration(String fcmRegistrationId) {
 		super();
 		this.fcmRegistrationId = fcmRegistrationId;

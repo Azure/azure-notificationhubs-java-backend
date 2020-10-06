@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 import java.net.URI;
@@ -20,9 +24,9 @@ public class MpnsTemplateRegistration extends MpnsRegistration {
 
 	public MpnsTemplateRegistration() {
 	}
-	
-	
-	
+
+
+
 	public MpnsTemplateRegistration(URI channelUri, String bodyTemplate,
 			Map<String, String> headers) {
 		super(channelUri);
@@ -49,12 +53,12 @@ public class MpnsTemplateRegistration extends MpnsRegistration {
 	public Map<String, String> getHeaders() {
 		return headers;
 	}
-	
+
 	public void addHeader(String name, String value) {
 		headers.put(name, value);
 	}
-	
-	
+
+
 
 	@Override
 	public int hashCode() {

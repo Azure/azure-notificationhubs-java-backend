@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 /**
@@ -11,7 +15,7 @@ public class AppleTemplateRegistration extends AppleRegistration {
 	private static final String APNS_TEMPLATE_REGISTRATION4 = "]]></BodyTemplate>";
 	private static final String APNS_TEMPLATE_REGISTRATION5 = "</AppleTemplateRegistrationDescription></content></entry>";
 
-	
+
 	private String bodyTemplate;
 	private String expiry;
 
@@ -45,8 +49,8 @@ public class AppleTemplateRegistration extends AppleRegistration {
 	public void setExpiry(String expiry) {
 		this.expiry = expiry;
 	}
-	
-	
+
+
 
 	@Override
 	public int hashCode() {

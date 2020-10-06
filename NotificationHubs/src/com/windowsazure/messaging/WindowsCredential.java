@@ -1,23 +1,27 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class WindowsCredential extends PnsCredential {	
+public final class WindowsCredential extends PnsCredential {
 	private String packageSid;
 	private String secretKey;
-	
+
 	public WindowsCredential(){
 		this(null,null);
 	}
-		
+
 	public WindowsCredential(String packageSid, String secretKey){
 		super();
 		this.setPackageSid(packageSid);
 		this.setSecretKey(secretKey);
 	}
-	
+
 	public String getPackageSid() {
 		return packageSid;
 	}
@@ -32,8 +36,8 @@ public final class WindowsCredential extends PnsCredential {
 
 	public void setSecretKey(String secretKey) {
 		this.secretKey = secretKey;
-	}	
-	
+	}
+
     	public void setWindowsLiveEndpoint(String propertyValue) throws Exception {
         	// fix for reflection that's calling 'setWindowsLiveEndpoint' of null.
         	// unused function

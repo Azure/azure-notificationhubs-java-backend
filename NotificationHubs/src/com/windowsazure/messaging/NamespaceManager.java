@@ -1,9 +1,14 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -18,7 +23,7 @@ import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 
-public class NamespaceManager {
+public class NamespaceManager implements NamespaceManagerClient {
 	private static final String IFMATCH_HEADER_NAME = "If-Match";
 	private static final String AUTHORIZATION_HEADER_NAME = "Authorization";
 	private static final String HUBS_COLLECTION_PATH = "$Resources/NotificationHubs/";
@@ -44,25 +49,27 @@ public class NamespaceManager {
 			}
 		}
 	}
-	
-	public void getNotificationHubAsync(String hubPath, final FutureCallback<NotificationHubDescription> callback){
+
+	@Override
+    public void getNotificationHubAsync(String hubPath, final FutureCallback<NotificationHubDescription> callback){
 		try {
 			URI uri = new URI(endpoint + hubPath + APIVERSION);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
-			
+
 			HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		int httpStatusCode = response.getStatusLine().getStatusCode();
 		        		if (httpStatusCode != 200) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                httpStatusCode));
 		        			return;
-		    			}		    			
-		    			
+		    			}
+
 						callback.completed(NotificationHubDescription.parseOne(response.getEntity().getContent()));
 		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
+		        		callback.failed(e);
 		        	} finally {
 		        		get.releaseConnection();
 		    		}
@@ -75,36 +82,39 @@ public class NamespaceManager {
 		        	get.releaseConnection();
 		        	callback.cancelled();
 		        }
-			});			
+			});
 		} catch (Exception e) {
 			throw new RuntimeException(e);
-		} 
+		}
 	}
-	
-	public NotificationHubDescription getNotificationHub(String hubPath) throws NotificationHubsException{
+
+	@Override
+    public NotificationHubDescription getNotificationHub(String hubPath) throws NotificationHubsException{
 		SyncCallback<NotificationHubDescription> callback = new SyncCallback<NotificationHubDescription>();
 		getNotificationHubAsync(hubPath, callback);
 		return callback.getResult();
 	}
-	
-	public void getNotificationHubsAsync(final FutureCallback<List<NotificationHubDescription>> callback){
+
+	@Override
+    public void getNotificationHubsAsync(final FutureCallback<List<NotificationHubDescription>> callback){
 		try {
 			URI uri = new URI(endpoint + HUBS_COLLECTION_PATH + APIVERSION + SKIP_TOP_PARAM);
 			final HttpGet get = new HttpGet(uri);
 			get.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
-			
+
 			HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		int httpStatusCode = response.getStatusLine().getStatusCode();
 		        		if (httpStatusCode != 200) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                httpStatusCode));
 		        			return;
-		    			}			    			
-		    			
+		    			}
+
 						callback.completed(NotificationHubDescription.parseCollection(response.getEntity().getContent()));
 		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
+		        		callback.failed(e);
 		        	} finally {
 		        		get.releaseConnection();
 		    		}
@@ -117,38 +127,43 @@ public class NamespaceManager {
 		        	get.releaseConnection();
 		        	callback.cancelled();
 		        }
-			});			
+			});
 		} catch (Exception e) {
 			throw new RuntimeException(e);
-		} 
+		}
 	}
-	
-	public List<NotificationHubDescription> getNotificationHubs() throws NotificationHubsException{
+
+	@Override
+    public List<NotificationHubDescription> getNotificationHubs() throws NotificationHubsException{
 		SyncCallback<List<NotificationHubDescription>> callback = new SyncCallback<List<NotificationHubDescription>>();
 		getNotificationHubsAsync(callback);
 		return callback.getResult();
 	}
-	
-	public void createNotificationHubAsync(NotificationHubDescription hubDescription, final FutureCallback<NotificationHubDescription> callback){
+
+	@Override
+    public void createNotificationHubAsync(NotificationHubDescription hubDescription, final FutureCallback<NotificationHubDescription> callback){
 		createOrUpdateNotificationHubAsync(hubDescription, false, callback);
 	}
-	
-	public NotificationHubDescription createNotificationHub(NotificationHubDescription hubDescription) throws NotificationHubsException{
+
+	@Override
+    public NotificationHubDescription createNotificationHub(NotificationHubDescription hubDescription) throws NotificationHubsException{
 		SyncCallback<NotificationHubDescription> callback = new SyncCallback<NotificationHubDescription>();
 		createNotificationHubAsync(hubDescription, callback);
 		return callback.getResult();
 	}
-	
-	public void updateNotificationHubAsync(NotificationHubDescription hubDescription, FutureCallback<NotificationHubDescription> callback){
+
+	@Override
+    public void updateNotificationHubAsync(NotificationHubDescription hubDescription, FutureCallback<NotificationHubDescription> callback){
 		createOrUpdateNotificationHubAsync(hubDescription, true, callback);
 	}
-	
-	public NotificationHubDescription updateNotificationHub(NotificationHubDescription hubDescription) throws NotificationHubsException{
+
+	@Override
+    public NotificationHubDescription updateNotificationHub(NotificationHubDescription hubDescription) throws NotificationHubsException{
 		SyncCallback<NotificationHubDescription> callback = new SyncCallback<NotificationHubDescription>();
 		updateNotificationHubAsync(hubDescription, callback);
 		return callback.getResult();
 	}
-	
+
 	private void createOrUpdateNotificationHubAsync(NotificationHubDescription hubDescription, final boolean isUpdate, final FutureCallback<NotificationHubDescription> callback){
 		try {
 			URI uri = new URI(endpoint + hubDescription.getPath() + APIVERSION);
@@ -157,23 +172,24 @@ public class NamespaceManager {
 			if(isUpdate){
 				put.setHeader(IFMATCH_HEADER_NAME, "*");
 			}
-			
+
 			StringEntity entity = new StringEntity(hubDescription.getXml(), ContentType.APPLICATION_ATOM_XML);
 			entity.setContentEncoding("utf-8");
 			put.setEntity(entity);
-			
+
 			HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		int httpStatusCode = response.getStatusLine().getStatusCode();
 		        		if (httpStatusCode != (isUpdate ? 200 : 201)) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response) ,httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                httpStatusCode));
 		        			return;
-		    			}		    			
-		    			
+		    			}
+
 						callback.completed(NotificationHubDescription.parseOne(response.getEntity().getContent()));
 		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
+		        		callback.failed(e);
 		        	} finally {
 		        		put.releaseConnection();
 		    		}
@@ -186,30 +202,32 @@ public class NamespaceManager {
 		        	put.releaseConnection();
 		        	callback.cancelled();
 		        }
-			});			
+			});
 		} catch (Exception e) {
 			throw new RuntimeException(e);
-		} 
-	}	
-	
-	public void deleteNotificationHubAsync(String hubPath, final FutureCallback<Object> callback){
+		}
+	}
+
+	@Override
+    public void deleteNotificationHubAsync(String hubPath, final FutureCallback<Object> callback){
 		try {
 			URI uri = new URI(endpoint + hubPath + APIVERSION);
 			final HttpDelete delete = new HttpDelete(uri);
 			delete.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
-			
+
 			HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
 		        public void completed(final HttpResponse response) {
 		        	try{
 		        		int httpStatusCode = response.getStatusLine().getStatusCode();
 		        		if (httpStatusCode != 200 && httpStatusCode != 404) {
-		        			callback.failed(new NotificationHubsException(getErrorString(response), httpStatusCode));
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                                httpStatusCode));
 		        			return;
-		    			}		    			
-		    			
+		    			}
+
 						callback.completed(null);
 		        	} catch (Exception e) {
-		        		callback.failed(e);	        		
+		        		callback.failed(e);
 		        	} finally {
 		        		delete.releaseConnection();
 		    		}
@@ -222,18 +240,19 @@ public class NamespaceManager {
 		        	delete.releaseConnection();
 		        	callback.cancelled();
 		        }
-			});			
+			});
 		} catch (Exception e) {
 			throw new RuntimeException(e);
-		} 
-	}	
-	
-	public void deleteNotificationHub(String hubPath) throws NotificationHubsException{
+		}
+	}
+
+	@Override
+    public void deleteNotificationHub(String hubPath) throws NotificationHubsException{
 		SyncCallback<Object> callback = new SyncCallback<Object>();
 		deleteNotificationHubAsync(hubPath, callback);
 		callback.getResult();
-	}	 
-		
+	}
+
 	private String generateSasToken(URI uri) {
 		String targetUri;
 		try {
@@ -247,7 +266,7 @@ public class NamespaceManager {
 			String toSign = targetUri + "\n" + expires;
 
 			// Get an hmac_sha1 key from the raw key bytes
-			byte[] keyBytes = SasKeyValue.getBytes("UTF-8");
+			byte[] keyBytes = SasKeyValue.getBytes(StandardCharsets.UTF_8);
 			SecretKeySpec signingKey = new SecretKeySpec(keyBytes, "HmacSHA256");
 
 			// Get an hmac_sha1 Mac instance and initialize with the signing key
@@ -255,7 +274,7 @@ public class NamespaceManager {
 			mac.init(signingKey);
 
 			// Compute the hmac on input data bytes
-			byte[] rawHmac = mac.doFinal(toSign.getBytes("UTF-8"));
+			byte[] rawHmac = mac.doFinal(toSign.getBytes(StandardCharsets.UTF_8));
 
 			// Convert raw bytes to Hex
 			String signature = URLEncoder.encode(
@@ -268,13 +287,5 @@ public class NamespaceManager {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	private String getErrorString(HttpResponse response)
-			throws IllegalStateException, IOException {
-		StringWriter writer = new StringWriter();
-		IOUtils.copy(response.getEntity().getContent(), writer, "UTF-8");
-		String body = writer.toString();
-		return "Error: " + response.getStatusLine() + " - " + body;
 	}
 }

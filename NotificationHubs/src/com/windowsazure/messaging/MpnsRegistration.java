@@ -1,10 +1,14 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * 
+ *
  * Class representing a native registration for a device using MPNS.
  *
  */
@@ -14,7 +18,7 @@ public class MpnsRegistration extends Registration {
 	private static final String MPNS_NATIVE_REGISTRATION3 = "</ChannelUri></MpnsRegistrationDescription></content></entry>";
 
 	protected URI channelUri;
-	
+
 	public MpnsRegistration() {
 	}
 
@@ -39,8 +43,8 @@ public class MpnsRegistration extends Registration {
 			throw new RuntimeException(channelUri);
 		}
 	}
-	
-	
+
+
 
 	@Override
 	public int hashCode() {

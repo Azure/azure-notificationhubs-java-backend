@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 public class AdmRegistration extends Registration {
@@ -6,7 +10,7 @@ public class AdmRegistration extends Registration {
 	private static final String ADM_NATIVE_REGISTRATION3 = "</AdmRegistrationId></AdmRegistrationDescription></content></entry>";
 
 	protected String admRegistrationId;
-	
+
 	public AdmRegistration() {
 		super();
 	}
@@ -15,7 +19,7 @@ public class AdmRegistration extends Registration {
 		super(registrationId);
 		this.admRegistrationId = admRegistrationId;
 	}
-	
+
 	public AdmRegistration(String admRegistrationId) {
 		super();
 		this.admRegistrationId = admRegistrationId;

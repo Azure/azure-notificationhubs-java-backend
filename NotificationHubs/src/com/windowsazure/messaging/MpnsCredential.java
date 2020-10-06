@@ -1,23 +1,27 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class MpnsCredential extends PnsCredential {	
+public final class MpnsCredential extends PnsCredential {
 	private String mpnsCertificate;
 	private String certificateKey;
-	
+
 	public MpnsCredential(){
 		this(null,null);
 	}
-		
+
 	public MpnsCredential(String mpnsCertificate, String certificateKey){
 		super();
 		this.setMpnsCertificate(mpnsCertificate);
 		this.setCertificateKey(certificateKey);
 	}
-	
+
 	public String getMpnsCertificate() {
 		return mpnsCertificate;
 	}
@@ -32,8 +36,8 @@ public final class MpnsCredential extends PnsCredential {
 
 	public void setCertificateKey(String certificateKey) {
 		this.certificateKey = certificateKey;
-	}	
-		
+	}
+
 	@Override
 	public List<SimpleEntry<String, String>> getProperties() {
 		ArrayList<SimpleEntry<String, String>> result = new ArrayList<SimpleEntry<String, String>>();

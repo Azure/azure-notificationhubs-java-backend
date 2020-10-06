@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 import java.io.IOException;
@@ -9,20 +13,20 @@ import org.apache.commons.digester3.Digester;
 import org.xml.sax.SAXException;
 
 public class NotificationHubDescription {
-	private static final String XML_HEADER="<?xml version=\"1.0\" encoding=\"utf-8\"?><entry xmlns=\"http://www.w3.org/2005/Atom\"><content type=\"application/xml\"><NotificationHubDescription xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/netservices/2010/10/servicebus/connect\">"; 
+	private static final String XML_HEADER="<?xml version=\"1.0\" encoding=\"utf-8\"?><entry xmlns=\"http://www.w3.org/2005/Atom\"><content type=\"application/xml\"><NotificationHubDescription xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/netservices/2010/10/servicebus/connect\">";
 	private static final String XML_FOOTER="</NotificationHubDescription></content></entry>";
-	private String path;	
+	private String path;
 	private AdmCredential admCredential;
 	private ApnsCredential apnsCredential;
 	private WindowsCredential windowsCredential;
 	private MpnsCredential mpnsCredential;
-	private GcmCredential gcmCredential;	
+	private GcmCredential gcmCredential;
 	private FcmCredential fcmCredential;
 	private BaiduCredential baiduCredential;
-	
+
 	private static final ThreadLocal<Digester> singleEntryParser;
 	private static final ThreadLocal<Digester> collectionParser;
-	
+
 	static {
 		singleEntryParser = new ThreadLocal<Digester>(){
 			@Override protected Digester initialValue() {
@@ -31,7 +35,7 @@ public class NotificationHubDescription {
                 return instance;
              }
 		};
-		
+
 		collectionParser = new ThreadLocal<Digester>(){
 			@Override protected Digester initialValue() {
 				Digester instance = new Digester();
@@ -39,17 +43,17 @@ public class NotificationHubDescription {
                 return instance;
              }
 		};
-	}	
-	
+	}
+
 	public NotificationHubDescription(){
 		this(null);
 	}
-	
+
 	public NotificationHubDescription(String path){
 		super();
 		this.path=path;
 	}
-	
+
 	public String getPath() {
 		return path;
 	}
@@ -97,7 +101,7 @@ public class NotificationHubDescription {
 	public void setGcmCredential(GcmCredential gcmCredential) {
 		this.gcmCredential = gcmCredential;
 	}
-	
+
 	public FcmCredential getFcmCredential() {
 		return fcmCredential;
 	}
@@ -105,23 +109,23 @@ public class NotificationHubDescription {
  	public void setFcmCredential(FcmCredential fcmCredential) {
 		this.fcmCredential = fcmCredential;
 	}
-	
+
 	public BaiduCredential getBaiduCredential() {
 		return baiduCredential;
 	}
 
 	public void setBaiduCredential(BaiduCredential baiduCredential) {
 		this.baiduCredential = baiduCredential;
-	}	
-		
+	}
+
 	public static NotificationHubDescription parseOne(InputStream content) throws IOException,	SAXException {
 		return singleEntryParser.get().parse(content);
 	}
-	
+
 	public static List<NotificationHubDescription> parseCollection(InputStream content) throws IOException,	SAXException {
 		return collectionParser.get().parse(content);
 	}
-	
+
 	public String getXml(){
 		StringBuffer buf = new StringBuffer();
 		buf.append(XML_HEADER);
@@ -135,13 +139,13 @@ public class NotificationHubDescription {
 		buf.append(XML_FOOTER);
 		return buf.toString();
 	}
-	
-	private static void setupCollectionParser(Digester digester){	
+
+	private static void setupCollectionParser(Digester digester){
 		digester.addObjectCreate("*/feed", LinkedList.class);
 		setupSingleEntryParser(digester);
 		digester.addSetNext("*/entry", "add", NotificationHubDescription.class.getName());
 	}
-	
+
 	private static void setupSingleEntryParser(Digester digester){
 		digester.addObjectCreate("*/entry", NotificationHubDescription.class);
 		digester.addCallMethod("*/entry/title","setPath",1);
@@ -161,5 +165,5 @@ public class NotificationHubDescription {
 		digester.addSetNext("*/GcmCredential", "setGcmCredential", GcmCredential.class.getName());
 		digester.addSetNext("*/FcmCredential", "setFcmCredential", FcmCredential.class.getName());
 		digester.addSetNext("*/BaiduCredential", "setBaiduCredential", BaiduCredential.class.getName());
-	}	
+	}
 }

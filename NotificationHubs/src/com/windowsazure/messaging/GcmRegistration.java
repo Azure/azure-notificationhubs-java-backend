@@ -1,10 +1,14 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 /**
  * Class representing a native registration for devices using GCM.
  * @deprecated use {@link com.windowsazure.messaging.FcmRegistration#FcmRegistration()} instead.
  */
- 
+
 @Deprecated
 public class GcmRegistration extends Registration {
 	private static final String GCM_NATIVE_REGISTRATION1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><entry xmlns=\"http://www.w3.org/2005/Atom\"><content type=\"application/xml\"><GcmRegistrationDescription xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/netservices/2010/10/servicebus/connect\">";
@@ -12,9 +16,9 @@ public class GcmRegistration extends Registration {
 	private static final String GCM_NATIVE_REGISTRATION3 = "</GcmRegistrationId></GcmRegistrationDescription></content></entry>";
 
 	protected String gcmRegistrationId;
-	
-	
-	
+
+
+
 	public GcmRegistration() {
 		super();
 	}
@@ -23,7 +27,7 @@ public class GcmRegistration extends Registration {
 		super(registrationId);
 		this.gcmRegistrationId = gcmRegistrationId;
 	}
-	
+
 	public GcmRegistration(String gcmRegistrationId) {
 		super();
 		this.gcmRegistrationId = gcmRegistrationId;
@@ -37,7 +41,7 @@ public class GcmRegistration extends Registration {
 		this.gcmRegistrationId = gcmRegistrationId;
 	}
 
-	
+
 
 
 	@Override

@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 import java.util.List;
@@ -10,11 +14,11 @@ public class PartialUpdateOperation {
 	private UpdateOperationType operation;
 	private String path;
 	private String value;
-	
+
 	public PartialUpdateOperation(){
 		this(null, null, null);
 	}
-	
+
 	public PartialUpdateOperation(UpdateOperationType operation, String path){
 		this(operation, path, null);
 	}
@@ -24,35 +28,35 @@ public class PartialUpdateOperation {
 		this.path = path;
 		this.value = value;
 	}
-	
+
 	public UpdateOperationType getOperation() {
 		return operation;
 	}
-	
+
 	public void setOperation(UpdateOperationType operation) {
 		this.operation = operation;
 	}
-	
+
 	public String getPath() {
 		return path;
 	}
-	
+
 	public void setPath(String path) {
 		this.path = path;
 	}
-	
+
 	public String getValue() {
 		return value;
 	}
-	
+
 	public void setValue(String value) {
 		this.value = value;
-	}	
-	
+	}
+
 	public static String toJson(PartialUpdateOperation... operations){
 		return new GsonBuilder().disableHtmlEscaping().create().toJson(operations);
 	}
-	
+
 	public static String toJson(List<PartialUpdateOperation> operations){
 		return new GsonBuilder().disableHtmlEscaping().create().toJson(operations);
 	}

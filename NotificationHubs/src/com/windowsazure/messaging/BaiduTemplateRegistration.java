@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 public class BaiduTemplateRegistration extends BaiduRegistration {
@@ -7,12 +11,12 @@ public class BaiduTemplateRegistration extends BaiduRegistration {
 	private static final String BAIDU_NATIVE_REGISTRATION4 = "</BaiduChannelId><BodyTemplate><![CDATA[";
 	private static final String BAIDU_NATIVE_REGISTRATION5 = "]]></BodyTemplate></BaiduTemplateRegistrationDescription></content></entry>";
 
-	private String bodyTemplate;	
-	
+	private String bodyTemplate;
+
 	public BaiduTemplateRegistration() {
 		this(null, null, null);
 	}
-	
+
 	public BaiduTemplateRegistration(String baiduUserId, String baiduChannelId, String bodyTemplate) {
 		this(null, baiduUserId, baiduChannelId, bodyTemplate);
 	}
@@ -20,7 +24,7 @@ public class BaiduTemplateRegistration extends BaiduRegistration {
 	public BaiduTemplateRegistration(String registrationId, String baiduUserId, String baiduChannelId, String bodyTemplate) {
 		super(registrationId, baiduUserId, baiduChannelId);
 		this.bodyTemplate = bodyTemplate;
-	}	
+	}
 
 	public String getBodyTemplate() {
 		return bodyTemplate;
