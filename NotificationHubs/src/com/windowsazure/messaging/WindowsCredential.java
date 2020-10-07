@@ -1,54 +1,58 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class WindowsCredential extends PnsCredential {	
-	private String packageSid;
-	private String secretKey;
-	
-	public WindowsCredential(){
-		this(null,null);
-	}
-		
-	public WindowsCredential(String packageSid, String secretKey){
-		super();
-		this.setPackageSid(packageSid);
-		this.setSecretKey(secretKey);
-	}
-	
-	public String getPackageSid() {
-		return packageSid;
-	}
+public final class WindowsCredential extends PnsCredential {
+    private String packageSid;
+    private String secretKey;
 
-	public void setPackageSid(String packageSid) {
-		this.packageSid = packageSid;
-	}
+    public WindowsCredential() {
+        this(null, null);
+    }
 
-	public String getSecretKey() {
-		return secretKey;
-	}
+    public WindowsCredential(String packageSid, String secretKey) {
+        super();
+        this.setPackageSid(packageSid);
+        this.setSecretKey(secretKey);
+    }
 
-	public void setSecretKey(String secretKey) {
-		this.secretKey = secretKey;
-	}	
-	
-    	public void setWindowsLiveEndpoint(String propertyValue) throws Exception {
-        	// fix for reflection that's calling 'setWindowsLiveEndpoint' of null.
-        	// unused function
-    	}
+    public String getPackageSid() {
+        return packageSid;
+    }
 
-	@Override
-	public List<SimpleEntry<String, String>> getProperties() {
-		ArrayList<SimpleEntry<String, String>> result = new ArrayList<SimpleEntry<String, String>>();
-		result.add(new SimpleEntry<String, String>("PackageSid",getPackageSid()));
-		result.add(new SimpleEntry<String, String>("SecretKey",getSecretKey()));
-		return result;
-	}
+    public void setPackageSid(String packageSid) {
+        this.packageSid = packageSid;
+    }
 
-	@Override
-	public String getRootTagName() {
-		return "WnsCredential";
-	}
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
+    }
+
+    public void setWindowsLiveEndpoint(String propertyValue) {
+        // fix for reflection that's calling 'setWindowsLiveEndpoint' of null.
+        // unused function
+    }
+
+    @Override
+    public List<SimpleEntry<String, String>> getProperties() {
+        ArrayList<SimpleEntry<String, String>> result = new ArrayList<>();
+        result.add(new SimpleEntry<>("PackageSid", getPackageSid()));
+        result.add(new SimpleEntry<>("SecretKey", getSecretKey()));
+        return result;
+    }
+
+    @Override
+    public String getRootTagName() {
+        return "WnsCredential";
+    }
 }
