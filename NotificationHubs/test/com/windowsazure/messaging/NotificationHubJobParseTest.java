@@ -1,4 +1,9 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
+
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -10,12 +15,11 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-
 public class NotificationHubJobParseTest {
-		
+
 	@Test
 	public void testParseNotificationHubJob() throws IOException, SAXException, URISyntaxException {
-		InputStream inputXml = this.getClass().getResourceAsStream("NotificationHubJobIncoming");		
+		InputStream inputXml = this.getClass().getResourceAsStream("NotificationHubJobIncoming");
 		NotificationHubJob job = NotificationHubJob.parseOne(inputXml);
 		assertNotNull(job);
 		assertEquals("1", job.getJobId());
@@ -29,15 +33,15 @@ public class NotificationHubJobParseTest {
 		assertEquals(2, job.getOutputProperties().size());
 		assertEquals("test//hub/1/Output.txt", job.getOutputProperties().get("OutputFilePath"));
 		assertEquals("test//hub/1/Failed.txt", job.getOutputProperties().get("FailedFilePath"));
-				
-		String expectedResultXml = IOUtils.toString(this.getClass().getResourceAsStream("NotificationHubJobOutgoing"));	
+
+		String expectedResultXml = IOUtils.toString(this.getClass().getResourceAsStream("NotificationHubJobOutgoing"));
 		String  actualResultXml = job.getXml();
-		assertEquals(expectedResultXml, actualResultXml);	
-	}	
-	
+		assertEquals(expectedResultXml, actualResultXml);
+	}
+
 	@Test
 	public void testParseNotificationHubsFeed() throws Exception {
-		InputStream inputXml = this.getClass().getResourceAsStream("NotificationHubJobFeed");		
+		InputStream inputXml = this.getClass().getResourceAsStream("NotificationHubJobFeed");
 		List<NotificationHubJob> jobs = NotificationHubJob.parseCollection(inputXml);
 		assertNotNull(jobs);
 		assertEquals(3, jobs.size());
