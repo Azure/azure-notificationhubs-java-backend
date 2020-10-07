@@ -9,34 +9,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class FcmCredential extends PnsCredential {
-	private String googleApiKey;
+    private String googleApiKey;
 
-	public FcmCredential(){
-		this(null);
-	}
+    public FcmCredential() {
+        this(null);
+    }
 
-	public FcmCredential(String googleApiKey){
-		super();
-		this.setGoogleApiKey(googleApiKey);
-	}
+    public FcmCredential(String googleApiKey) {
+        super();
+        this.setGoogleApiKey(googleApiKey);
+    }
 
-	public String getGoogleApiKey() {
-		return googleApiKey;
-	}
+    public String getGoogleApiKey() {
+        return googleApiKey;
+    }
 
-	public void setGoogleApiKey(String googleApiKey) {
-		this.googleApiKey = googleApiKey;
-	}
+    public void setGoogleApiKey(String googleApiKey) {
+        this.googleApiKey = googleApiKey;
+    }
 
-	@Override
-	public List<SimpleEntry<String, String>> getProperties() {
-		ArrayList<SimpleEntry<String, String>> result = new ArrayList<SimpleEntry<String, String>>();
-		result.add(new SimpleEntry<String, String>("GoogleApiKey", getGoogleApiKey()));
-		return result;
-	}
+    @Override
+    public List<SimpleEntry<String, String>> getProperties() {
+        ArrayList<SimpleEntry<String, String>> result = new ArrayList<SimpleEntry<String, String>>();
+        result.add(new SimpleEntry<>("GoogleApiKey", getGoogleApiKey()));
+        return result;
+    }
 
-	@Override
-	public String getRootTagName() {
-		return "GcmCredential"; // TODO rename to FcmCredential when new version of backend will be released
-	}
+    @Override
+    public String getRootTagName() {
+        return "GcmCredential";
+    }
 }

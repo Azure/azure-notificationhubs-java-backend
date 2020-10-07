@@ -6,11 +6,23 @@ package com.windowsazure.messaging;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * This enum represents the possible update operation types.
+ */
 public enum UpdateOperationType {
-	@SerializedName("add")
-	Add,
-	@SerializedName("remove")
-	Remove,
-	@SerializedName("replace")
-	Replace,
+    /**
+     * The add update operation type.
+     */
+    @SerializedName("add")
+    Add,
+    /**
+     * The remove update operation type.
+     */
+    @SerializedName("remove")
+    Remove,
+    /**
+     * The replace update operation type.
+     */
+    @SerializedName("replace")
+    Replace,
 }

@@ -202,9 +202,8 @@ public interface INotificationHub {
      * @param registration A registration object containing the description of the
      *                     registration to create. ETag and registration ID are
      *                     ignored
-     *
      * @return The created registration containing the read-only parameters
-     *         (registration ID, ETag, and expiration time).
+     * (registration ID, ETag, and expiration time).
      * @throws NotificationHubsException Thrown if there is a client error.
      */
     Registration createRegistration(Registration registration) throws NotificationHubsException;
@@ -215,7 +214,6 @@ public interface INotificationHub {
      * @param registration A registration object containing the description of the
      *                     registration to create. ETag and registration ID are
      *                     ignored
-     *
      * @param callback     A callback when invoked returns created registration
      *                     containing the read-only parameters (registration ID,
      *                     ETag, and expiration time)
@@ -228,9 +226,8 @@ public interface INotificationHub {
      * @param registration A registration object containing the description of the
      *                     registration to update. The registration ID has to be
      *                     populated.
-     *
      * @return The updated registration containing the read-only parameters
-     *         (registration ID, ETag, and expiration time).
+     * (registration ID, ETag, and expiration time).
      * @throws NotificationHubsException Thrown if there is a client error.
      */
     Registration updateRegistration(Registration registration) throws NotificationHubsException;
@@ -254,9 +251,8 @@ public interface INotificationHub {
      * @param registration A registration object containing the description of the
      *                     registration to create or update. The registration ID
      *                     must be populated.
-     *
      * @return The updated registration containing the read-only parameters
-     *         (registration ID, ETag, and expiration time).
+     * (registration ID, ETag, and expiration time).
      * @throws NotificationHubsException Thrown if there is a client error.
      */
     Registration upsertRegistration(Registration registration) throws NotificationHubsException;
@@ -351,7 +347,6 @@ public interface INotificationHub {
      *                          100)
      * @param continuationToken If not-null, continues iterating through a
      *                          previously requested query.
-     *
      * @return A collection containing the registrations.
      * @throws NotificationHubsException Thrown if there is a client error.
      */
@@ -373,7 +368,6 @@ public interface INotificationHub {
      * Returns all registrations with a specific tag
      *
      * @param tag The tag to search for registrations.
-     *
      * @return A collection of registrations with the given tag.
      * @throws NotificationHubsException Thrown if there is a client error.
      */
@@ -396,7 +390,6 @@ public interface INotificationHub {
      *                          100)
      * @param continuationToken If not-null, continues iterating through a
      *                          previously requested query.
-     *
      * @return A collection of registrations with the given tag.
      * @throws NotificationHubsException Thrown if there is a client error.
      */

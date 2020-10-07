@@ -133,6 +133,7 @@ public class Installation {
 
     /**
      * Gets whether the push channel has expired
+     *
      * @return Returns true if expired, false otherwise.
      */
     public boolean isPushChannelExpired() {

@@ -51,7 +51,7 @@ public class Notification {
      * Utility method to set up a native notification for WNS. Sets the X-WNS-Type
      * header to "wns/raw" in order of sending of raw notification.
      *
-     * @param body The b ody for the Windows Raw Notification
+     * @param body The body for the Windows Raw Notification
      * @return A native notification for WNS.
      */
     public static Notification createWindowsRawNotification(String body) {
@@ -64,12 +64,11 @@ public class Notification {
     }
 
     /**
+     * @param body the body for the Apple notification
+     * @return A native notification for APNS.
      * @deprecated Typo in name, use createAppleNotification instead.
      * Utility method to set up a native notification for APNs. An expiry Date of 1
      * day is set by default.
-     *
-     * @param body the body for the Apple notification
-     * @return A native notification for APNS.
      */
     @Deprecated
     public static Notification createAppleNotifiation(String body) {
@@ -120,9 +119,9 @@ public class Notification {
      * Utility method to set up a native notification for APNs. Enables to set the
      * expiry date of the notification for the APNs QoS.
      *
-     * @param body   the body for the APNS notification.
-     * @param expiry the expiration date of this notification. A null value will be
-     *               interpreted as 0 seconds.
+     * @param body    the body for the APNS notification.
+     * @param expiry  the expiration date of this notification. A null value will be
+     *                interpreted as 0 seconds.
      * @param headers the APNS headers
      * @return an APNS notification with expiration time and headers.
      */
@@ -151,10 +150,9 @@ public class Notification {
     /**
      * Utility method to set up a native notification for GCM.
      *
-     * @deprecated use {@link #createFcmNotification(String)} instead.
-     *
      * @param body the body for the GCM message.
      * @return a GCM notification with the body
+     * @deprecated use {@link #createFcmNotification(String)} instead.
      */
     @Deprecated
     public static Notification createGcmNotifiation(String body) {
@@ -164,10 +162,9 @@ public class Notification {
     /**
      * Utility method to set up a native notification for GCM.
      *
-     * @deprecated use {@link #createFcmNotification(String)} instead.
-     *
      * @param body the body for the GCM message.
      * @return a GCM notification with the body
+     * @deprecated use {@link #createFcmNotification(String)} instead.
      */
     @Deprecated
     public static Notification createGcmNotification(String body) {
@@ -183,10 +180,9 @@ public class Notification {
     /**
      * Utility method to set up a native notification for FCM.
      *
-     * @deprecated use {@link #createFcmNotification(String)} instead.
-     *
      * @param body the body for the FCM message.
      * @return a FCM notification with the body
+     * @deprecated use {@link #createFcmNotification(String)} instead.
      */
     @Deprecated
     public static Notification createFcmNotifiation(String body) {
@@ -209,10 +205,10 @@ public class Notification {
 
     /**
      * Utility method to set up a native notification for ADM.
-     * @deprecated use {@link #createAdmNotification(String)} instead.
      *
      * @param body The body for the ADM notification.
      * @return an ADM notification with the given body.
+     * @deprecated use {@link #createAdmNotification(String)} instead.
      */
     @Deprecated
     public static Notification createAdmNotifiation(String body) {
@@ -237,10 +233,10 @@ public class Notification {
 
     /**
      * Utility method to set up a native notification for Baidu PNS.
-     * @deprecated use {@link #createBaiduNotifiation(String)} instead.
      *
      * @param body the body for the Baidu notification
      * @return a Baidu notification with the given body.
+     * @deprecated use {@link #createBaiduNotifiation(String)} instead.
      */
     @Deprecated
     public static Notification createBaiduNotifiation(String body) {
@@ -267,10 +263,10 @@ public class Notification {
      * Utility method to set up a native notification for MPNS. Sets the
      * X-WindowsPhone-Target and X-NotificationClass headers based on the body
      * provided. Raw notifications are not supported for MPNS.
-     * @deprecated use {@link #createMpnsNotification(String)} instead.
      *
      * @param body the body for the MPNS notification.
      * @return an initialized MPNS notification
+     * @deprecated use {@link #createMpnsNotification(String)} instead.
      */
     @Deprecated
     public static Notification createMpnsNotifiation(String body) {
@@ -318,9 +314,9 @@ public class Notification {
         Notification n = new Notification();
         StringBuilder buf = new StringBuilder();
         buf.append("{");
-        for (Iterator<String> iterator = properties.keySet().iterator(); iterator.hasNext();) {
+        for (Iterator<String> iterator = properties.keySet().iterator(); iterator.hasNext(); ) {
             String key = iterator.next();
-            buf.append("\"" + key + "\":\"" + properties.get(key) + "\"");
+            buf.append("\"").append(key).append("\":\"").append(properties.get(key)).append("\"");
             if (iterator.hasNext())
                 buf.append(",");
         }

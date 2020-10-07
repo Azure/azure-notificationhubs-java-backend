@@ -30,13 +30,13 @@ public class HttpClientManager {
         synchronized (HttpClientManager.class) {
             if (httpAsyncClient == null) {
                 RequestConfig config = RequestConfig.custom()
-                        .setConnectionRequestTimeout(connectionRequestTimeout)
-                        .setConnectTimeout(connectionTimeout)
-                        .setSocketTimeout(socketTimeout)
-                        .build();
+                    .setConnectionRequestTimeout(connectionRequestTimeout)
+                    .setConnectTimeout(connectionTimeout)
+                    .setSocketTimeout(socketTimeout)
+                    .build();
                 CloseableHttpAsyncClient client = HttpAsyncClientBuilder.create()
-                        .setDefaultRequestConfig(config)
-                        .build();
+                    .setDefaultRequestConfig(config)
+                    .build();
                 client.start();
                 httpAsyncClient = client;
             }
