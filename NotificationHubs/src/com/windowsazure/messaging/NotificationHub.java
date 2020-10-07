@@ -47,7 +47,7 @@ import com.google.gson.GsonBuilder;
 public class NotificationHub implements NotificationHubClient {
 
     private static final String USER_AGENT = "NHub/2020-06 (api-origin=JavaSDK;os=%s;os-version=%s)";
-    private static final String APIVERSION = "?api-version=2020-06";
+    private static final String API_VERSION = "?api-version=2020-06";
     private static final String CONTENT_LOCATION_HEADER = "Location";
     private static final String TRACKING_ID_HEADER = "TrackingId";
     private String endpoint;
@@ -63,13 +63,13 @@ public class NotificationHub implements NotificationHubClient {
             throw new RuntimeException("Error parsing connection string: "
                 + connectionString);
 
-        for (int i = 0; i < parts.length; i++) {
-            if (parts[i].startsWith("Endpoint")) {
-                this.endpoint = "https" + parts[i].substring(11);
-            } else if (parts[i].startsWith("SharedAccessKeyName")) {
-                this.SasKeyName = parts[i].substring(20);
-            } else if (parts[i].startsWith("SharedAccessKey")) {
-                this.SasKeyValue = parts[i].substring(16);
+        for (String part : parts) {
+            if (part.startsWith("Endpoint")) {
+                this.endpoint = "https" + part.substring(11);
+            } else if (part.startsWith("SharedAccessKeyName")) {
+                this.SasKeyName = part.substring(20);
+            } else if (part.startsWith("SharedAccessKey")) {
+                this.SasKeyValue = part.substring(16);
             }
         }
     }
@@ -77,7 +77,7 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public void createRegistrationAsync(Registration registration, final FutureCallback<Registration> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + "/registrations" + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + "/registrations" + API_VERSION);
             final HttpPost post = new HttpPost(uri);
             post.setHeader("Authorization", generateSasToken(uri));
             post.setHeader("User-Agent", getUserAgent());
@@ -121,7 +121,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public Registration createRegistration(Registration registration) throws NotificationHubsException {
-        SyncCallback<Registration> callback = new SyncCallback<Registration>();
+        SyncCallback<Registration> callback = new SyncCallback<>();
         createRegistrationAsync(registration, callback);
         return callback.getResult();
     }
@@ -129,7 +129,7 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public void createRegistrationIdAsync(final FutureCallback<String> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + "/registrationids" + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + "/registrationids" + API_VERSION);
             final HttpPost post = new HttpPost(uri);
             post.setHeader("Authorization", generateSasToken(uri));
             post.setHeader("User-Agent", getUserAgent());
@@ -174,7 +174,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public String createRegistrationId() throws NotificationHubsException {
-        SyncCallback<String> callback = new SyncCallback<String>();
+        SyncCallback<String> callback = new SyncCallback<>();
         createRegistrationIdAsync(callback);
         return callback.getResult();
     }
@@ -182,7 +182,7 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public void updateRegistrationAsync(Registration registration, final FutureCallback<Registration> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + API_VERSION);
             final HttpPut put = new HttpPut(uri);
             put.setHeader("Authorization", generateSasToken(uri));
             put.setHeader("If-Match", registration.getEtag() == null ? "*" : "W/\"" + registration.getEtag() + "\"");
@@ -224,7 +224,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public Registration updateRegistration(Registration registration) throws NotificationHubsException {
-        SyncCallback<Registration> callback = new SyncCallback<Registration>();
+        SyncCallback<Registration> callback = new SyncCallback<>();
         updateRegistrationAsync(registration, callback);
         return callback.getResult();
     }
@@ -232,7 +232,7 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public void upsertRegistrationAsync(Registration registration, final FutureCallback<Registration> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + API_VERSION);
             final HttpPut put = new HttpPut(uri);
             put.setHeader("Authorization", generateSasToken(uri));
             put.setHeader("User-Agent", getUserAgent());
@@ -273,7 +273,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public Registration upsertRegistration(Registration registration) throws NotificationHubsException {
-        SyncCallback<Registration> callback = new SyncCallback<Registration>();
+        SyncCallback<Registration> callback = new SyncCallback<>();
         upsertRegistrationAsync(registration, callback);
         return callback.getResult();
     }
@@ -285,7 +285,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public void deleteRegistration(Registration registration) throws NotificationHubsException {
-        SyncCallback<Object> callback = new SyncCallback<Object>();
+        SyncCallback<Object> callback = new SyncCallback<>();
         deleteRegistrationAsync(registration, callback);
         callback.getResult();
     }
@@ -293,7 +293,7 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public void deleteRegistrationAsync(String registrationId, final FutureCallback<Object> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + API_VERSION);
             final HttpDelete delete = new HttpDelete(uri);
             delete.setHeader("Authorization", generateSasToken(uri));
             delete.setHeader("If-Match", "*");
@@ -334,7 +334,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public void deleteRegistration(String registrationId) throws NotificationHubsException {
-        SyncCallback<Object> callback = new SyncCallback<Object>();
+        SyncCallback<Object> callback = new SyncCallback<>();
         deleteRegistrationAsync(registrationId, callback);
         callback.getResult();
     }
@@ -342,7 +342,7 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public void getRegistrationAsync(String registrationId, final FutureCallback<Registration> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + API_VERSION);
             final HttpGet get = new HttpGet(uri);
             get.setHeader("Authorization", generateSasToken(uri));
             get.setHeader("User-Agent", getUserAgent());
@@ -382,7 +382,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public Registration getRegistration(String registrationId) throws NotificationHubsException {
-        SyncCallback<Registration> callback = new SyncCallback<Registration>();
+        SyncCallback<Registration> callback = new SyncCallback<>();
         getRegistrationAsync(registrationId, callback);
         return callback.getResult();
     }
@@ -394,13 +394,13 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public void getRegistrationsAsync(int top, String continuationToken, final FutureCallback<CollectionResult> callback) {
-        String queryUri = endpoint + hubPath + "/registrations" + APIVERSION + getQueryString(top, continuationToken);
+        String queryUri = endpoint + hubPath + "/registrations" + API_VERSION + getQueryString(top, continuationToken);
         retrieveRegistrationCollectionAsync(queryUri, callback);
     }
 
     @Override
     public CollectionResult getRegistrations(int top, String continuationToken) throws NotificationHubsException {
-        SyncCallback<CollectionResult> callback = new SyncCallback<CollectionResult>();
+        SyncCallback<CollectionResult> callback = new SyncCallback<>();
         getRegistrationsAsync(top, continuationToken, callback);
         return callback.getResult();
     }
@@ -413,14 +413,14 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public void getRegistrationsByTagAsync(String tag, int top, String continuationToken, final FutureCallback<CollectionResult> callback) {
         String queryUri = endpoint + hubPath + "/tags/" + tag
-            + "/registrations" + APIVERSION
+            + "/registrations" + API_VERSION
             + getQueryString(top, continuationToken);
         retrieveRegistrationCollectionAsync(queryUri, callback);
     }
 
     @Override
     public CollectionResult getRegistrationsByTag(String tag, int top, String continuationToken) throws NotificationHubsException {
-        SyncCallback<CollectionResult> callback = new SyncCallback<CollectionResult>();
+        SyncCallback<CollectionResult> callback = new SyncCallback<>();
         getRegistrationsByTagAsync(tag, top, continuationToken, callback);
         return callback.getResult();
     }
@@ -432,17 +432,17 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public CollectionResult getRegistrationsByTag(String tag) throws NotificationHubsException {
-        SyncCallback<CollectionResult> callback = new SyncCallback<CollectionResult>();
+        SyncCallback<CollectionResult> callback = new SyncCallback<>();
         getRegistrationsByTagAsync(tag, callback);
         return callback.getResult();
     }
 
     @Override
     public void getRegistrationsByChannelAsync(String channel, int top, String continuationToken, final FutureCallback<CollectionResult> callback) {
-        String queryUri = null;
+        String queryUri;
         try {
             String channelQuery = URLEncoder.encode("ChannelUri eq '" + channel + "'", "UTF-8");
-            queryUri = endpoint + hubPath + "/registrations" + APIVERSION
+            queryUri = endpoint + hubPath + "/registrations" + API_VERSION
                 + "&$filter=" + channelQuery
                 + getQueryString(top, continuationToken);
         } catch (UnsupportedEncodingException e) {
@@ -453,7 +453,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public CollectionResult getRegistrationsByChannel(String channel, int top, String continuationToken) throws NotificationHubsException {
-        SyncCallback<CollectionResult> callback = new SyncCallback<CollectionResult>();
+        SyncCallback<CollectionResult> callback = new SyncCallback<>();
         getRegistrationsByChannelAsync(channel, top, continuationToken, callback);
         return callback.getResult();
     }
@@ -465,18 +465,18 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public CollectionResult getRegistrationsByChannel(String channel) throws NotificationHubsException {
-        SyncCallback<CollectionResult> callback = new SyncCallback<CollectionResult>();
+        SyncCallback<CollectionResult> callback = new SyncCallback<>();
         getRegistrationsByChannelAsync(channel, callback);
         return callback.getResult();
     }
 
     private String getQueryString(int top, String continuationToken) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         if (top > 0) {
-            buf.append("&$top=" + top);
+            buf.append("&$top=").append(top);
         }
         if (continuationToken != null) {
-            buf.append("&ContinuationToken=" + continuationToken);
+            buf.append("&ContinuationToken=").append(continuationToken);
         }
         return buf.toString();
     }
@@ -534,7 +534,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public NotificationOutcome sendNotification(Notification notification) throws NotificationHubsException {
-        SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
+        SyncCallback<NotificationOutcome> callback = new SyncCallback<>();
         sendNotificationAsync(notification, callback);
         return callback.getResult();
     }
@@ -546,7 +546,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public NotificationOutcome sendNotification(Notification notification, Set<String> tags) throws NotificationHubsException {
-        SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
+        SyncCallback<NotificationOutcome> callback = new SyncCallback<>();
         sendNotificationAsync(notification, tags, callback);
         return callback.getResult();
     }
@@ -558,7 +558,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public NotificationOutcome sendNotification(Notification notification, String tagExpression) throws NotificationHubsException {
-        SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
+        SyncCallback<NotificationOutcome> callback = new SyncCallback<>();
         sendNotificationAsync(notification, tagExpression, callback);
         return callback.getResult();
     }
@@ -570,7 +570,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public NotificationOutcome scheduleNotification(Notification notification, Date scheduledTime) throws NotificationHubsException {
-        SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
+        SyncCallback<NotificationOutcome> callback = new SyncCallback<>();
         scheduleNotificationAsync(notification, scheduledTime, callback);
         return callback.getResult();
     }
@@ -581,7 +581,7 @@ public class NotificationHub implements NotificationHubClient {
             throw new IllegalArgumentException(
                 "tags has to contain at least an element");
 
-        StringBuffer exp = new StringBuffer();
+        StringBuilder exp = new StringBuilder();
         for (Iterator<String> iterator = tags.iterator(); iterator.hasNext(); ) {
             exp.append(iterator.next());
             if (iterator.hasNext())
@@ -593,7 +593,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public NotificationOutcome scheduleNotification(Notification notification, Set<String> tags, Date scheduledTime) throws NotificationHubsException {
-        SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
+        SyncCallback<NotificationOutcome> callback = new SyncCallback<>();
         scheduleNotificationAsync(notification, tags, scheduledTime, callback);
         return callback.getResult();
     }
@@ -601,7 +601,7 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public void scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime, final FutureCallback<NotificationOutcome> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + (scheduledTime == null ? "/messages" : "/schedulednotifications") + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + (scheduledTime == null ? "/messages" : "/schedulednotifications") + API_VERSION);
             final HttpPost post = new HttpPost(uri);
             final String trackingId = java.util.UUID.randomUUID().toString();
             post.setHeader("Authorization", generateSasToken(uri));
@@ -672,14 +672,14 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public NotificationOutcome scheduleNotification(Notification notification, String tagExpression, Date scheduledTime) throws NotificationHubsException {
-        SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
+        SyncCallback<NotificationOutcome> callback = new SyncCallback<>();
         scheduleNotificationAsync(notification, tagExpression, scheduledTime, callback);
         return callback.getResult();
     }
 
     @Override
     public void cancelScheduledNotification(String notificationId) throws NotificationHubsException {
-        SyncCallback<Object> callback = new SyncCallback<Object>();
+        SyncCallback<Object> callback = new SyncCallback<>();
         cancelScheduledNotificationAsync(notificationId, callback);
         callback.getResult();
     }
@@ -687,7 +687,7 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public void cancelScheduledNotificationAsync(String notificationId, final FutureCallback<Object> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + "/schedulednotifications/" + notificationId + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + "/schedulednotifications/" + notificationId + API_VERSION);
             final HttpDelete delete = new HttpDelete(uri);
             delete.setHeader("Authorization", generateSasToken(uri));
             delete.setHeader("User-Agent", getUserAgent());
@@ -727,14 +727,14 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public NotificationOutcome sendDirectNotification(Notification notification, String deviceHandle) throws NotificationHubsException {
-        SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
+        SyncCallback<NotificationOutcome> callback = new SyncCallback<>();
         sendDirectNotificationAsync(notification, deviceHandle, callback);
         return callback.getResult();
     }
 
     @Override
     public NotificationOutcome sendDirectNotification(Notification notification, List<String> deviceHandles) throws NotificationHubsException {
-        SyncCallback<NotificationOutcome> callback = new SyncCallback<NotificationOutcome>();
+        SyncCallback<NotificationOutcome> callback = new SyncCallback<>();
         sendDirectNotificationAsync(notification, deviceHandles, callback);
         return callback.getResult();
     }
@@ -743,7 +743,7 @@ public class NotificationHub implements NotificationHubClient {
     public void sendDirectNotificationAsync(Notification notification,
                                             String deviceHandle, final FutureCallback<NotificationOutcome> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + "/messages" + APIVERSION + "&direct");
+            URI uri = new URI(endpoint + hubPath + "/messages" + API_VERSION + "&direct");
             final HttpPost post = new HttpPost(uri);
             final String trackingId = java.util.UUID.randomUUID().toString();
             post.setHeader("ServiceBusNotification-DeviceHandle", deviceHandle);
@@ -805,7 +805,7 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public void sendDirectNotificationAsync(Notification notification, List<String> deviceHandles, final FutureCallback<NotificationOutcome> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + "/messages/$batch" + APIVERSION + "&direct");
+            URI uri = new URI(endpoint + hubPath + "/messages/$batch" + API_VERSION + "&direct");
             final HttpPost post = new HttpPost(uri);
             final String trackingId = java.util.UUID.randomUUID().toString();
             post.setHeader("Authorization", generateSasToken(uri));
@@ -885,7 +885,7 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public NotificationTelemetry getNotificationTelemetry(String notificationId)
         throws NotificationHubsException {
-        SyncCallback<NotificationTelemetry> callback = new SyncCallback<NotificationTelemetry>();
+        SyncCallback<NotificationTelemetry> callback = new SyncCallback<>();
         getNotificationTelemetryAsync(notificationId, callback);
         return callback.getResult();
     }
@@ -893,7 +893,7 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public void getNotificationTelemetryAsync(String notificationId, final FutureCallback<NotificationTelemetry> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + "/messages/" + notificationId + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + "/messages/" + notificationId + API_VERSION);
             final HttpGet get = new HttpGet(uri);
             get.setHeader("Authorization", generateSasToken(uri));
             get.setHeader("User-Agent", getUserAgent());
@@ -934,7 +934,7 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public void createOrUpdateInstallationAsync(Installation installation, final FutureCallback<Object> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + "/installations/" + installation.getInstallationId() + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + "/installations/" + installation.getInstallationId() + API_VERSION);
             final HttpPut put = new HttpPut(uri);
             put.setHeader("Authorization", generateSasToken(uri));
             put.setHeader("User-Agent", getUserAgent());
@@ -978,7 +978,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public void createOrUpdateInstallation(Installation installation) throws NotificationHubsException {
-        SyncCallback<Object> callback = new SyncCallback<Object>();
+        SyncCallback<Object> callback = new SyncCallback<>();
         createOrUpdateInstallationAsync(installation, callback);
         callback.getResult();
     }
@@ -990,7 +990,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public void patchInstallation(String installationId, PartialUpdateOperation... operations) throws NotificationHubsException {
-        SyncCallback<Object> callback = new SyncCallback<Object>();
+        SyncCallback<Object> callback = new SyncCallback<>();
         patchInstallationAsync(installationId, callback, operations);
         callback.getResult();
     }
@@ -1002,14 +1002,14 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public void patchInstallation(String installationId, List<PartialUpdateOperation> operations) throws NotificationHubsException {
-        SyncCallback<Object> callback = new SyncCallback<Object>();
+        SyncCallback<Object> callback = new SyncCallback<>();
         patchInstallationAsync(installationId, operations, callback);
         callback.getResult();
     }
 
     private void patchInstallationInternalAsync(String installationId, String operationsJson, final FutureCallback<Object> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
             final HttpPatch patch = new HttpPatch(uri);
             patch.setHeader("Authorization", generateSasToken(uri));
             patch.setHeader("User-Agent", getUserAgent());
@@ -1054,7 +1054,7 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public void deleteInstallationAsync(String installationId, final FutureCallback<Object> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
             final HttpDelete delete = new HttpDelete(uri);
             delete.setHeader("Authorization", generateSasToken(uri));
             delete.setHeader("User-Agent", getUserAgent());
@@ -1094,7 +1094,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public void deleteInstallation(String installationId) throws NotificationHubsException {
-        SyncCallback<Object> callback = new SyncCallback<Object>();
+        SyncCallback<Object> callback = new SyncCallback<>();
         deleteInstallationAsync(installationId, callback);
         callback.getResult();
     }
@@ -1102,7 +1102,7 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public void getInstallationAsync(String installationId, final FutureCallback<Installation> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
             final HttpGet get = new HttpGet(uri);
             get.setHeader("Authorization", generateSasToken(uri));
             get.setHeader("User-Agent", getUserAgent());
@@ -1142,7 +1142,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public Installation getInstallation(String installationId) throws NotificationHubsException {
-        SyncCallback<Installation> callback = new SyncCallback<Installation>();
+        SyncCallback<Installation> callback = new SyncCallback<>();
         getInstallationAsync(installationId, callback);
         return callback.getResult();
     }
@@ -1150,7 +1150,7 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public void submitNotificationHubJobAsync(NotificationHubJob job, final FutureCallback<NotificationHubJob> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + "/jobs" + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + "/jobs" + API_VERSION);
             final HttpPost post = new HttpPost(uri);
             post.setHeader("Authorization", generateSasToken(uri));
             post.setHeader("User-Agent", getUserAgent());
@@ -1194,7 +1194,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public NotificationHubJob submitNotificationHubJob(NotificationHubJob job) throws NotificationHubsException {
-        SyncCallback<NotificationHubJob> callback = new SyncCallback<NotificationHubJob>();
+        SyncCallback<NotificationHubJob> callback = new SyncCallback<>();
         submitNotificationHubJobAsync(job, callback);
         return callback.getResult();
     }
@@ -1202,7 +1202,7 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public void getNotificationHubJobAsync(String jobId, final FutureCallback<NotificationHubJob> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + "/jobs/" + jobId + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + "/jobs/" + jobId + API_VERSION);
             final HttpGet get = new HttpGet(uri);
             get.setHeader("Authorization", generateSasToken(uri));
             get.setHeader("User-Agent", getUserAgent());
@@ -1242,7 +1242,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public NotificationHubJob getNotificationHubJob(String jobId) throws NotificationHubsException {
-        SyncCallback<NotificationHubJob> callback = new SyncCallback<NotificationHubJob>();
+        SyncCallback<NotificationHubJob> callback = new SyncCallback<>();
         getNotificationHubJobAsync(jobId, callback);
         return callback.getResult();
     }
@@ -1250,7 +1250,7 @@ public class NotificationHub implements NotificationHubClient {
     @Override
     public void getAllNotificationHubJobsAsync(final FutureCallback<List<NotificationHubJob>> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + "/jobs" + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + "/jobs" + API_VERSION);
             final HttpGet get = new HttpGet(uri);
             get.setHeader("Authorization", generateSasToken(uri));
             get.setHeader("User-Agent", getUserAgent());
@@ -1290,7 +1290,7 @@ public class NotificationHub implements NotificationHubClient {
 
     @Override
     public List<NotificationHubJob> getAllNotificationHubJobs() throws NotificationHubsException {
-        SyncCallback<List<NotificationHubJob>> callback = new SyncCallback<List<NotificationHubJob>>();
+        SyncCallback<List<NotificationHubJob>> callback = new SyncCallback<>();
         getAllNotificationHubJobsAsync(callback);
         return callback.getResult();
     }
@@ -1316,7 +1316,7 @@ public class NotificationHub implements NotificationHubClient {
             String toSign = targetUri + "\n" + expires;
 
             // Get an hmac_sha1 key from the raw key bytes
-            byte[] keyBytes = SasKeyValue.getBytes("UTF-8");
+            byte[] keyBytes = SasKeyValue.getBytes(StandardCharsets.UTF_8);
             SecretKeySpec signingKey = new SecretKeySpec(keyBytes, "HmacSHA256");
 
             // Get an hmac_sha1 Mac instance and initialize with the signing key
@@ -1324,16 +1324,15 @@ public class NotificationHub implements NotificationHubClient {
             mac.init(signingKey);
 
             // Compute the hmac on input data bytes
-            byte[] rawHmac = mac.doFinal(toSign.getBytes("UTF-8"));
+            byte[] rawHmac = mac.doFinal(toSign.getBytes(StandardCharsets.UTF_8));
 
             // Convert raw bytes to Hex
             String signature = URLEncoder.encode(
                 Base64.encodeBase64String(rawHmac), "UTF-8");
 
             // construct authorization string
-            String token = "SharedAccessSignature sr=" + targetUri + "&sig="
+            return "SharedAccessSignature sr=" + targetUri + "&sig="
                 + signature + "&se=" + expires + "&skn=" + SasKeyName;
-            return token;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

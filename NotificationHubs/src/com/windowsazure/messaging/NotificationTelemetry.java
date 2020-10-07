@@ -35,14 +35,11 @@ public class NotificationTelemetry {
     private static final ThreadLocal<Digester> parser;
 
     static {
-        parser = new ThreadLocal<Digester>() {
-            @Override
-            protected Digester initialValue() {
-                Digester instance = new Digester();
-                setupParser(instance);
-                return instance;
-            }
-        };
+        parser = ThreadLocal.withInitial(() -> {
+            Digester instance = new Digester();
+            setupParser(instance);
+            return instance;
+        });
     }
 
     public static NotificationTelemetry parseOne(InputStream content) throws IOException, SAXException {

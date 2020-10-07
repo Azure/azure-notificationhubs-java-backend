@@ -40,9 +40,9 @@ public final class AdmCredential extends PnsCredential {
 
     @Override
     public List<SimpleEntry<String, String>> getProperties() {
-        ArrayList<SimpleEntry<String, String>> result = new ArrayList<SimpleEntry<String, String>>();
-        result.add(new SimpleEntry<String, String>("ClientId", getClientId()));
-        result.add(new SimpleEntry<String, String>("ClientSecret", getClientSecret()));
+        ArrayList<SimpleEntry<String, String>> result = new ArrayList<>();
+        result.add(new SimpleEntry<>("ClientId", getClientId()));
+        result.add(new SimpleEntry<>("ClientSecret", getClientSecret()));
         return result;
     }
 

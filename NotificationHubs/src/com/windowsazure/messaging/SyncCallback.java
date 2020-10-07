@@ -12,7 +12,7 @@ public class SyncCallback<T> implements FutureCallback<T> {
     private T result;
     private RuntimeException runtimeException;
     private NotificationHubsException nhException;
-    private CountDownLatch waitLatch = new CountDownLatch(1);
+    private final CountDownLatch waitLatch = new CountDownLatch(1);
 
     public T getResult() throws NotificationHubsException {
         try {

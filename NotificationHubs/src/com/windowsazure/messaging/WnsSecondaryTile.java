@@ -58,7 +58,7 @@ public class WnsSecondaryTile {
 
     public void addTag(String tag) {
         if (this.tags == null) {
-            this.tags = new ArrayList<String>();
+            this.tags = new ArrayList<>();
         }
 
         this.tags.add(tag);
@@ -70,7 +70,7 @@ public class WnsSecondaryTile {
 
     public void addTemplate(String templateName, InstallationTemplate template) {
         if (this.templates == null) {
-            this.templates = new HashMap<String, InstallationTemplate>();
+            this.templates = new HashMap<>();
         }
 
         this.templates.put(templateName, template);

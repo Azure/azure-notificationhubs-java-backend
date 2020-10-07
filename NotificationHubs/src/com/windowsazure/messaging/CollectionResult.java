@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class CollectionResult {
     private String continuationToken;
-    private final List<Registration> registrations = new LinkedList<Registration>();
+    private final List<Registration> registrations = new LinkedList<>();
 
     public CollectionResult() {
         // TODO Auto-generated constructor stub

@@ -72,15 +72,13 @@ public class BaiduRegistration extends Registration {
 
     @Override
     public String getXml() {
-        StringBuffer buf = new StringBuffer();
-        buf.append(BAIDU_NATIVE_REGISTRATION1);
-        buf.append(getTagsXml());
-        buf.append(BAIDU_NATIVE_REGISTRATION2);
-        buf.append(baiduUserId);
-        buf.append(BAIDU_NATIVE_REGISTRATION3);
-        buf.append(baiduChannelId);
-        buf.append(BAIDU_NATIVE_REGISTRATION4);
-        return buf.toString();
+        return BAIDU_NATIVE_REGISTRATION1 +
+            getTagsXml() +
+            BAIDU_NATIVE_REGISTRATION2 +
+            baiduUserId +
+            BAIDU_NATIVE_REGISTRATION3 +
+            baiduChannelId +
+            BAIDU_NATIVE_REGISTRATION4;
     }
 
 }

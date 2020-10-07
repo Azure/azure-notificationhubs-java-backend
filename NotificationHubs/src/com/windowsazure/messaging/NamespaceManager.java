@@ -4,17 +4,7 @@
 
 package com.windowsazure.messaging;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -23,11 +13,18 @@ import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
 public class NamespaceManager implements NamespaceManagerClient {
-    private static final String IFMATCH_HEADER_NAME = "If-Match";
+    private static final String IF_MATCH_HEADER_NAME = "If-Match";
     private static final String AUTHORIZATION_HEADER_NAME = "Authorization";
     private static final String HUBS_COLLECTION_PATH = "$Resources/NotificationHubs/";
-    private static final String APIVERSION = "?api-version=2014-09";
+    private static final String API_VERSION = "?api-version=2014-09";
     private static final String SKIP_TOP_PARAM = "&$skip=0&$top=2147483647";
     private String endpoint;
     private String SasKeyName;
@@ -39,13 +36,13 @@ public class NamespaceManager implements NamespaceManagerClient {
             throw new RuntimeException("Error parsing connection string: "
                 + connectionString);
 
-        for (int i = 0; i < parts.length; i++) {
-            if (parts[i].startsWith("Endpoint")) {
-                this.endpoint = "https" + parts[i].substring(11);
-            } else if (parts[i].startsWith("SharedAccessKeyName")) {
-                this.SasKeyName = parts[i].substring(20);
-            } else if (parts[i].startsWith("SharedAccessKey")) {
-                this.SasKeyValue = parts[i].substring(16);
+        for (String part : parts) {
+            if (part.startsWith("Endpoint")) {
+                this.endpoint = "https" + part.substring(11);
+            } else if (part.startsWith("SharedAccessKeyName")) {
+                this.SasKeyName = part.substring(20);
+            } else if (part.startsWith("SharedAccessKey")) {
+                this.SasKeyValue = part.substring(16);
             }
         }
     }
@@ -53,7 +50,7 @@ public class NamespaceManager implements NamespaceManagerClient {
     @Override
     public void getNotificationHubAsync(String hubPath, final FutureCallback<NotificationHubDescription> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + API_VERSION);
             final HttpGet get = new HttpGet(uri);
             get.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
 
@@ -92,7 +89,7 @@ public class NamespaceManager implements NamespaceManagerClient {
 
     @Override
     public NotificationHubDescription getNotificationHub(String hubPath) throws NotificationHubsException {
-        SyncCallback<NotificationHubDescription> callback = new SyncCallback<NotificationHubDescription>();
+        SyncCallback<NotificationHubDescription> callback = new SyncCallback<>();
         getNotificationHubAsync(hubPath, callback);
         return callback.getResult();
     }
@@ -100,7 +97,7 @@ public class NamespaceManager implements NamespaceManagerClient {
     @Override
     public void getNotificationHubsAsync(final FutureCallback<List<NotificationHubDescription>> callback) {
         try {
-            URI uri = new URI(endpoint + HUBS_COLLECTION_PATH + APIVERSION + SKIP_TOP_PARAM);
+            URI uri = new URI(endpoint + HUBS_COLLECTION_PATH + API_VERSION + SKIP_TOP_PARAM);
             final HttpGet get = new HttpGet(uri);
             get.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
 
@@ -139,7 +136,7 @@ public class NamespaceManager implements NamespaceManagerClient {
 
     @Override
     public List<NotificationHubDescription> getNotificationHubs() throws NotificationHubsException {
-        SyncCallback<List<NotificationHubDescription>> callback = new SyncCallback<List<NotificationHubDescription>>();
+        SyncCallback<List<NotificationHubDescription>> callback = new SyncCallback<>();
         getNotificationHubsAsync(callback);
         return callback.getResult();
     }
@@ -151,7 +148,7 @@ public class NamespaceManager implements NamespaceManagerClient {
 
     @Override
     public NotificationHubDescription createNotificationHub(NotificationHubDescription hubDescription) throws NotificationHubsException {
-        SyncCallback<NotificationHubDescription> callback = new SyncCallback<NotificationHubDescription>();
+        SyncCallback<NotificationHubDescription> callback = new SyncCallback<>();
         createNotificationHubAsync(hubDescription, callback);
         return callback.getResult();
     }
@@ -163,18 +160,18 @@ public class NamespaceManager implements NamespaceManagerClient {
 
     @Override
     public NotificationHubDescription updateNotificationHub(NotificationHubDescription hubDescription) throws NotificationHubsException {
-        SyncCallback<NotificationHubDescription> callback = new SyncCallback<NotificationHubDescription>();
+        SyncCallback<NotificationHubDescription> callback = new SyncCallback<>();
         updateNotificationHubAsync(hubDescription, callback);
         return callback.getResult();
     }
 
     private void createOrUpdateNotificationHubAsync(NotificationHubDescription hubDescription, final boolean isUpdate, final FutureCallback<NotificationHubDescription> callback) {
         try {
-            URI uri = new URI(endpoint + hubDescription.getPath() + APIVERSION);
+            URI uri = new URI(endpoint + hubDescription.getPath() + API_VERSION);
             final HttpPut put = new HttpPut(uri);
             put.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
             if (isUpdate) {
-                put.setHeader(IFMATCH_HEADER_NAME, "*");
+                put.setHeader(IF_MATCH_HEADER_NAME, "*");
             }
 
             StringEntity entity = new StringEntity(hubDescription.getXml(), ContentType.APPLICATION_ATOM_XML);
@@ -217,7 +214,7 @@ public class NamespaceManager implements NamespaceManagerClient {
     @Override
     public void deleteNotificationHubAsync(String hubPath, final FutureCallback<Object> callback) {
         try {
-            URI uri = new URI(endpoint + hubPath + APIVERSION);
+            URI uri = new URI(endpoint + hubPath + API_VERSION);
             final HttpDelete delete = new HttpDelete(uri);
             delete.setHeader(AUTHORIZATION_HEADER_NAME, generateSasToken(uri));
 
@@ -256,7 +253,7 @@ public class NamespaceManager implements NamespaceManagerClient {
 
     @Override
     public void deleteNotificationHub(String hubPath) throws NotificationHubsException {
-        SyncCallback<Object> callback = new SyncCallback<Object>();
+        SyncCallback<Object> callback = new SyncCallback<>();
         deleteNotificationHubAsync(hubPath, callback);
         callback.getResult();
     }

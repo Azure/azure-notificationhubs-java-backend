@@ -4,25 +4,24 @@
 
 package com.windowsazure.messaging;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.ObjectCreationFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Abstract class representing a registration.
  */
 public abstract class Registration implements Cloneable {
     protected String registrationId;
-    protected Set<String> tags = new HashSet<String>();
+    protected Set<String> tags = new HashSet<>();
     protected String etag;
     protected Date expirationTime;
 
@@ -30,24 +29,18 @@ public abstract class Registration implements Cloneable {
     private static final ThreadLocal<Digester> multiRegParser;
 
     static {
-        singleRegParser = new ThreadLocal<Digester>() {
-            @Override
-            protected Digester initialValue() {
-                Digester instance = new Digester();
-                addRegistrationRules(instance);
-                return instance;
-            }
-        };
+        singleRegParser = ThreadLocal.withInitial(() -> {
+            Digester instance = new Digester();
+            addRegistrationRules(instance);
+            return instance;
+        });
 
-        multiRegParser = new ThreadLocal<Digester>() {
-            @Override
-            protected Digester initialValue() {
-                Digester instance = new Digester();
-                addRegistrationRules(instance);
-                addCollectionRules(instance);
-                return instance;
-            }
-        };
+        multiRegParser = ThreadLocal.withInitial(() -> {
+            Digester instance = new Digester();
+            addRegistrationRules(instance);
+            addCollectionRules(instance);
+            return instance;
+        });
     }
 
     public Registration() {
@@ -98,10 +91,10 @@ public abstract class Registration implements Cloneable {
     }
 
     public void setTagsFromString(String string) {
-        tags = new HashSet<String>();
+        tags = new HashSet<>();
         String[] tagsArray = string.split(",");
-        for (int i = 0; i < tagsArray.length; i++) {
-            tags.add(tagsArray[i].trim());
+        for (String s : tagsArray) {
+            tags.add(s.trim());
         }
     }
 
@@ -127,7 +120,7 @@ public abstract class Registration implements Cloneable {
         this.expirationTime = expirationTime;
     }
 
-    public void setExpirationTimeFromString(String expirationTimeString) throws ParseException {
+    public void setExpirationTimeFromString(String expirationTimeString) {
         this.expirationTime = javax.xml.bind.DatatypeConverter.parseDateTime(expirationTimeString).getTime();
     }
 
@@ -275,7 +268,7 @@ public abstract class Registration implements Cloneable {
         private Digester digester;
 
         @Override
-        public Object createObject(Attributes attributes) throws Exception {
+        public Object createObject(Attributes attributes) {
             if ("WindowsRegistrationDescription".equals(attributes
                 .getValue("i:type"))) {
                 return new WindowsRegistration();

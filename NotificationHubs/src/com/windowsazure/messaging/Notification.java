@@ -236,7 +236,7 @@ public class Notification {
      *
      * @param body the body for the Baidu notification
      * @return a Baidu notification with the given body.
-     * @deprecated use {@link #createBaiduNotifiation(String)} instead.
+     * @deprecated use {@link #createBaiduNotification(String)} instead.
      */
     @Deprecated
     public static Notification createBaiduNotifiation(String body) {

@@ -60,7 +60,7 @@ public class NotificationHubsExceptionFactory {
     }
 
     public static NotificationHubsException createNotificationHubException(HttpResponse response, int httpStatusCode,
-                                                                           String message) throws IOException {
+                                                                           String message) {
         Optional<Duration> retryAfter = parseRetryAfter(response);
         boolean isTransient = isTransientStatusCode(httpStatusCode);
         if (retryAfter.isPresent()) {

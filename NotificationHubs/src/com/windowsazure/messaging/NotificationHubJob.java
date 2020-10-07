@@ -34,23 +34,17 @@ public class NotificationHubJob {
     private static final ThreadLocal<Digester> collectionParser;
 
     static {
-        singleEntryParser = new ThreadLocal<Digester>() {
-            @Override
-            protected Digester initialValue() {
-                Digester instance = new Digester();
-                setupSingleEntryParser(instance);
-                return instance;
-            }
-        };
+        singleEntryParser = ThreadLocal.withInitial(() -> {
+            Digester instance = new Digester();
+            setupSingleEntryParser(instance);
+            return instance;
+        });
 
-        collectionParser = new ThreadLocal<Digester>() {
-            @Override
-            protected Digester initialValue() {
-                Digester instance = new Digester();
-                setupCollectionParser(instance);
-                return instance;
-            }
-        };
+        collectionParser = ThreadLocal.withInitial(() -> {
+            Digester instance = new Digester();
+            setupCollectionParser(instance);
+            return instance;
+        });
     }
 
     public String getJobId() {
@@ -151,7 +145,7 @@ public class NotificationHubJob {
         if (this.jobType != null) buf.append("<Type>").append(this.jobType.name()).append("</Type>");
         if (this.outputContainerUri != null)
             buf.append("<OutputContainerUri>").append(this.outputContainerUri).append("</OutputContainerUri>");
-        if (this.importFileUri != null) buf.append("<ImportFileUri>" + this.importFileUri + "</ImportFileUri>");
+        if (this.importFileUri != null) buf.append("<ImportFileUri>").append(this.importFileUri).append("</ImportFileUri>");
         buf.append(XML_FOOTER);
         return buf.toString();
     }

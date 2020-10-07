@@ -102,7 +102,7 @@ public class MpnsTemplateRegistration extends MpnsRegistration {
     }
 
     private String getHeadersXml() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         if (!headers.isEmpty()) {
             buf.append("<MpnsHeaders>");
             for (String key : headers.keySet()) {

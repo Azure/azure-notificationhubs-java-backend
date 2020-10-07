@@ -38,16 +38,16 @@ public final class WindowsCredential extends PnsCredential {
         this.secretKey = secretKey;
     }
 
-    public void setWindowsLiveEndpoint(String propertyValue) throws Exception {
+    public void setWindowsLiveEndpoint(String propertyValue) {
         // fix for reflection that's calling 'setWindowsLiveEndpoint' of null.
         // unused function
     }
 
     @Override
     public List<SimpleEntry<String, String>> getProperties() {
-        ArrayList<SimpleEntry<String, String>> result = new ArrayList<SimpleEntry<String, String>>();
-        result.add(new SimpleEntry<String, String>("PackageSid", getPackageSid()));
-        result.add(new SimpleEntry<String, String>("SecretKey", getSecretKey()));
+        ArrayList<SimpleEntry<String, String>> result = new ArrayList<>();
+        result.add(new SimpleEntry<>("PackageSid", getPackageSid()));
+        result.add(new SimpleEntry<>("SecretKey", getSecretKey()));
         return result;
     }
 

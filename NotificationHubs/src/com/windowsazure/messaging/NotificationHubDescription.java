@@ -28,23 +28,17 @@ public class NotificationHubDescription {
     private static final ThreadLocal<Digester> collectionParser;
 
     static {
-        singleEntryParser = new ThreadLocal<Digester>() {
-            @Override
-            protected Digester initialValue() {
-                Digester instance = new Digester();
-                setupSingleEntryParser(instance);
-                return instance;
-            }
-        };
+        singleEntryParser = ThreadLocal.withInitial(() -> {
+            Digester instance = new Digester();
+            setupSingleEntryParser(instance);
+            return instance;
+        });
 
-        collectionParser = new ThreadLocal<Digester>() {
-            @Override
-            protected Digester initialValue() {
-                Digester instance = new Digester();
-                setupCollectionParser(instance);
-                return instance;
-            }
-        };
+        collectionParser = ThreadLocal.withInitial(() -> {
+            Digester instance = new Digester();
+            setupCollectionParser(instance);
+            return instance;
+        });
     }
 
     public NotificationHubDescription() {

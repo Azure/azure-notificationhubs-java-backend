@@ -70,13 +70,11 @@ public class GcmRegistration extends Registration {
 
     @Override
     public String getXml() {
-        StringBuffer buf = new StringBuffer();
-        buf.append(GCM_NATIVE_REGISTRATION1);
-        buf.append(getTagsXml());
-        buf.append(GCM_NATIVE_REGISTRATION2);
-        buf.append(gcmRegistrationId);
-        buf.append(GCM_NATIVE_REGISTRATION3);
-        return buf.toString();
+        return GCM_NATIVE_REGISTRATION1 +
+            getTagsXml() +
+            GCM_NATIVE_REGISTRATION2 +
+            gcmRegistrationId +
+            GCM_NATIVE_REGISTRATION3;
     }
 
 }
