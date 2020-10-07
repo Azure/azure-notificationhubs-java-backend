@@ -52,7 +52,7 @@ public class NotificationHub implements NotificationHubClient {
 	private static final String CONTENT_LOCATION_HEADER = "Location";
 	private static final String TRACKING_ID_HEADER = "TrackingId";
 	private String endpoint;
-	private String hubPath;
+	private final String hubPath;
 	private String SasKeyName;
 	private String SasKeyValue;
 
@@ -375,6 +375,11 @@ public class NotificationHub implements NotificationHubClient {
 		getRegistrationAsync(registrationId, callback);
 		return callback.getResult();
 	}
+
+    @Override
+    public void getRegistrationsAsync(FutureCallback<CollectionResult> callback) {
+        getRegistrationsAsync(0, null, callback);
+    }
 
 	@Override
 	public void getRegistrationsAsync(int top, String continuationToken, final FutureCallback<CollectionResult> callback) {

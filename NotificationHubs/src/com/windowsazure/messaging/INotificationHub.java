@@ -10,202 +10,665 @@ import java.util.Set;
 
 import org.apache.http.concurrent.FutureCallback;
 
-
 /**
- * Interface for the REST wrapper of WIndows Azure Notification Hubs
+ * This interface represents all actions that can be done on an Azure
+ * Notification Hub. This interface will be removed in favor of the
+ * NotificationHubClient interface and should not be used directly.
  */
 public interface INotificationHub {
 
-	void createOrUpdateInstallation(Installation installation) throws NotificationHubsException;
-	void patchInstallation(String installationId, PartialUpdateOperation... operations) throws NotificationHubsException;
-	void patchInstallation(String installationId, List<PartialUpdateOperation> operations) throws NotificationHubsException;
-	void deleteInstallation(String installationId) throws NotificationHubsException;
-	Installation getInstallation(String installationId) throws NotificationHubsException;
+    /**
+     * Creates or updates an installation.
+     *
+     * @param installation The installation to create or update.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    void createOrUpdateInstallation(Installation installation) throws NotificationHubsException;
 
-	NotificationOutcome scheduleNotification(Notification notification, Date scheduledTime) throws NotificationHubsException;
-	NotificationOutcome scheduleNotification(Notification notification, Set<String> tags, Date scheduledTime) throws NotificationHubsException;
-	NotificationOutcome scheduleNotification(Notification notification, String tagExpression, Date scheduledTime) throws NotificationHubsException;
-	NotificationOutcome sendDirectNotification(Notification notification, String deviceHandle) throws NotificationHubsException;
-	NotificationOutcome sendDirectNotification(Notification notification, List<String> deviceHandles) throws NotificationHubsException;
-	void cancelScheduledNotification(String notificationId) throws NotificationHubsException;
+    /**
+     * Creates or updates an installation.
+     *
+     * @param installation The installation to create or update.
+     * @param callback     A callback, when invoked, returns nothing.
+     */
+    void createOrUpdateInstallationAsync(Installation installation, FutureCallback<Object> callback);
 
-	NotificationHubJob submitNotificationHubJob(NotificationHubJob job) throws NotificationHubsException;
-	NotificationHubJob getNotificationHubJob(String jobId) throws NotificationHubsException;
-	List<NotificationHubJob> getAllNotificationHubJobs() throws NotificationHubsException;
+    /**
+     * Patches an installation with the given installation ID.
+     *
+     * @param installationId The installation ID to patch.
+     * @param operations     The list of operations to perform on the installation.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    void patchInstallation(String installationId, PartialUpdateOperation... operations)
+        throws NotificationHubsException;
 
-	NotificationTelemetry getNotificationTelemetry(String notificationId) throws NotificationHubsException;
+    /**
+     * Patches an installation with the given installation ID.
+     *
+     * @param installationId The installation ID to patch.
+     * @param callback       A callback, when invoked, returns nothing.
+     * @param operations     The list of operations to perform on the installation.
+     */
+    void patchInstallationAsync(String installationId, FutureCallback<Object> callback,
+                                PartialUpdateOperation... operations);
 
-	void createRegistrationIdAsync(FutureCallback<String> callback);
-	void createRegistrationAsync(Registration registration, FutureCallback<Registration> callback);
-	void updateRegistrationAsync(Registration registration, FutureCallback<Registration> callback);
-	void upsertRegistrationAsync(Registration registration, FutureCallback<Registration> callback);
-	void deleteRegistrationAsync(Registration registration, FutureCallback<Object> callback);
-	void deleteRegistrationAsync(String registrationId, FutureCallback<Object> callback);
-	void getRegistrationAsync(String registrationId, FutureCallback<Registration> callback);
-	void getRegistrationsByChannelAsync(String channel, int top, String continuationToken, FutureCallback<CollectionResult> callback);
-	void getRegistrationsByTagAsync(String tag, int top, String continuationToken, FutureCallback<CollectionResult> callback);
-	void getRegistrationsByTagAsync(String tag,	FutureCallback<CollectionResult> callback);
-	void getRegistrationsByChannelAsync(String channel,	FutureCallback<CollectionResult> callback);
-	void getRegistrationsAsync(int top, String continuationToken, FutureCallback<CollectionResult> callback);
+    /**
+     * Patches an installation with the given installation ID.
+     *
+     * @param installationId The installation ID to patch.
+     * @param operations     The list of operations to perform on the installation.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    void patchInstallation(String installationId, List<PartialUpdateOperation> operations)
+        throws NotificationHubsException;
 
-	void sendNotificationAsync(Notification notification, FutureCallback<NotificationOutcome> callback);
-	void sendNotificationAsync(Notification notification, Set<String> tags,	FutureCallback<NotificationOutcome> callback);
-	void sendNotificationAsync(Notification notification, String tagExpression,	FutureCallback<NotificationOutcome> callback);
-	void sendDirectNotificationAsync(Notification notification, String deviceHandle, FutureCallback<NotificationOutcome> callback);
-	void sendDirectNotificationAsync(Notification notification, List<String> deviceHandles, FutureCallback<NotificationOutcome> callback);
-	void scheduleNotificationAsync(Notification notification, Date scheduledTime, FutureCallback<NotificationOutcome> callback);
-	void scheduleNotificationAsync(Notification notification, Set<String> tags,	Date scheduledTime, FutureCallback<NotificationOutcome> callback);
-	void scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime, FutureCallback<NotificationOutcome> callback);
-	void cancelScheduledNotificationAsync(String notificationId, FutureCallback<Object> callback);
+    /**
+     * Patches an installation with the given installation ID.
+     *
+     * @param installationId The installation ID to patch.
+     * @param operations     The list of operations to perform on the installation.
+     * @param callback       A callback, when invoked, returns nothing.
+     */
+    void patchInstallationAsync(String installationId, List<PartialUpdateOperation> operations,
+                                FutureCallback<Object> callback);
 
-	void createOrUpdateInstallationAsync(Installation installation,	FutureCallback<Object> callback);
-	void patchInstallationAsync(String installationId,	List<PartialUpdateOperation> operations, FutureCallback<Object> callback);
-	void patchInstallationAsync(String installationId,	FutureCallback<Object> callback, PartialUpdateOperation... operations);
-	void deleteInstallationAsync(String installationId,	FutureCallback<Object> callback);
-	void getInstallationAsync(String installationId, FutureCallback<Installation> callback);
+    /**
+     * Deletes an installation with the given installation ID.
+     *
+     * @param installationId The installation ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    void deleteInstallation(String installationId) throws NotificationHubsException;
 
-	void submitNotificationHubJobAsync(NotificationHubJob job,	FutureCallback<NotificationHubJob> callback);
-	void getNotificationHubJobAsync(String jobId, FutureCallback<NotificationHubJob> callback);
-	void getAllNotificationHubJobsAsync(FutureCallback<List<NotificationHubJob>> callback);
+    /**
+     * Deletes an installation with the given installation ID.
+     *
+     * @param installationId The installation ID.
+     * @param callback       A callback, when invoked, returns nothing.
+     */
+    void deleteInstallationAsync(String installationId, FutureCallback<Object> callback);
 
-	void getNotificationTelemetryAsync(String notificationId, FutureCallback<NotificationTelemetry> callback);
+    /**
+     * Gets an installation by the given installation ID.
+     *
+     * @param installationId The installation ID for the installation to get.
+     * @return The matching installation by the installation ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    Installation getInstallation(String installationId) throws NotificationHubsException;
 
+    /**
+     * Gets an installation by the given installation ID.
+     *
+     * @param installationId The installation ID for the installation to get.
+     * @param callback       A callback, when invoked, returns the matching
+     *                       installation by the installation ID.
+     */
+    void getInstallationAsync(String installationId, FutureCallback<Installation> callback);
 
-	/**
-	 * Create a registrationId, without creating an actual registration. To create use upsert.
-	 * This method is used when the registration id is stored only on the device.
-	 *
-	 * @return a registration id.
-	 */
-	String createRegistrationId() throws NotificationHubsException;
+    /**
+     * Submits a notification hub job such as import or export.
+     *
+     * @param job The notification hubs job to submit.
+     * @return The notification job with status.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    NotificationHubJob submitNotificationHubJob(NotificationHubJob job) throws NotificationHubsException;
 
-	/**
-	 * This method creates a new registration
-	 * @param registration A registration object containing the description of the registration to create.
-	 * ETag and registrationid are ignored
-	 *
-	 * @return the created registration containing the read-only parameters (registrationid, etag, and expiration time).
-	 */
-	Registration createRegistration(Registration registration) throws NotificationHubsException;
+    /**
+     * Submits a notification hub job such as import or export.
+     *
+     * @param job      The notification hubs job to submit.
+     * @param callback A callback, when invoked, returns the notification job with
+     *                 status.
+     */
+    void submitNotificationHubJobAsync(NotificationHubJob job, FutureCallback<NotificationHubJob> callback);
 
-	/**
-	 * This methods updates an existing registration
-	 *
-	 * @param registration A registration object containing the description of the registration to update.
-	 * The registration id has to be populated.
-	 *
-	 * @throws NotificationHubsException
-	 * runtime exception if the registration already exists
-	 *
-	 * @return the updated registration containing the read-only parameters (registrationid, etag, and expiration time).
-	 */
-	Registration updateRegistration(Registration registration) throws NotificationHubsException;
+    /**
+     * Gets a notification hub job by the job ID.
+     *
+     * @param jobId The job ID of the notification hub job to get.
+     * @return The notification hub job with the matching job ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    NotificationHubJob getNotificationHubJob(String jobId) throws NotificationHubsException;
 
-	/**
-	 * This method updates or creates a new regiostration with the registration id specified.
-	 *
-	 * @param registration A registration object containing the description of the registration to create or update.
-	 * The registration id has to be populated.
-	 *
-	 * @return the updated registration containing the read-only parameters (registrationid, etag, and expiration time).
-	 */
-	Registration upsertRegistration(Registration registration) throws NotificationHubsException;
+    /**
+     * Gets a notification hub job by the job ID.
+     *
+     * @param jobId    The job ID of the notification hub job to get.
+     * @param callback A callback, when invoked, returns the notification hub job
+     *                 with the matching job ID.
+     */
+    void getNotificationHubJobAsync(String jobId, FutureCallback<NotificationHubJob> callback);
 
-	/**
-	 * Deletes a registration.
-	 *
-	 * @param registration. Registration id has to be populated.
-	 */
-	void deleteRegistration(Registration registration) throws NotificationHubsException;
+    /**
+     * Gets all notification hub jobs for this namespace.
+     *
+     * @return All notification hub jobs for this namespace.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    List<NotificationHubJob> getAllNotificationHubJobs() throws NotificationHubsException;
 
-	/**
-	 * Deletes a registration.
-	 *
-	 * @param registrationId
-	 */
-	void deleteRegistration(String registrationId) throws NotificationHubsException;
+    /**
+     * Gets all notification hub jobs for this namespace.
+     *
+     * @param callback A callback, when invoked, returns all notification hub jobs
+     *                 for this namespace.
+     */
+    void getAllNotificationHubJobsAsync(FutureCallback<List<NotificationHubJob>> callback);
 
-	/**
-	 * Retrieves the description of a registration based on the id.
-	 *
-	 * @param registrationId
-	 * @return A registration object
-	 */
-	Registration getRegistration(String registrationId) throws NotificationHubsException;
+    /**
+     * Gets notification telemetry by the notification ID.
+     *
+     * @param notificationId The notification ID for the telemetry.
+     * @return The notification telemetry for the given notification.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    NotificationTelemetry getNotificationTelemetry(String notificationId) throws NotificationHubsException;
 
-	/**
-	 * Return all registrations in this hub
-	 *
-	 * @return Registration collection.
-	 */
-	CollectionResult getRegistrations() throws NotificationHubsException;
+    /**
+     * Gets notification telemetry by the notification ID.
+     *
+     * @param notificationId The notification ID for the telemetry.
+     * @param callback       A callback, when invoked, returns the notification
+     *                       telemetry for the given notification.
+     */
+    void getNotificationTelemetryAsync(String notificationId, FutureCallback<NotificationTelemetry> callback);
 
-	/**
-	 * Returns all registrations in this hub
-	 *
-	 * @param top The maximum number of registrations to return (max 100)
-	 * @param continuationToken If not-null, continues iterating through a previously requested query.
-	 *
-	 * @return Registration collection.
-	 */
-	CollectionResult getRegistrations(int top, String continuationToken) throws NotificationHubsException;
+    /**
+     * Create a registrationId, without creating an actual registration. To create
+     * use upsert. This method is used when the registration id is stored only on
+     * the device.
+     *
+     * @return The newly created registration ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    String createRegistrationId() throws NotificationHubsException;
 
-	/**
-	 * Returns all registrations with a specific tag
-	 *
-	 * @param tag
-	 *
-	 * @return Registration Collection
-	 */
-	CollectionResult getRegistrationsByTag(String tag) throws NotificationHubsException;
+    /**
+     * Create a registrationId, without creating an actual registration. To create
+     * use upsert. This method is used when the registration id is stored only on
+     * the device.
+     *
+     * @param callback A callback with the newly created registration ID.
+     */
+    void createRegistrationIdAsync(FutureCallback<String> callback);
 
-	/**
-	 * Returns all registrations with a specific tag
-	 *
-	 * @param tag
-	 * @param top The maximum number of registrations to return (max 100)
-	 * @param continuationToken If not-null, continues iterating through a previously requested query.
-	 *
-	 * @return Registration Collection
-	 */
-	CollectionResult getRegistrationsByTag(String tag, int top, String continuationToken) throws NotificationHubsException;
+    /**
+     * This method creates a new registration
+     *
+     * @param registration A registration object containing the description of the
+     *                     registration to create. ETag and registration ID are
+     *                     ignored
+     *
+     * @return The created registration containing the read-only parameters
+     *         (registration ID, ETag, and expiration time).
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    Registration createRegistration(Registration registration) throws NotificationHubsException;
 
-	/**
-	 * Returns all registration with a specific channel (e.g. ChannelURI, device token)
-	 * @param channel
-	 * @return Registration Collection
-	 */
-	CollectionResult getRegistrationsByChannel(String channel) throws NotificationHubsException;
+    /**
+     * This method creates a new registration
+     *
+     * @param registration A registration object containing the description of the
+     *                     registration to create. ETag and registration ID are
+     *                     ignored
+     *
+     * @param callback     A callback when invoked returns created registration
+     *                     containing the read-only parameters (registration ID,
+     *                     ETag, and expiration time)
+     */
+    void createRegistrationAsync(Registration registration, FutureCallback<Registration> callback);
 
-	/**
-	 * Returns all registration with a specific channel (e.g. ChannelURI, device token)
-	 * @param channel
-	 * @param top The maximum number of registrations to return (max 100)
-	 * @param continuationToken If not-null, continues iterating through a previously requested query.
-	 * @return Registration Collection
-	 */
-	CollectionResult getRegistrationsByChannel(String channel, int top, String continuationToken) throws NotificationHubsException;
+    /**
+     * This methods updates an existing registration
+     *
+     * @param registration A registration object containing the description of the
+     *                     registration to update. The registration ID has to be
+     *                     populated.
+     *
+     * @return The updated registration containing the read-only parameters
+     *         (registration ID, ETag, and expiration time).
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    Registration updateRegistration(Registration registration) throws NotificationHubsException;
 
-	/**
-	 * Sends a notification to all eligible registrations (i.e. only correct platform, if notification is platform specific)
-	 *
-	 * @param notification
-	 */
-	NotificationOutcome sendNotification(Notification notification) throws NotificationHubsException;
+    /**
+     * This methods updates an existing registration
+     *
+     * @param registration A registration object containing the description of the
+     *                     registration to update. The registration ID must be
+     *                     populated.
+     * @param callback     A callback when invoked, returns the updated registration
+     *                     containing the read-only parameters (registration ID,
+     *                     ETag, and expiration time).
+     */
+    void updateRegistrationAsync(Registration registration, FutureCallback<Registration> callback);
 
-	/**
-	 * Sends a notifications to all eligible registrations with at least one of the specified tags
-	 *
-	 * @param notification
-	 * @param tags
-	 */
-	NotificationOutcome sendNotification(Notification notification, Set<String> tags) throws NotificationHubsException;
+    /**
+     * This method updates or creates a new registration with the registration ID
+     * specified.
+     *
+     * @param registration A registration object containing the description of the
+     *                     registration to create or update. The registration ID
+     *                     must be populated.
+     *
+     * @return The updated registration containing the read-only parameters
+     *         (registration ID, ETag, and expiration time).
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    Registration upsertRegistration(Registration registration) throws NotificationHubsException;
 
-	/**
-	 * Sends a notifications to all eligible registrations that satisfy the provided tag expression
-	 *
-	 * @param notification
-	 * @param tagExpression
-	 */
-	NotificationOutcome sendNotification(Notification notification, String tagExpression) throws NotificationHubsException;
+    /**
+     * This method updates or creates a new registration with the registration id
+     * specified.
+     *
+     * @param registration A registration object containing the description of the
+     *                     registration to create or update. The registration ID
+     *                     must be populated.
+     * @param callback     A callback, when invoked, returns the updated
+     *                     registration containing the read-only parameters
+     *                     (registration ID, ETag, and expiration time).
+     */
+    void upsertRegistrationAsync(Registration registration, FutureCallback<Registration> callback);
+
+    /**
+     * Deletes a registration with the given registration containing a populated
+     * registrationId.
+     *
+     * @param registration The registration containing the registrationId field
+     *                     populated.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    void deleteRegistration(Registration registration) throws NotificationHubsException;
+
+    /**
+     * Deletes a registration with the given registration containing a populated
+     * registrationId.
+     *
+     * @param registration The registration containing the registrationId field
+     *                     populated.
+     * @param callback     A callback when invoked returns nothing.
+     */
+    void deleteRegistrationAsync(Registration registration, FutureCallback<Object> callback);
+
+    /**
+     * Deletes a registration by the given registration ID.
+     *
+     * @param registrationId The registration ID for the registration to delete.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    void deleteRegistration(String registrationId) throws NotificationHubsException;
+
+    /**
+     * Deletes a registration by the given registration ID.
+     *
+     * @param registrationId The registration ID for the registration to delete.
+     * @param callback       A callback when invoked returns nothing.
+     */
+    void deleteRegistrationAsync(String registrationId, FutureCallback<Object> callback);
+
+    /**
+     * Retrieves the description of a registration based on the ID.
+     *
+     * @param registrationId The ID for the registration to retrieve.
+     * @return The registration with the ID matching the given registration ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    Registration getRegistration(String registrationId) throws NotificationHubsException;
+
+    /**
+     * Retrieves the description of a registration based on the ID.
+     *
+     * @param registrationId The ID for the registration to retrieve.
+     * @param callback       A callback, when invoked, returns the registration with
+     *                       the ID matching the given registration ID.
+     */
+    void getRegistrationAsync(String registrationId, FutureCallback<Registration> callback);
+
+    /**
+     * Return all registrations in the current notification hub.
+     *
+     * @return Collection containing the registrations.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    CollectionResult getRegistrations() throws NotificationHubsException;
+
+    /**
+     * Return all registrations in the current notification hub.
+     *
+     * @param callback The callback when invoked, returns a collection containing
+     *                 registrations.
+     */
+    void getRegistrationsAsync(FutureCallback<CollectionResult> callback);
+
+    /**
+     * Returns all registrations in this hub
+     *
+     * @param top               The maximum number of registrations to return (max
+     *                          100)
+     * @param continuationToken If not-null, continues iterating through a
+     *                          previously requested query.
+     *
+     * @return A collection containing the registrations.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    CollectionResult getRegistrations(int top, String continuationToken) throws NotificationHubsException;
+
+    /**
+     * Returns all registrations in this hub
+     *
+     * @param top               The maximum number of registrations to return (max
+     *                          100)
+     * @param continuationToken If not-null, continues iterating through a
+     *                          previously requested query.
+     * @param callback          A callback when invoked returns a collection
+     *                          containing the registrations.
+     */
+    void getRegistrationsAsync(int top, String continuationToken, FutureCallback<CollectionResult> callback);
+
+    /**
+     * Returns all registrations with a specific tag
+     *
+     * @param tag The tag to search for registrations.
+     *
+     * @return A collection of registrations with the given tag.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    CollectionResult getRegistrationsByTag(String tag) throws NotificationHubsException;
+
+    /**
+     * Returns all registrations with a specific tag
+     *
+     * @param tag      The tag to search for registrations.
+     * @param callback A callback, when invoked, returns a collection of
+     *                 registrations with the given tag.
+     */
+    void getRegistrationsByTagAsync(String tag, FutureCallback<CollectionResult> callback);
+
+    /**
+     * Returns all registrations with a specific tag
+     *
+     * @param tag               The tag to search for registrations.
+     * @param top               The maximum number of registrations to return (max
+     *                          100)
+     * @param continuationToken If not-null, continues iterating through a
+     *                          previously requested query.
+     *
+     * @return A collection of registrations with the given tag.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    CollectionResult getRegistrationsByTag(String tag, int top, String continuationToken)
+        throws NotificationHubsException;
+
+    /**
+     * Returns all registrations with a specific tag
+     *
+     * @param tag               The tag to search for registrations.
+     * @param top               The maximum number of registrations to return (max
+     *                          100)
+     * @param continuationToken If not-null, continues iterating through a
+     *                          previously requested query.
+     * @param callback          A callback when invoked, returns a collection of
+     *                          registrations with the given tag.
+     */
+    void getRegistrationsByTagAsync(String tag, int top, String continuationToken,
+                                    FutureCallback<CollectionResult> callback);
+
+    /**
+     * Returns all registration with a specific channel (e.g. ChannelURI, device
+     * token)
+     *
+     * @param channel The channel URI, device token or other unique PNS identifier.
+     * @return A collection of registrations with matching channels.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    CollectionResult getRegistrationsByChannel(String channel) throws NotificationHubsException;
+
+    /**
+     * Returns all registration with a specific channel (e.g. ChannelURI, device
+     * token)
+     *
+     * @param channel  The channel URI, device token or other unique PNS identifier.
+     * @param callback A callback, when invoked, returns a collection of
+     *                 registrations with matching channels.
+     */
+    void getRegistrationsByChannelAsync(String channel, FutureCallback<CollectionResult> callback);
+
+    /**
+     * Returns all registration with a specific channel (e.g. ChannelURI, device
+     * token)
+     *
+     * @param channel           The channel URI, device token or other unique PNS
+     *                          identifier.
+     * @param top               The maximum number of registrations to return (max
+     *                          100)
+     * @param continuationToken If not-null, continues iterating through a
+     *                          previously requested query.
+     * @return A collection of registrations with matching channels.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    CollectionResult getRegistrationsByChannel(String channel, int top, String continuationToken)
+        throws NotificationHubsException;
+
+    /**
+     * Returns all registration with a specific channel (e.g. ChannelURI, device
+     * token)
+     *
+     * @param channel           The channel URI, device token or other unique PNS
+     *                          identifier.
+     * @param top               The maximum number of registrations to return (max
+     *                          100)
+     * @param continuationToken If not-null, continues iterating through a
+     *                          previously requested query.
+     * @param callback          A callback, when invoked, returns a collection of
+     *                          registrations with matching channels.
+     */
+    void getRegistrationsByChannelAsync(String channel, int top, String continuationToken,
+                                        FutureCallback<CollectionResult> callback);
+
+    /**
+     * Sends a notification to all eligible registrations (i.e. only correct
+     * platform, if notification is platform specific)
+     *
+     * @param notification The notification to send to all eligible registrations.
+     * @return A notification outcome with the tracking ID and notification ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    NotificationOutcome sendNotification(Notification notification) throws NotificationHubsException;
+
+    /**
+     * Sends a notification to all eligible registrations (i.e. only correct
+     * platform, if notification is platform specific)
+     *
+     * @param notification The notification to send to all eligible registrations.
+     * @param callback     A callback, when invoked, returns a notification outcome
+     *                     with the tracking ID and notification ID.
+     */
+    void sendNotificationAsync(Notification notification, FutureCallback<NotificationOutcome> callback);
+
+    /**
+     * Sends a notifications to all eligible registrations with at least one of the
+     * specified tags
+     *
+     * @param notification The notification to send to the audience with the
+     *                     specified tags.
+     * @param tags         The tags for targeting the notifications.
+     * @return A notification outcome with the tracking ID and notification ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    NotificationOutcome sendNotification(Notification notification, Set<String> tags) throws NotificationHubsException;
+
+    /**
+     * Sends a notifications to all eligible registrations with at least one of the
+     * specified tags
+     *
+     * @param notification The notification to send to the audience with the
+     *                     specified tags.
+     * @param tags         The tags for targeting the notifications.
+     * @param callback     A callback, when invoked, returns a notification outcome
+     *                     with the tracking ID and notification ID.
+     */
+    void sendNotificationAsync(Notification notification, Set<String> tags,
+                               FutureCallback<NotificationOutcome> callback);
+
+    /**
+     * Sends a notifications to all eligible registrations that satisfy the provided
+     * tag expression.
+     *
+     * @param notification  The notification to send to the audience that matches
+     *                      the specified tag expression.
+     * @param tagExpression The tag expression for targeting the notifications.
+     * @return A notification outcome with the tracking ID and notification ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    NotificationOutcome sendNotification(Notification notification, String tagExpression)
+        throws NotificationHubsException;
+
+    /**
+     * Sends a notifications to all eligible registrations that satisfy the provided
+     * tag expression.
+     *
+     * @param notification  The notification to send to the audience that matches
+     *                      the specified tag expression.
+     * @param tagExpression The tag expression for targeting the notifications.
+     * @param callback      A callback, when invoked, returns a notification outcome
+     *                      with the tracking ID and notification ID.
+     */
+    void sendNotificationAsync(Notification notification, String tagExpression,
+                               FutureCallback<NotificationOutcome> callback);
+
+    /**
+     * Schedules a notification at the given scheduled time.
+     *
+     * @param notification  The notification to send at the scheduled time.
+     * @param scheduledTime The scheduled time for the notification.
+     * @return A notification outcome with the tracking ID and notification ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    NotificationOutcome scheduleNotification(Notification notification, Date scheduledTime)
+        throws NotificationHubsException;
+
+    /**
+     * Schedules a notification at the given scheduled time.
+     *
+     * @param notification  The notification to send at the scheduled time.
+     * @param scheduledTime The scheduled time for the notification.
+     * @param callback      A callback, when invoked, returns a notification outcome
+     *                      with the tracking ID and notification ID.
+     */
+    void scheduleNotificationAsync(Notification notification, Date scheduledTime,
+                                   FutureCallback<NotificationOutcome> callback);
+
+    /**
+     * Schedules a notification at the given time with a set of tags.
+     *
+     * @param notification  The notification to send at the given time.
+     * @param tags          The tags associated with the notification targeting.
+     * @param scheduledTime The scheduled time for the notification.
+     * @return A notification outcome with the tracking ID and notification ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    NotificationOutcome scheduleNotification(Notification notification, Set<String> tags, Date scheduledTime)
+        throws NotificationHubsException;
+
+    /**
+     * Schedules a notification at the given time with a set of tags.
+     *
+     * @param notification  The notification to send at the given time.
+     * @param tags          The tags associated with the notification targeting.
+     * @param scheduledTime The scheduled time for the notification.
+     * @param callback      A callback, when invoked, returns a notification outcome
+     *                      with the tracking ID and notification ID.
+     */
+    void scheduleNotificationAsync(Notification notification, Set<String> tags, Date scheduledTime,
+                                   FutureCallback<NotificationOutcome> callback);
+
+    /**
+     * Schedules a notification at the given time with a tag expression.
+     *
+     * @param notification  The notification to send at the given time.
+     * @param tagExpression The tag expression associated with the notification
+     *                      targeting.
+     * @param scheduledTime The scheduled time for the notification.
+     * @return A notification outcome with the tracking ID and notification ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    NotificationOutcome scheduleNotification(Notification notification, String tagExpression, Date scheduledTime)
+        throws NotificationHubsException;
+
+    /**
+     * Schedules a notification at the given time with a tag expression.
+     *
+     * @param notification  The notification to send at the given time.
+     * @param tagExpression The tag expression associated with the notification
+     *                      targeting.
+     * @param scheduledTime The scheduled time for the notification.
+     * @param callback      A callback, when invoked, returns a notification outcome
+     *                      with the tracking ID and notification ID.
+     */
+    void scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime,
+                                   FutureCallback<NotificationOutcome> callback);
+
+    /**
+     * Sends a direct notification to a given device handle.
+     *
+     * @param notification The notification to send directly to the device handle.
+     * @param deviceHandle The device handle to target for the notification.
+     * @return A notification outcome with the tracking ID and notification ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    NotificationOutcome sendDirectNotification(Notification notification, String deviceHandle)
+        throws NotificationHubsException;
+
+    /**
+     * Sends a direct notification to a given device handle.
+     *
+     * @param notification The notification to send directly to the device handle.
+     * @param deviceHandle The device handle to target for the notification.
+     * @param callback     A callback, when invoked, returns a notification outcome
+     *                     with the tracking ID and notification ID.
+     */
+    void sendDirectNotificationAsync(Notification notification, String deviceHandle,
+                                     FutureCallback<NotificationOutcome> callback);
+
+    /**
+     * Sends a direct notification to the given device handles.
+     *
+     * @param notification  The notification to send directly to the device handles.
+     * @param deviceHandles The device handles to target for the notification.
+     * @return A notification outcome with the tracking ID and notification ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    NotificationOutcome sendDirectNotification(Notification notification, List<String> deviceHandles)
+        throws NotificationHubsException;
+
+    /**
+     * Sends a direct notification to the given device handles.
+     *
+     * @param notification  The notification to send directly to the device handles.
+     * @param deviceHandles The device handles to target for the notification.
+     * @param callback      A callback, when invoked, returns a notification outcome
+     *                      with the tracking ID and notification ID.
+     */
+    void sendDirectNotificationAsync(Notification notification, List<String> deviceHandles,
+                                     FutureCallback<NotificationOutcome> callback);
+
+    /**
+     * Cancels the scheduled notification with the given notification ID.
+     *
+     * @param notificationId The notification ID of the notification to cancel.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    void cancelScheduledNotification(String notificationId) throws NotificationHubsException;
+
+    /**
+     * Cancels the scheduled notification with the given notification ID.
+     *
+     * @param notificationId The notification ID of the notification to cancel.
+     * @param callback       A callback, when invoked, returns nothing.
+     */
+    void cancelScheduledNotificationAsync(String notificationId, FutureCallback<Object> callback);
 }

@@ -10,6 +10,7 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -22,6 +23,7 @@ public class Installation {
     private String userId;
     private NotificationPlatform platform;
     private String pushChannel;
+    private boolean pushChannelExpired;
     private String expirationTime;
     private List<String> tags;
     private Map<String, InstallationTemplate> templates;
@@ -127,6 +129,14 @@ public class Installation {
      */
     public void setPushChannel(String pushChannel) {
         this.pushChannel = pushChannel;
+    }
+
+    /**
+     * Gets whether the push channel has expired
+     * @return Returns true if expired, false otherwise.
+     */
+    public boolean isPushChannelExpired() {
+        return pushChannelExpired;
     }
 
     /**
@@ -342,7 +352,7 @@ public class Installation {
      * @throws IOException An exception reading from the stream occurred.
      */
     public static Installation fromJson(InputStream json) throws IOException {
-        return Installation.fromJson(IOUtils.toString(json));
+        return Installation.fromJson(IOUtils.toString(json, StandardCharsets.UTF_8));
     }
 
     /**
