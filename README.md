@@ -318,6 +318,28 @@ Notification n = Notification.createWindowsNotification("WNS body");
 NotificationOutcome outcome = hub.sendNotification(n, "$InstallationId:{installation-id}");
 ```
 
+### Send to a User ID
+
+With the [Installation API](https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-push-notification-registration-management#installations) we now have a new feature that allows you to associate a user ID with an installation and then be able to target it with a send to all devices for that user.  To set the user ID for the installation, set the `UserId` property of the `Installation`.
+
+```java
+Installation installation = new Installation();
+installation.setUserId("user1234");
+
+hub.createOrUpdateInstallation(installation);
+```
+
+The user can then be targeted to send a notification with the tag format of `$UserId:{USER_ID}`, for example like the following:
+
+```java
+String jsonPayload = "{\"aps\":{\"alert\":\"Notification Hub test notification\"}}";
+Set<String> tags = new HashSet<String>();
+tags.add("$UserId:user1234");
+
+Notification n = Notification.createAppleNotification(jsonPayload);
+NotificationOutcome outcome = hub.sendNotification(n, tags);
+```
+
 ### Send To An Installation Template For An Installation
 
 ```java
