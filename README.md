@@ -48,7 +48,7 @@ hub.setWindowsCredential(new WindowsCredential("sid","key"));
 namespaceManager.createNotificationHubAsync(hub, new FutureCallback<NotificationHubDescription>() {
     @Override
     public void completed(NotificationHubDescription result) {
-    // Handle success
+        // Handle success
     }
 
     @Override
