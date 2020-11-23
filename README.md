@@ -40,7 +40,7 @@ The Azure Notification Hubs SDK for Java support both synchronous and asynchrono
 // Synchronous
 NotificationHubDescription hub = new NotificationHubDescription("hubname");
 hub.setWindowsCredential(new WindowsCredential("sid","key"));
-NotificationHubDescription hubDescription = namespaceManager.createNotificationHubAsync(hub);
+NotificationHubDescription hubDescription = namespaceManager.createNotificationHub(hub);
 
 // Asynchronous
 NotificationHubDescription hub = new NotificationHubDescription("hubname");
