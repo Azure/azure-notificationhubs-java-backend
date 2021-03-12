@@ -5,9 +5,49 @@
 	<artifactId>Notification-Hubs-java-sdk</artifactId>
 	<version>0.4.1</version>
 	<name>Windows Azure Notification Hubs Java SDK</name>
+  <url>https://github.com/Azure/azure-notificationhubs-java-backend</url>
+  <description>Azure Notification Hubs Java SDK for interacting with the data and management plane operations.</description>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>A business-friendly OSS license</comments>
+    </license>
+  </licenses>
+
+  <organization>
+    <name>Microsoft Corporation</name>
+    <url>http://www.microsoft.com/</url>
+  </organization>
+
+  <developers>
+    <developer>
+      <id>mpodwysocki</id>
+      <name>Matthew Podwysocki</name>
+      <email>matthewp@microsoft.com</email>
+      <url>https://github.com/mpodwysocki</url>
+      <organization>Microsoft Corporation</organization>
+      <organizationUrl>http://www.microsoft.com/</organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+      <timezone>America/New_York</timezone>
+      <properties>
+        <picUrl>https://avatars.githubusercontent.com/u/11578097</picUrl>
+      </properties>
+    </developer>
+  </developers>
+
+  <scm>
+    <url>scm:git:https://github.com/Azure/azure-notificationhubs-java-backend</url>
+  </scm>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<testSourceDirectory>test</testSourceDirectory>
