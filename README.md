@@ -1,4 +1,4 @@
-[ ![Download](https://api.bintray.com/packages/microsoftazuremobile/SDK/Notification-Hubs-Java-Backend-SDK/images/download.svg) ](https://bintray.com/microsoftazuremobile/SDK/Notification-Hubs-Java-Backend-SDK/_latestVersion)
+[![Maven Central](https://img.shields.io/maven-central/v/com.windowsazure/Notification-Hubs-java-sdk.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.windowsazure%22%20AND%20a:%22Notification-Hubs-java-sdk%22)
 
 # Microsoft Azure Notification Hubs Java SDK
 
