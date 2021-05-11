@@ -47,8 +47,13 @@ public class BaiduRegistration extends Registration {
     }
 
     @Override
+    public String getPnsHandle() {
+        return baiduUserId + "-" + baiduChannelId;
+    }
+
+    @Override
     public int hashCode() {
-        String channel = (baiduUserId == null ? "" : baiduUserId) + "-" + (baiduChannelId == null ? "" : baiduChannelId);
+        String channel = getPnsHandle();
         final int prime = 31;
         int result = super.hashCode();
         result = prime

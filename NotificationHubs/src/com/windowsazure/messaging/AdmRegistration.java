@@ -34,6 +34,11 @@ public class AdmRegistration extends Registration {
     }
 
     @Override
+    public String getPnsHandle() {
+        return admRegistrationId;
+    }
+
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();

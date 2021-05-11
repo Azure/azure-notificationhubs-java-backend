@@ -42,6 +42,10 @@ public class MpnsRegistration extends Registration {
         }
     }
 
+    @Override
+    public String getPnsHandle() {
+        return channelUri.toString();
+    }
 
     @Override
     public int hashCode() {
