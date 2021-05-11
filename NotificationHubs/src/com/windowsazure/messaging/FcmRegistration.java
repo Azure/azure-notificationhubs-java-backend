@@ -37,6 +37,11 @@ public class FcmRegistration extends Registration {
     }
 
     @Override
+    public String getPnsHandle() {
+        return fcmRegistrationId;
+    }
+
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();

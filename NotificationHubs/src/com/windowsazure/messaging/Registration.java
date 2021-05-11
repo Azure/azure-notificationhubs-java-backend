@@ -66,6 +66,12 @@ public abstract class Registration implements Cloneable {
 
     public abstract String getXml();
 
+    /**
+     * Gets the PNS Handle for direct sends for the registration.
+     * @return The PNS Handle used for direct sends.
+     */
+    public abstract String getPnsHandle();
+
     public String getRegistrationId() {
         return registrationId;
     }

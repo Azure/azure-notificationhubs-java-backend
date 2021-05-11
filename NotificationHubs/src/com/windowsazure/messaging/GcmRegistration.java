@@ -41,6 +41,11 @@ public class GcmRegistration extends Registration {
     }
 
     @Override
+    public String getPnsHandle() {
+        return gcmRegistrationId;
+    }
+
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();

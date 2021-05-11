@@ -37,6 +37,11 @@ public class AppleRegistration extends Registration {
     }
 
     @Override
+    public String getPnsHandle() {
+        return deviceToken;
+    }
+
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
