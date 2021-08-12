@@ -1,4 +1,4 @@
-[ ![Download](https://api.bintray.com/packages/microsoftazuremobile/SDK/Notification-Hubs-Java-Backend-SDK/images/download.svg) ](https://bintray.com/microsoftazuremobile/SDK/Notification-Hubs-Java-Backend-SDK/_latestVersion)
+[![Maven Central](https://img.shields.io/maven-central/v/com.windowsazure/Notification-Hubs-java-sdk.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.windowsazure%22%20AND%20a:%22Notification-Hubs-java-sdk%22)
 
 # Microsoft Azure Notification Hubs Java SDK
 
@@ -40,7 +40,7 @@ The Azure Notification Hubs SDK for Java support both synchronous and asynchrono
 // Synchronous
 NotificationHubDescription hub = new NotificationHubDescription("hubname");
 hub.setWindowsCredential(new WindowsCredential("sid","key"));
-NotificationHubDescription hubDescription = namespaceManager.createNotificationHubAsync(hub);
+NotificationHubDescription hubDescription = namespaceManager.createNotificationHub(hub);
 
 // Asynchronous
 NotificationHubDescription hub = new NotificationHubDescription("hubname");
@@ -48,7 +48,7 @@ hub.setWindowsCredential(new WindowsCredential("sid","key"));
 namespaceManager.createNotificationHubAsync(hub, new FutureCallback<NotificationHubDescription>() {
     @Override
     public void completed(NotificationHubDescription result) {
-    // Handle success
+        // Handle success
     }
 
     @Override
@@ -316,6 +316,28 @@ Send flow for Installations is the same as for Registrations. We've just introdu
 ```java
 Notification n = Notification.createWindowsNotification("WNS body");
 NotificationOutcome outcome = hub.sendNotification(n, "$InstallationId:{installation-id}");
+```
+
+### Send to a User ID
+
+With the [Installation API](https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-push-notification-registration-management#installations) we now have a new feature that allows you to associate a user ID with an installation and then be able to target it with a send to all devices for that user.  To set the user ID for the installation, set the `UserId` property of the `Installation`.
+
+```java
+Installation installation = new Installation();
+installation.setUserId("user1234");
+
+hub.createOrUpdateInstallation(installation);
+```
+
+The user can then be targeted to send a notification with the tag format of `$UserId:{USER_ID}`, for example like the following:
+
+```java
+String jsonPayload = "{\"aps\":{\"alert\":\"Notification Hub test notification\"}}";
+Set<String> tags = new HashSet<String>();
+tags.add("$UserId:user1234");
+
+Notification n = Notification.createAppleNotification(jsonPayload);
+NotificationOutcome outcome = hub.sendNotification(n, tags);
 ```
 
 ### Send To An Installation Template For An Installation
