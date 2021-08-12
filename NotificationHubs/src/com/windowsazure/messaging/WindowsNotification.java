@@ -25,5 +25,6 @@ public class WindowsNotification extends Notification {
 
         if (body.startsWith("<")) {
             this.contentType = ContentType.APPLICATION_XML;
+        }
     }
 }
