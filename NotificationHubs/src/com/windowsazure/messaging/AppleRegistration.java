@@ -4,6 +4,8 @@
 
 package com.windowsazure.messaging;
 
+import java.util.Objects;
+
 /**
  * Class representing a native registration for a device using APNs.
  */
@@ -14,52 +16,58 @@ public class AppleRegistration extends Registration {
 
     protected String deviceToken;
 
+    /**
+     * Creates a new instance of the AppleRegistration class.
+     */
     public AppleRegistration() {
         super();
     }
 
+    /**
+     * Creates a new instance of the AppleRegistration class.
+     * @param deviceToken The APNS device token for the registration.
+     */
     public AppleRegistration(String deviceToken) {
         super();
         this.deviceToken = deviceToken;
     }
 
+    /**
+     * Creates a new instance of the AppleRegistration class.
+     * @param registrationId The registration ID for the device.
+     * @param deviceToken The APNS device token for the registration.
+     */
     public AppleRegistration(String registrationId, String deviceToken) {
         super(registrationId);
         this.deviceToken = deviceToken;
     }
 
+    /**
+     * Gets the APNS device token for the registration.
+     * @return The APNS device token for the registration.
+     */
     public String getDeviceToken() {
         return deviceToken;
     }
 
-    public void setDeviceToken(String deviceToken) {
-        this.deviceToken = deviceToken;
+    /**
+     * Sets the APNS device token for the registration.
+     * @param value The APNS device token for the registration to set.
+     */
+    public void setDeviceToken(String value) { deviceToken = value; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        AppleRegistration that = (AppleRegistration) o;
+        return Objects.equals(getDeviceToken(), that.getDeviceToken());
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result
-            + ((deviceToken == null) ? 0 : deviceToken.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        AppleRegistration other = (AppleRegistration) obj;
-        if (deviceToken == null) {
-            if (other.deviceToken != null)
-                return false;
-        } else if (!deviceToken.equals(other.deviceToken))
-            return false;
-        return true;
+        return Objects.hash(super.hashCode(), getDeviceToken());
     }
 
     @Override

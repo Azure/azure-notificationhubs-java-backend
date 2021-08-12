@@ -11,10 +11,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Abstract class representing a registration.
@@ -43,9 +40,16 @@ public abstract class Registration implements Cloneable {
         });
     }
 
+    /**
+     * Creates a new instance of the Registration class.
+     */
     public Registration() {
     }
 
+    /**
+     * Clones the current registration.
+     * @return A clone of the current registration.
+     */
     public Registration clone() {
         try {
             return (Registration) super.clone();
@@ -54,42 +58,52 @@ public abstract class Registration implements Cloneable {
         }
     }
 
+    /**
+     * Creates a new instance of the Registration class with the registration ID.
+     * @param registrationId The registration ID.
+     */
     public Registration(String registrationId) {
         super();
         this.registrationId = registrationId;
     }
 
+    /**
+     * Creates a new instance of the Registration class with a set of tags.
+     * @param tags The tags for the registration.
+     */
     public Registration(Set<String> tags) {
         super();
         this.tags = tags;
     }
 
-    public abstract String getXml();
+    /**
+     * Gets the registration ID.
+     * @return The registration ID.
+     */
+    public String getRegistrationId() { return registrationId; }
 
-    public String getRegistrationId() {
-        return registrationId;
-    }
+    /**
+     * Sets the registration ID.
+     * @param value The registration ID to set.
+     */
+    public void setRegistrationId(String value) { registrationId = value; }
 
-    public void setRegistrationId(String registrationId) {
-        this.registrationId = registrationId;
-    }
+    /**
+     * Gets the tags for the registration.
+     * @return The tags for the registration.
+     */
+    public Set<String> getTags() { return tags; }
 
-    public Set<String> getTags() {
-        return tags;
-    }
+    /**
+     * Sets the tags for the registration.
+     * @param value The tags for the registration to set.
+     */
+    public void setTags(Set<String> value) { this.tags = value; }
 
-    public void setTags(Set<String> tags) {
-        this.tags = tags;
-    }
-
-    public String getEtag() {
-        return etag;
-    }
-
-    public void setEtag(String etag) {
-        this.etag = etag;
-    }
-
+    /**
+     * Sets the tags from a comma separated string.
+     * @param string The comma separated string containing the tags.
+     */
     public void setTagsFromString(String string) {
         tags = new HashSet<>();
         String[] tagsArray = string.split(",");
@@ -97,6 +111,44 @@ public abstract class Registration implements Cloneable {
             tags.add(s.trim());
         }
     }
+
+    /**
+     * Gets the etag for the registration.
+     * @return The etag for the registration.
+     */
+    public String getEtag() { return etag; }
+
+    /**
+     * Sets the etag for the registration.
+     * @param value The etag for the registration to set.
+     */
+    public void setEtag(String value) { etag = value; }
+
+    /**
+     * Gets the expiration time for the registration.
+     * @return The expiration time for the registration.
+     */
+    public Date getExpirationTime() { return expirationTime; }
+
+    /**
+     * Sets the expiration time for the registration.
+     * @param value The expiration time for the registration.
+     */
+    public void setExpirationTime(Date value) { expirationTime = value; }
+
+    /**
+     * Sets the expiration time for the registration from a string value.
+     * @param expirationTimeString The expiration time for the registration string to be parsed.
+     */
+    public void setExpirationTimeFromString(String expirationTimeString) {
+        this.expirationTime = javax.xml.bind.DatatypeConverter.parseDateTime(expirationTimeString).getTime();
+    }
+
+    /**
+     * Gets an XML representation of the current object.
+     * @return The XML representation of the current object.
+     */
+    public abstract String getXml();
 
     protected String getTagsXml() {
         StringBuilder buf = new StringBuilder();
@@ -112,61 +164,17 @@ public abstract class Registration implements Cloneable {
         return buf.toString();
     }
 
-    public Date getExpirationTime() {
-        return expirationTime;
-    }
-
-    public void setExpirationTime(Date expirationTime) {
-        this.expirationTime = expirationTime;
-    }
-
-    public void setExpirationTimeFromString(String expirationTimeString) {
-        this.expirationTime = javax.xml.bind.DatatypeConverter.parseDateTime(expirationTimeString).getTime();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Registration that = (Registration) o;
+        return Objects.equals(getRegistrationId(), that.getRegistrationId()) && Objects.equals(getTags(), that.getTags()) && Objects.equals(getEtag(), that.getEtag()) && Objects.equals(getExpirationTime(), that.getExpirationTime());
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((etag == null) ? 0 : etag.hashCode());
-        result = prime * result
-            + ((expirationTime == null) ? 0 : expirationTime.hashCode());
-        result = prime * result
-            + ((registrationId == null) ? 0 : registrationId.hashCode());
-        result = prime * result + ((tags == null) ? 0 : tags.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Registration other = (Registration) obj;
-        if (etag == null) {
-            if (other.etag != null)
-                return false;
-        } else if (!etag.equals(other.etag))
-            return false;
-        if (expirationTime == null) {
-            if (other.expirationTime != null)
-                return false;
-        } else if (!expirationTime.equals(other.expirationTime))
-            return false;
-        if (registrationId == null) {
-            if (other.registrationId != null)
-                return false;
-        } else if (!registrationId.equals(other.registrationId))
-            return false;
-        if (tags == null) {
-            if (other.tags != null)
-                return false;
-        } else if (!tags.equals(other.tags))
-            return false;
-        return true;
+        return Objects.hash(getRegistrationId(), getTags(), getEtag(), getExpirationTime());
     }
 
     public static Registration parse(InputStream content) throws IOException,
@@ -205,6 +213,10 @@ public abstract class Registration implements Cloneable {
             BaiduRegistration.class);
         digester.addObjectCreate("*/BaiduTemplateRegistrationDescription",
             BaiduTemplateRegistration.class);
+        digester.addObjectCreate("*/BrowserRegistrationDescription",
+            BrowserRegistration.class);
+        digester.addObjectCreate("*/BrowserTemplateRegistrationDescription",
+            BrowserTemplateRegistration.class);
         digester.addCallMethod("*/RegistrationId", "setRegistrationId", 1);
         digester.addCallParam("*/RegistrationId", 0);
         digester.addCallMethod("*/ETag", "setEtag", 1);
@@ -237,6 +249,12 @@ public abstract class Registration implements Cloneable {
         digester.addCallParam("*/BaiduUserId", 0);
         digester.addCallMethod("*/BaiduChannelId", "setBaiduChannelId", 1);
         digester.addCallParam("*/BaiduChannelId", 0);
+        digester.addCallMethod("*/Endpoint", "setEndpoint", 1);
+        digester.addCallParam("*/Endpoint", 0);
+        digester.addCallMethod("*/P256DH", "setP256dh", 1);
+        digester.addCallParam("*/P256DH", 0);
+        digester.addCallMethod("*/Auth", "setAuth", 1);
+        digester.addCallParam("*/Auth", 0);
     }
 
     public static CollectionResult parseRegistrations(InputStream content)

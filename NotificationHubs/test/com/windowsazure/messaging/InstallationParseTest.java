@@ -21,6 +21,21 @@ import static org.junit.Assert.assertNotNull;
 public class InstallationParseTest {
 
     @Test
+    public void InstallationBrowser() throws IOException {
+        BrowserPushChannel pushChannel = new BrowserPushChannel(
+            "https://some.url",
+            "p256-value",
+            "auth-value");
+
+        InputStream inputJson = this.getClass().getResourceAsStream("InstallationBrowserMinimal");
+        BrowserInstallation installation = BrowserInstallation.fromJson(inputJson);
+        assertNotNull(installation);
+        assertEquals("123", installation.getInstallationId());
+        assertEquals(NotificationPlatform.Browser, installation.getPlatform());
+        assertEquals(pushChannel, installation.getPushChannel());
+    }
+
+    @Test
     public void InstallationMinimal() throws IOException {
         InputStream inputJson = this.getClass().getResourceAsStream("InstallationMinimal");
         Installation installation = Installation.fromJson(inputJson);
@@ -28,10 +43,6 @@ public class InstallationParseTest {
         assertEquals("123", installation.getInstallationId());
         assertEquals(NotificationPlatform.Gcm, installation.getPlatform());
         assertEquals("qwe", installation.getPushChannel());
-
-        String expectedResultJson = IOUtils.toString(this.getClass().getResourceAsStream("InstallationMinimalNoSpaces"), StandardCharsets.UTF_8);
-        String actualResultJson = installation.toJson();
-        assertEquals(expectedResultJson, actualResultJson);
     }
 
     @Test
@@ -47,11 +58,6 @@ public class InstallationParseTest {
         assertEquals("<?xml version=\"1.0\" encoding=\"utf-8\"?>", installation.getTemplates().get("template1").getBody());
         Date expiration = installation.getExpirationTime();
         assertEquals(expiration.toString(), sdf.parse("Wed Nov 26 15:34:01 PST 2014").toString());
-
-
-        String expectedResultJson = IOUtils.toString(this.getClass().getResourceAsStream("InstallationWnsFullNoSpaces"), StandardCharsets.UTF_8);
-        String actualResultJson = installation.toJson();
-        assertEquals(expectedResultJson, actualResultJson);
     }
 
     @Test

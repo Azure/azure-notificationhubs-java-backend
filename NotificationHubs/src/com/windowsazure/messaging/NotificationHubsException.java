@@ -39,7 +39,7 @@ public class NotificationHubsException extends Exception {
      * @return The HTTP status code for the exception.
      */
     public int httpStatusCode() {
-        return this.httpStatusCode;
+        return httpStatusCode;
     }
 
     /**
@@ -48,7 +48,7 @@ public class NotificationHubsException extends Exception {
      * @return True if transient and can be retried.
      */
     public boolean isTransient() {
-        return this.isTransient;
+        return isTransient;
     }
 
     /**
@@ -57,6 +57,6 @@ public class NotificationHubsException extends Exception {
      * @return The duration for when the operation should be tried again.
      */
     public Optional<Duration> retryAfter() {
-        return Optional.ofNullable(this.retryAfter);
+        return Optional.ofNullable(retryAfter);
     }
 }

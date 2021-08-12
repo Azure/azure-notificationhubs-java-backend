@@ -4,7 +4,12 @@
 
 package com.windowsazure.messaging;
 
-public class FcmTemplateRegistration extends FcmRegistration {
+import java.util.Objects;
+
+/**
+ * This class represents a Firebase Messaging device template registration.
+ */
+public class FcmTemplateRegistration extends FcmRegistration implements TemplateRegistration {
     private static final String FCM_TEMPLATE_REGISTRATION1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><entry xmlns=\"http://www.w3.org/2005/Atom\"><content type=\"application/xml\"><GcmTemplateRegistrationDescription xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/netservices/2010/10/servicebus/connect\">";
     private static final String FCM_TEMPLATE_REGISTRATION2 = "<GcmRegistrationId>";
     private static final String FCM_TEMPLATE_REGISTRATION3 = "</GcmRegistrationId><BodyTemplate><![CDATA[";
@@ -12,53 +17,67 @@ public class FcmTemplateRegistration extends FcmRegistration {
 
     private String bodyTemplate;
 
+    /**
+     * Creates a new instance of the FcmTemplateRegistration class.
+     */
     public FcmTemplateRegistration() {
         super();
     }
 
-    public FcmTemplateRegistration(String registrationId,
-                                   String fcmRegistrationId, String bodyTemplate) {
+    /**
+     * Creates a new instance of the FcmTemplateRegistration class.
+     * @param registrationId The Azure Notification Hubs registration ID.
+     * @param fcmRegistrationId The Firebase Messaging registration ID.
+     * @param bodyTemplate The registration template body.
+     */
+    public FcmTemplateRegistration(
+        String registrationId,
+        String fcmRegistrationId,
+        String bodyTemplate
+    ) {
         super(registrationId, fcmRegistrationId);
         this.bodyTemplate = bodyTemplate;
     }
 
-    public FcmTemplateRegistration(String fcmRegistrationId, String bodyTemplate) {
+    /**
+     * Creates a new instance of the FcmTemplateRegistration class.
+     * @param fcmRegistrationId The Firebase Messaging registration ID.
+     * @param bodyTemplate The registration template body.
+     */
+    public FcmTemplateRegistration(
+        String fcmRegistrationId,
+        String bodyTemplate
+    ) {
         super(fcmRegistrationId);
         this.bodyTemplate = bodyTemplate;
     }
 
-    public String getBodyTemplate() {
-        return bodyTemplate;
-    }
+    /**
+     * Gets the registration template body.
+     * @return The registration template body.
+     */
+    @Override
+    public String getBodyTemplate() { return bodyTemplate; }
 
-    public void setBodyTemplate(String bodyTemplate) {
-        this.bodyTemplate = bodyTemplate;
+    /**
+     * Sets the registration template body.
+     * @param value The registration template body to set.
+     */
+    @Override
+    public void setBodyTemplate(String value) { this.bodyTemplate = value; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        FcmTemplateRegistration that = (FcmTemplateRegistration) o;
+        return Objects.equals(getBodyTemplate(), that.getBodyTemplate());
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result
-            + ((bodyTemplate == null) ? 0 : bodyTemplate.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        FcmTemplateRegistration other = (FcmTemplateRegistration) obj;
-        if (bodyTemplate == null) {
-            if (other.bodyTemplate != null)
-                return false;
-        } else if (!bodyTemplate.equals(other.bodyTemplate))
-            return false;
-        return true;
+        return Objects.hash(super.hashCode(), getBodyTemplate());
     }
 
     @Override

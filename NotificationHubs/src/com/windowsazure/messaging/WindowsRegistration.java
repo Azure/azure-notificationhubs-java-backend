@@ -6,6 +6,7 @@ package com.windowsazure.messaging;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Objects;
 
 /**
  * Class representing a native registration for a device using WNS.
@@ -17,23 +18,42 @@ public class WindowsRegistration extends Registration {
 
     protected URI channelUri;
 
+    /**
+     * Creates a new instance of the WindowsRegistration class.
+     */
     public WindowsRegistration() {
+        super();
     }
 
+    /**
+     * Creates a new instance of the WindowsRegistration class.
+     * @param channelUri The channel URI for the WNS registration.
+     */
     public WindowsRegistration(URI channelUri) {
         super();
         this.channelUri = channelUri;
     }
 
+    /**
+     * Creates a new instance of the WindowsRegistration class.
+     * @param registrationId The Azure Notification Hubs registration ID.
+     * @param channelUri The channel URI for the WNS registration.
+     */
     public WindowsRegistration(String registrationId, URI channelUri) {
         super(registrationId);
         this.channelUri = channelUri;
     }
 
-    public URI getChannelUri() {
-        return channelUri;
-    }
+    /**
+     * Gets the WNS channel URI.
+     * @return The WNS channel URI.
+     */
+    public URI getChannelUri() { return channelUri;  }
 
+    /**
+     * Sets the WNS channel URI from a string.
+     * @param channelUri The WNS channel URI string to set.
+     */
     public void setChannelUri(String channelUri) {
         try {
             this.channelUri = new URI(channelUri);
@@ -42,31 +62,18 @@ public class WindowsRegistration extends Registration {
         }
     }
 
-
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result
-            + ((channelUri == null) ? 0 : channelUri.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        WindowsRegistration that = (WindowsRegistration) o;
+        return Objects.equals(getChannelUri(), that.getChannelUri());
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        WindowsRegistration other = (WindowsRegistration) obj;
-        if (channelUri == null) {
-            if (other.channelUri != null)
-                return false;
-        } else if (!channelUri.equals(other.channelUri))
-            return false;
-        return true;
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getChannelUri());
     }
 
     @Override

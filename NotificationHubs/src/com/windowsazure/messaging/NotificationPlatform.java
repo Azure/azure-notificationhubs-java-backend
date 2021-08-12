@@ -40,4 +40,9 @@ public enum NotificationPlatform {
      */
     @SerializedName("adm")
     Adm,
+    /**
+     * The Browser Push platform.
+     */
+    @SerializedName("browser")
+     Browser
 }

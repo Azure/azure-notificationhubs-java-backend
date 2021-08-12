@@ -24,5 +24,5 @@ public enum UpdateOperationType {
      * The replace update operation type.
      */
     @SerializedName("replace")
-    Replace,
+    Replace
 }

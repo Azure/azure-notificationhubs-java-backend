@@ -8,24 +8,33 @@ import java.util.concurrent.CountDownLatch;
 
 import org.apache.http.concurrent.FutureCallback;
 
+/**
+ * This class represents getting a synchronous value from an asynchronous operation.
+ * @param <T> The type returned from the asynchronous operation.
+ */
 public class SyncCallback<T> implements FutureCallback<T> {
     private T result;
     private RuntimeException runtimeException;
     private NotificationHubsException nhException;
     private final CountDownLatch waitLatch = new CountDownLatch(1);
 
+    /**
+     * Gets a synchronous value from an asynchronous operation.
+     * @return The synchronous value from an asynchronous operation.
+     * @throws NotificationHubsException If there is an error with the operation.
+     */
     public T getResult() throws NotificationHubsException {
         try {
-            this.waitLatch.await();
+            waitLatch.await();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 
-        if (this.runtimeException != null)
-            throw this.runtimeException;
+        if (runtimeException != null)
+            throw runtimeException;
 
-        if (this.nhException != null)
-            throw this.nhException;
+        if (nhException != null)
+            throw nhException;
 
         return result;
     }
@@ -39,14 +48,13 @@ public class SyncCallback<T> implements FutureCallback<T> {
     @Override
     public void failed(final Exception ex) {
         if (ex instanceof NotificationHubsException) {
-            this.nhException = (NotificationHubsException) ex;
+            nhException = (NotificationHubsException) ex;
         } else {
-            this.runtimeException = new RuntimeException(ex);
+            runtimeException = new RuntimeException(ex);
         }
 
         this.waitLatch.countDown();
     }
-
 
     @Override
     public void cancelled() {

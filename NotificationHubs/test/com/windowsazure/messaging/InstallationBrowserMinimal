@@ -1,0 +1,9 @@
+{
+	"pushChannel":{
+        "endpoint":"https://some.url",
+        "p256dh":"p256-value",
+        "auth":"auth-value"
+    },
+	"installationId":"123",
+	"platform":"browser"
+}

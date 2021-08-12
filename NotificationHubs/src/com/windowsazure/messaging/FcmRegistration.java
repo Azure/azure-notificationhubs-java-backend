@@ -4,6 +4,8 @@
 
 package com.windowsazure.messaging;
 
+import java.util.Objects;
+
 /**
  * Class representing a native registration for devices using FCM.
  */
@@ -14,54 +16,56 @@ public class FcmRegistration extends Registration {
 
     protected String fcmRegistrationId;
 
+    /**
+     * Creates a new instance of the FcmRegistration class.
+     */
     public FcmRegistration() {
         super();
     }
 
+    /**
+     * Creates a new instance of the FcmRegistration with a registration ID and FCM registration ID.
+     * @param registrationId The Azure Notification Hubs registration ID.
+     * @param fcmRegistrationId The Firebase Cloud Messaging registration ID.
+     */
     public FcmRegistration(String registrationId, String fcmRegistrationId) {
         super(registrationId);
         this.fcmRegistrationId = fcmRegistrationId;
     }
 
+    /**
+     * Creates a new instance of the FcmRegistration with a Firebase Cloud Messaging registration ID.
+     * @param fcmRegistrationId The Firebase Cloud Messaging registration ID.
+     */
     public FcmRegistration(String fcmRegistrationId) {
         super();
         this.fcmRegistrationId = fcmRegistrationId;
     }
 
-    public String getFcmRegistrationId() {
-        return fcmRegistrationId;
-    }
+    /**
+     * Gets the Firebase Messaging registration ID.
+     * @return The Firebase Messaging registration ID.
+     */
+    public String getFcmRegistrationId() { return fcmRegistrationId; }
 
-    public void setFcmRegistrationId(String fcmRegistrationId) {
-        this.fcmRegistrationId = fcmRegistrationId;
+    /**
+     * Sets the Firebase Messaging registration ID.
+     * @param value The Firebase Messaging registration ID to set.
+     */
+    public void setFcmRegistrationId(String value) { fcmRegistrationId = value; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        FcmRegistration that = (FcmRegistration) o;
+        return Objects.equals(getFcmRegistrationId(), that.getFcmRegistrationId());
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime
-            * result
-            + ((fcmRegistrationId == null) ? 0 : fcmRegistrationId
-            .hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        FcmRegistration other = (FcmRegistration) obj;
-        if (fcmRegistrationId == null) {
-            if (other.fcmRegistrationId != null)
-                return false;
-        } else if (!fcmRegistrationId.equals(other.fcmRegistrationId))
-            return false;
-        return true;
+        return Objects.hash(super.hashCode(), getFcmRegistrationId());
     }
 
     @Override

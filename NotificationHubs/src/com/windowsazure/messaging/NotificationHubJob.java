@@ -15,6 +15,9 @@ import java.util.Map;
 import org.apache.commons.digester3.Digester;
 import org.xml.sax.SAXException;
 
+/**
+ * This class represents an Azure Notification Hubs job.
+ */
 public class NotificationHubJob {
     private static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"utf-8\"?><entry xmlns=\"http://www.w3.org/2005/Atom\"><content type=\"application/atom+xml;type=entry;charset=utf-8\"><NotificationHubJob xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/netservices/2010/10/servicebus/connect\">";
     private static final String XML_FOOTER = "</NotificationHubJob></content></entry>";
@@ -47,12 +50,20 @@ public class NotificationHubJob {
         });
     }
 
+    /**
+     * Gets the Azure Notification Hubs job ID.
+     * @return The Azure Notification Hubs job ID.
+     */
     public String getJobId() {
         return jobId;
     }
 
-    public void setJobId(String jobId) {
-        this.jobId = jobId;
+    /**
+     * Sets the Azure Notification Hubs job ID.
+     * @param value The Azure Notification Hubs job ID to set.
+     */
+    public void setJobId(String value) {
+        jobId = value;
     }
 
     public double getProgress() {

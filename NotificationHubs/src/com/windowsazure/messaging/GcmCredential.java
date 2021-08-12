@@ -15,30 +15,41 @@ import java.util.List;
 public final class GcmCredential extends PnsCredential {
     private String googleApiKey;
 
+    /**
+     * Creates a new instance of the GcmCredential class.
+     */
     public GcmCredential() {
-        this(null);
+        super();
     }
 
+    /**
+     * Creates a new instance of the GcmCredential class.
+     * @param googleApiKey The Google Cloud Messaging API key.
+     */
     public GcmCredential(String googleApiKey) {
         super();
         this.setGoogleApiKey(googleApiKey);
     }
 
-    public String getGoogleApiKey() {
-        return googleApiKey;
-    }
+    /**
+     * Gets the Google Cloud Messaging API key.
+     * @return The Google Cloud Messaging API key.
+     */
+    public String getGoogleApiKey() { return googleApiKey; }
+
+    /**
+     * Sets the Google Cloud Messaging API key.
+     * @param value The Google Cloud Messaging API key to set.
+     */
+    public void setGoogleApiKey(String value) { this.googleApiKey = value; }
 
     public void setgoogleApiKey(String googleApiKey) {
         this.googleApiKey = googleApiKey; // fix for reflection that's calling 'setgoogleApiKey' instead of 'setGoogleApiKey'.
     }
 
-    public void setGoogleApiKey(String googleApiKey) {
-        this.googleApiKey = googleApiKey;
-    }
-
     @Override
     public List<SimpleEntry<String, String>> getProperties() {
-        ArrayList<SimpleEntry<String, String>> result = new ArrayList<SimpleEntry<String, String>>();
+        ArrayList<SimpleEntry<String, String>> result = new ArrayList<>();
         result.add(new SimpleEntry<>("GoogleApiKey", getGoogleApiKey()));
         return result;
     }

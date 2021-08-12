@@ -40,5 +40,5 @@ public enum NotificationStatus {
     /**
      * The notification has an unknown status.
      */
-    Unknown,
+    Unknown
 }

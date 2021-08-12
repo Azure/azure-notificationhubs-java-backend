@@ -6,6 +6,7 @@ package com.windowsazure.messaging;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +30,6 @@ public class InstallationTemplate {
      * Initializes a new installation template.
      */
     public InstallationTemplate() {
-        this(null);
     }
 
     /**
@@ -38,7 +38,7 @@ public class InstallationTemplate {
      * @param body The body for the installation template.
      */
     public InstallationTemplate(String body) {
-        this(body, null);
+        this.body = body;
     }
 
     /**
@@ -190,17 +190,6 @@ public class InstallationTemplate {
      */
     public static InstallationTemplate fromJson(String json) {
         return new Gson().fromJson(json, InstallationTemplate.class);
-    }
-
-    /**
-     * Creates an installation template from the JSON input stream.
-     *
-     * @param json The JSON input stream.
-     * @return An installation template created from the JSON stream.
-     * @throws IOException If there was an issue with the Stream.
-     */
-    public static Installation fromJson(InputStream json) throws IOException {
-        return Installation.fromJson(IOUtils.toString(json));
     }
 
     /**

@@ -21,7 +21,7 @@ public class InstallationCrudsE2E {
         String connectionString = p.getProperty("connectionstring");
         assertTrue(connectionString != null && !connectionString.isEmpty());
 
-        hubPath = "JavaSDK_" + UUID.randomUUID().toString();
+        hubPath = "JavaSDK_" + UUID.randomUUID();
         namespaceManager = new NamespaceManager(connectionString);
         NotificationHubDescription hubDescription = new NotificationHubDescription(hubPath);
         namespaceManager.createNotificationHub(hubDescription);

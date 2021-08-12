@@ -9,11 +9,13 @@ import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 
-import java.io.IOException;
 import java.io.StringWriter;
 import java.time.Duration;
 import java.util.Optional;
 
+/**
+ * This class creates NotificationHubException classes based upon the HTTP response.
+ */
 public class NotificationHubsExceptionFactory {
 
     static boolean isTransientStatusCode(int httpStatusCode) {
@@ -40,15 +42,26 @@ public class NotificationHubsExceptionFactory {
         }
     }
 
-    static String getErrorString(HttpResponse response) throws IllegalStateException, IOException {
+    static String getErrorString(HttpResponse response) {
         StringWriter writer = new StringWriter();
-        IOUtils.copy(response.getEntity().getContent(), writer, "UTF-8");
-        String body = writer.toString();
-        return "Error: " + response.getStatusLine() + " - " + body;
+        try{
+            IOUtils.copy(response.getEntity().getContent(), writer, "UTF-8");
+            String body = writer.toString();
+            return "Error: " + response.getStatusLine() + " - " + body;
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot get the HTTP response error string");
+        }
+
     }
 
-    public static NotificationHubsException createNotificationHubException(HttpResponse response, int httpStatusCode)
-        throws IOException {
+    /**
+     /**
+     * Creates a NotificationHubsException instance based upon the HTTP response and status code.
+     * @param response The HTTP response.
+     * @param httpStatusCode The HTTP status code from the response.
+     * @return A new NotificationHubsException instance based upon the HTTP response data.
+     */
+    public static NotificationHubsException createNotificationHubException(HttpResponse response, int httpStatusCode) {
         Optional<Duration> retryAfter = parseRetryAfter(response);
         boolean isTransient = isTransientStatusCode(httpStatusCode);
         if (retryAfter.isPresent()) {
@@ -59,8 +72,18 @@ public class NotificationHubsExceptionFactory {
         }
     }
 
-    public static NotificationHubsException createNotificationHubException(HttpResponse response, int httpStatusCode,
-                                                                           String message) {
+    /**
+     * Creates a NotificationHubsException instance based upon the HTTP response and status code.
+     * @param response The HTTP response.
+     * @param httpStatusCode The HTTP status code from the response.
+     * @param message A message for the NotificationHubsException instance.
+     * @return A new NotificationHubsException instance based upon the HTTP response data.
+     */
+    public static NotificationHubsException createNotificationHubException(
+        HttpResponse response,
+        int httpStatusCode,
+        String message
+    ) {
         Optional<Duration> retryAfter = parseRetryAfter(response);
         boolean isTransient = isTransientStatusCode(httpStatusCode);
         if (retryAfter.isPresent()) {
