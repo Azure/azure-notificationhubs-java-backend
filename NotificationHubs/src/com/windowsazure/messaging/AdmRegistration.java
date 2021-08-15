@@ -58,6 +58,13 @@ public class AdmRegistration extends Registration {
         admRegistrationId = value;
     }
 
+    /**
+     * Gets the PNS handle for getting devices by channel.
+     * @return The PNS handle for getting devices by channel.
+     */
+    @Override
+    public String getPnsHandle() { return admRegistrationId; }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

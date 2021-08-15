@@ -72,6 +72,13 @@ public class BaiduRegistration extends Registration {
      */
     public void setBaiduChannelId(String value) { baiduChannelId = value; }
 
+    /**
+     * Gets the PNS handle for getting devices by channel.
+     * @return The PNS handle for getting devices by channel.
+     */
+    @Override
+    public String getPnsHandle() { return baiduUserId + "-" + baiduChannelId; }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

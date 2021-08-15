@@ -83,7 +83,7 @@ public class NotificationHub implements NotificationHubClient {
      *                     ETag, and expiration time)
      */
     @Override
-    public void createRegistrationAsync(Registration registration, final FutureCallback<Registration> callback) {
+    public <T extends Registration> void createRegistrationAsync(T registration, final FutureCallback<T> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/registrations" + API_VERSION);
             final HttpPost post = new HttpPost(uri);
@@ -138,8 +138,8 @@ public class NotificationHub implements NotificationHubClient {
      * @throws NotificationHubsException Thrown if there is a client error.
      */
     @Override
-    public Registration createRegistration(Registration registration) throws NotificationHubsException {
-        SyncCallback<Registration> callback = new SyncCallback<>();
+    public <T extends Registration> T createRegistration(T registration) throws NotificationHubsException {
+        SyncCallback<T> callback = new SyncCallback<>();
         createRegistrationAsync(registration, callback);
         return callback.getResult();
     }
@@ -225,9 +225,10 @@ public class NotificationHub implements NotificationHubClient {
      * @param callback     A callback when invoked, returns the updated registration
      *                     containing the read-only parameters (registration ID,
      *                     ETag, and expiration time).
+     * @param <T> The type of Registration class.
      */
     @Override
-    public void updateRegistrationAsync(Registration registration, final FutureCallback<Registration> callback) {
+    public <T extends Registration> void updateRegistrationAsync(T registration, final FutureCallback<T> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + API_VERSION);
             final HttpPut put = new HttpPut(uri);
@@ -277,11 +278,12 @@ public class NotificationHub implements NotificationHubClient {
      *                     populated.
      * @return The updated registration containing the read-only parameters
      * (registration ID, ETag, and expiration time).
+     * @param <T> The type of Registration class.
      * @throws NotificationHubsException Thrown if there is a client error.
      */
     @Override
-    public Registration updateRegistration(Registration registration) throws NotificationHubsException {
-        SyncCallback<Registration> callback = new SyncCallback<>();
+    public <T extends Registration> T updateRegistration(T registration) throws NotificationHubsException {
+        SyncCallback<T> callback = new SyncCallback<>();
         updateRegistrationAsync(registration, callback);
         return callback.getResult();
     }
@@ -296,9 +298,10 @@ public class NotificationHub implements NotificationHubClient {
      * @param callback     A callback, when invoked, returns the updated
      *                     registration containing the read-only parameters
      *                     (registration ID, ETag, and expiration time).
+     * @param <T> The type of Registration class.
      */
     @Override
-    public void upsertRegistrationAsync(Registration registration, final FutureCallback<Registration> callback) {
+    public <T extends Registration> void upsertRegistrationAsync(T registration, final FutureCallback<T> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + API_VERSION);
             final HttpPut put = new HttpPut(uri);
@@ -349,10 +352,11 @@ public class NotificationHub implements NotificationHubClient {
      * @return The updated registration containing the read-only parameters
      * (registration ID, ETag, and expiration time).
      * @throws NotificationHubsException Thrown if there is a client error.
+     * @param <T> The type of Registration class.
      */
     @Override
-    public Registration upsertRegistration(Registration registration) throws NotificationHubsException {
-        SyncCallback<Registration> callback = new SyncCallback<>();
+    public <T extends Registration> T upsertRegistration(T registration) throws NotificationHubsException {
+        SyncCallback<T> callback = new SyncCallback<>();
         upsertRegistrationAsync(registration, callback);
         return callback.getResult();
     }
@@ -452,9 +456,10 @@ public class NotificationHub implements NotificationHubClient {
      * @param registrationId The ID for the registration to retrieve.
      * @param callback       A callback, when invoked, returns the registration with
      *                       the ID matching the given registration ID.
+     * @param <T> The type of Registration class.
      */
     @Override
-    public void getRegistrationAsync(String registrationId, final FutureCallback<Registration> callback) {
+    public <T extends Registration> void getRegistrationAsync(String registrationId, final FutureCallback<T> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + API_VERSION);
             final HttpGet get = new HttpGet(uri);
@@ -500,10 +505,11 @@ public class NotificationHub implements NotificationHubClient {
      * @param registrationId The ID for the registration to retrieve.
      * @return The registration with the ID matching the given registration ID.
      * @throws NotificationHubsException Thrown if there is a client error.
+     * @param <T> The type of Registration class.
      */
     @Override
-    public Registration getRegistration(String registrationId) throws NotificationHubsException {
-        SyncCallback<Registration> callback = new SyncCallback<>();
+    public <T extends Registration> T getRegistration(String registrationId) throws NotificationHubsException {
+        SyncCallback<T> callback = new SyncCallback<>();
         getRegistrationAsync(registrationId, callback);
         return callback.getResult();
     }
@@ -851,7 +857,7 @@ public class NotificationHub implements NotificationHubClient {
     }
 
     /**
-     * Schedules a notification at the given scheduled time.
+     * Schedules a notification at the given scheduled time.  Note that this is not available on the free SKU.
      *
      * @param notification  The notification to send at the scheduled time.
      * @param scheduledTime The scheduled time for the notification.
@@ -864,7 +870,7 @@ public class NotificationHub implements NotificationHubClient {
     }
 
     /**
-     * Schedules a notification at the given scheduled time.
+     * Schedules a notification at the given scheduled time.  Note that this is not available on the free SKU.
      *
      * @param notification  The notification to send at the scheduled time.
      * @param scheduledTime The scheduled time for the notification.
@@ -879,7 +885,7 @@ public class NotificationHub implements NotificationHubClient {
     }
 
     /**
-     * Schedules a notification at the given time with a set of tags.
+     * Schedules a notification at the given time with a set of tags.  Note that this is not available on the free SKU.
      *
      * @param notification  The notification to send at the given time.
      * @param tags          The tags associated with the notification targeting.
@@ -904,7 +910,7 @@ public class NotificationHub implements NotificationHubClient {
     }
 
     /**
-     * Schedules a notification at the given time with a set of tags.
+     * Schedules a notification at the given time with a set of tags.  Note that this is not available on the free SKU.
      *
      * @param notification  The notification to send at the given time.
      * @param tags          The tags associated with the notification targeting.
@@ -920,7 +926,7 @@ public class NotificationHub implements NotificationHubClient {
     }
 
     /**
-     * Schedules a notification at the given time with a tag expression.
+     * Schedules a notification at the given time with a tag expression.  Note that this is not available on the free SKU.
      *
      * @param notification  The notification to send at the given time.
      * @param tagExpression The tag expression associated with the notification
@@ -1002,7 +1008,7 @@ public class NotificationHub implements NotificationHubClient {
     }
 
     /**
-     * Schedules a notification at the given time with a tag expression.
+     * Schedules a notification at the given time with a tag expression.  Note that this is not available on the free SKU.
      *
      * @param notification  The notification to send at the given time.
      * @param tagExpression The tag expression associated with the notification
@@ -1109,7 +1115,7 @@ public class NotificationHub implements NotificationHubClient {
     }
 
     /**
-     * Sends a direct notification to the given device handles.
+     * Sends a direct notification to the given device handles.  Note that this is not available on the free SKU.
      *
      * @param notification  The notification to send directly to the device handles.
      * @param deviceHandles The device handles to target for the notification.
@@ -1273,7 +1279,7 @@ public class NotificationHub implements NotificationHubClient {
     }
 
     /**
-     * Sends a direct notification to the given device handles.
+     * Sends a direct notification to the given device handles.  Note that this is not available on the free SKU.
      *
      * @param notification  The notification to send directly to the device handles.
      * @param deviceHandles The device handles to target for the notification.
@@ -1359,6 +1365,13 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * Gets notification telemetry by the notification ID.
+     *
+     * @param notificationId The notification ID for the telemetry.
+     * @return The notification telemetry for the given notification.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public NotificationTelemetry getNotificationTelemetry(String notificationId)
         throws NotificationHubsException {
@@ -1367,6 +1380,13 @@ public class NotificationHub implements NotificationHubClient {
         return callback.getResult();
     }
 
+    /**
+     * Gets notification telemetry by the notification ID.
+     *
+     * @param notificationId The notification ID for the telemetry.
+     * @param callback       A callback, when invoked, returns the notification
+     *                       telemetry for the given notification.
+     */
     @Override
     public void getNotificationTelemetryAsync(String notificationId, final FutureCallback<NotificationTelemetry> callback) {
         try {
@@ -1634,6 +1654,7 @@ public class NotificationHub implements NotificationHubClient {
      * @param installationId The installation ID for the installation to get.
      * @param callback       A callback, when invoked, returns the matching
      *                       installation by the installation ID.
+     * @param <T> The type of Installation class.
      */
     @Override
     public <T extends BaseInstallation> void getInstallationAsync(String installationId, final FutureCallback<T> callback) {
@@ -1682,6 +1703,7 @@ public class NotificationHub implements NotificationHubClient {
      * @param installationId The installation ID for the installation to get.
      * @return The matching installation by the installation ID.
      * @throws NotificationHubsException Thrown if there is a client error.
+     * @param <T> The type of Installation class.
      */
     @Override
     public <T extends BaseInstallation> T getInstallation(String installationId) throws NotificationHubsException {
@@ -1691,7 +1713,7 @@ public class NotificationHub implements NotificationHubClient {
     }
 
     /**
-     * Submits a notification hub job such as import or export.
+     * Submits a notification hub job such as import or export. Note this is not available on the free or basic SKU.
      *
      * @param job      The notification hubs job to submit.
      * @param callback A callback, when invoked, returns the notification job with
@@ -1743,7 +1765,7 @@ public class NotificationHub implements NotificationHubClient {
     }
 
     /**
-     * Submits a notification hub job such as import or export.
+     * Submits a notification hub job such as import or export. Note this is not available on the free or basic SKU.
      *
      * @param job The notification hubs job to submit.
      * @return The notification job with status.

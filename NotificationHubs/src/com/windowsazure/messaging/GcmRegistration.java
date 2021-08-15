@@ -58,6 +58,13 @@ public class GcmRegistration extends Registration {
      */
     public void setGcmRegistrationId(String value) { gcmRegistrationId = value; }
 
+    /**
+     * Gets the PNS handle for getting devices by channel.
+     * @return The PNS handle for getting devices by channel.
+     */
+    @Override
+    public String getPnsHandle() { return gcmRegistrationId; }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

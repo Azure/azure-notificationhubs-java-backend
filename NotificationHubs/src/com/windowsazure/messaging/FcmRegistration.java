@@ -63,6 +63,13 @@ public class FcmRegistration extends Registration {
         return Objects.equals(getFcmRegistrationId(), that.getFcmRegistrationId());
     }
 
+    /**
+     * Gets the PNS handle for getting devices by channel.
+     * @return The PNS handle for getting devices by channel.
+     */
+    @Override
+    public String getPnsHandle() { return fcmRegistrationId; }
+
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), getFcmRegistrationId());

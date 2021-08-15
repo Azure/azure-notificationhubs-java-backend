@@ -178,7 +178,7 @@ public interface NotificationHubClient {
      * @param callback       A callback, when invoked, returns the notification
      *                       telemetry for the given notification.
      */
-    void getNotificationTelemetryAsync(String notificationId, FutureCallback<NotificationTelemetry> callback);
+    void getNotificationTelemetryAsync(String notificationId, final FutureCallback<NotificationTelemetry> callback);
 
     /**
      * Create a registrationId, without creating an actual registration. To create
@@ -197,7 +197,7 @@ public interface NotificationHubClient {
      *
      * @param callback A callback with the newly created registration ID.
      */
-    void createRegistrationIdAsync(FutureCallback<String> callback);
+    void createRegistrationIdAsync(final FutureCallback<String> callback);
 
     /**
      * This method creates a new registration
@@ -209,7 +209,7 @@ public interface NotificationHubClient {
      * (registration ID, ETag, and expiration time).
      * @throws NotificationHubsException Thrown if there is a client error.
      */
-    Registration createRegistration(Registration registration) throws NotificationHubsException;
+    <T extends Registration> T createRegistration(T registration) throws NotificationHubsException;
 
     /**
      * This method creates a new registration
@@ -221,7 +221,7 @@ public interface NotificationHubClient {
      *                     containing the read-only parameters (registration ID,
      *                     ETag, and expiration time)
      */
-    void createRegistrationAsync(Registration registration, FutureCallback<Registration> callback);
+    <T extends Registration> void createRegistrationAsync(T registration, final FutureCallback<T> callback);
 
     /**
      * This method updates an existing registration
@@ -233,7 +233,7 @@ public interface NotificationHubClient {
      * (registration ID, ETag, and expiration time).
      * @throws NotificationHubsException Thrown if there is a client error.
      */
-    Registration updateRegistration(Registration registration) throws NotificationHubsException;
+    <T extends Registration> T updateRegistration(T registration) throws NotificationHubsException;
 
     /**
      * This method updates an existing registration
@@ -245,7 +245,7 @@ public interface NotificationHubClient {
      *                     containing the read-only parameters (registration ID,
      *                     ETag, and expiration time).
      */
-    void updateRegistrationAsync(Registration registration, FutureCallback<Registration> callback);
+    <T extends Registration> void updateRegistrationAsync(T registration, final FutureCallback<T> callback);
 
     /**
      * This method updates or creates a new registration with the registration ID
@@ -258,7 +258,7 @@ public interface NotificationHubClient {
      * (registration ID, ETag, and expiration time).
      * @throws NotificationHubsException Thrown if there is a client error.
      */
-    Registration upsertRegistration(Registration registration) throws NotificationHubsException;
+    <T extends Registration> T upsertRegistration(T registration) throws NotificationHubsException;
 
     /**
      * This method updates or creates a new registration with the registration id
@@ -271,7 +271,7 @@ public interface NotificationHubClient {
      *                     registration containing the read-only parameters
      *                     (registration ID, ETag, and expiration time).
      */
-    void upsertRegistrationAsync(Registration registration, FutureCallback<Registration> callback);
+    <T extends Registration> void upsertRegistrationAsync(T registration, final FutureCallback<T> callback);
 
     /**
      * Deletes a registration with the given registration containing a populated
@@ -315,8 +315,9 @@ public interface NotificationHubClient {
      * @param registrationId The ID for the registration to retrieve.
      * @return The registration with the ID matching the given registration ID.
      * @throws NotificationHubsException Thrown if there is a client error.
+     * @param <T> The type of Registration class.
      */
-    Registration getRegistration(String registrationId) throws NotificationHubsException;
+    <T extends Registration> T getRegistration(String registrationId) throws NotificationHubsException;
 
     /**
      * Retrieves the description of a registration based on the ID.
@@ -324,8 +325,9 @@ public interface NotificationHubClient {
      * @param registrationId The ID for the registration to retrieve.
      * @param callback       A callback, when invoked, returns the registration with
      *                       the ID matching the given registration ID.
+     * @param <T> The type of Registration class.
      */
-    void getRegistrationAsync(String registrationId, FutureCallback<Registration> callback);
+    <T extends Registration> void getRegistrationAsync(String registrationId, FutureCallback<T> callback);
 
     /**
      * Return all registrations in the current notification hub.
@@ -495,6 +497,7 @@ public interface NotificationHubClient {
      * @return A notification outcome with the tracking ID and notification ID.
      * @throws NotificationHubsException Thrown if there is a client error.
      */
+    @SuppressWarnings("UnusedReturnValue")
     NotificationOutcome sendNotification(Notification notification, Set<String> tags) throws NotificationHubsException;
 
     /**
@@ -520,6 +523,7 @@ public interface NotificationHubClient {
      * @return A notification outcome with the tracking ID and notification ID.
      * @throws NotificationHubsException Thrown if there is a client error.
      */
+    @SuppressWarnings("UnusedReturnValue")
     NotificationOutcome sendNotification(Notification notification, String tagExpression)
         throws NotificationHubsException;
 
@@ -569,11 +573,12 @@ public interface NotificationHubClient {
      * @return A notification outcome with the tracking ID and notification ID.
      * @throws NotificationHubsException Thrown if there is a client error.
      */
+    @SuppressWarnings("UnusedReturnValue")
     NotificationOutcome scheduleNotification(Notification notification, Set<String> tags, Date scheduledTime)
         throws NotificationHubsException;
 
     /**
-     * Schedules a notification at the given time with a set of tags.
+     * Schedules a notification at the given time with a set of tags.  Note that this is not available on the free SKU.
      *
      * @param notification  The notification to send at the given time.
      * @param tags          The tags associated with the notification targeting.
@@ -581,11 +586,15 @@ public interface NotificationHubClient {
      * @param callback      A callback, when invoked, returns a notification outcome
      *                      with the tracking ID and notification ID.
      */
-    void scheduleNotificationAsync(Notification notification, Set<String> tags, Date scheduledTime,
-                                   FutureCallback<NotificationOutcome> callback);
+    void scheduleNotificationAsync(
+        Notification notification,
+        Set<String> tags,
+        Date scheduledTime,
+        final FutureCallback<NotificationOutcome> callback
+    );
 
     /**
-     * Schedules a notification at the given time with a tag expression.
+     * Schedules a notification at the given time with a tag expression.  Note that this is not available on the free SKU.
      *
      * @param notification  The notification to send at the given time.
      * @param tagExpression The tag expression associated with the notification
@@ -594,11 +603,12 @@ public interface NotificationHubClient {
      * @return A notification outcome with the tracking ID and notification ID.
      * @throws NotificationHubsException Thrown if there is a client error.
      */
+    @SuppressWarnings("UnusedReturnValue")
     NotificationOutcome scheduleNotification(Notification notification, String tagExpression, Date scheduledTime)
         throws NotificationHubsException;
 
     /**
-     * Schedules a notification at the given time with a tag expression.
+     * Schedules a notification at the given time with a tag expression.  Note that this is not available on the free SKU.
      *
      * @param notification  The notification to send at the given time.
      * @param tagExpression The tag expression associated with the notification

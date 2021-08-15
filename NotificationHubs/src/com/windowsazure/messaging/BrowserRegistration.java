@@ -90,6 +90,13 @@ public class BrowserRegistration extends Registration {
      */
     public void setAuth(String value) { auth = value; }
 
+    /**
+     * Gets the PNS handle for getting devices by channel.
+     * @return The PNS handle for getting devices by channel.
+     */
+    @Override
+    public String getPnsHandle() { return endpoint; }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

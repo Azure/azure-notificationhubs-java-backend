@@ -145,6 +145,12 @@ public abstract class Registration implements Cloneable {
     }
 
     /**
+     * Gets the PNS handle for getting devices by channel.
+     * @return The PNS handle for getting devices by channel.
+     */
+    public abstract String getPnsHandle();
+
+    /**
      * Gets an XML representation of the current object.
      * @return The XML representation of the current object.
      */
@@ -177,7 +183,7 @@ public abstract class Registration implements Cloneable {
         return Objects.hash(getRegistrationId(), getTags(), getEtag(), getExpirationTime());
     }
 
-    public static Registration parse(InputStream content) throws IOException,
+    public static <T extends Registration> T parse(InputStream content) throws IOException,
         SAXException {
         return singleRegParser.get().parse(content);
     }

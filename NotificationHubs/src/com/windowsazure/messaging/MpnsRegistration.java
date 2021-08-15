@@ -61,6 +61,13 @@ public class MpnsRegistration extends Registration {
         }
     }
 
+    /**
+     * Gets the PNS handle for getting devices by channel.
+     * @return The PNS handle for getting devices by channel.
+     */
+    @Override
+    public String getPnsHandle() { return channelUri.toString(); }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

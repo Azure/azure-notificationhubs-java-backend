@@ -56,6 +56,13 @@ public class AppleRegistration extends Registration {
      */
     public void setDeviceToken(String value) { deviceToken = value; }
 
+    /**
+     * Gets the PNS handle for getting devices by channel.
+     * @return The PNS handle for getting devices by channel.
+     */
+    @Override
+    public String getPnsHandle() { return deviceToken; }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
