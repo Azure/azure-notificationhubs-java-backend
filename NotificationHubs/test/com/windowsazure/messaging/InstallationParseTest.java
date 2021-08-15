@@ -28,7 +28,7 @@ public class InstallationParseTest {
             "auth-value");
 
         InputStream inputJson = this.getClass().getResourceAsStream("InstallationBrowserMinimal");
-        BrowserInstallation installation = BaseInstallationFactory.createInstallation(inputJson);
+        BrowserInstallation installation = BaseInstallation.fromJson(inputJson);
         assertNotNull(installation);
         assertEquals("123", installation.getInstallationId());
         assertEquals(NotificationPlatform.Browser, installation.getPlatform());
@@ -49,7 +49,7 @@ public class InstallationParseTest {
     public void InstallationWnsFactory() throws IOException, ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
         InputStream inputJson = this.getClass().getResourceAsStream("InstallationWnsFull");
-        WindowsInstallation installation = BaseInstallationFactory.createInstallation(inputJson);
+        WindowsInstallation installation = BaseInstallation.fromJson(inputJson);
         assertNotNull(installation);
         assertEquals("123", installation.getInstallationId());
         assertEquals(NotificationPlatform.Wns, installation.getPlatform());
@@ -64,7 +64,7 @@ public class InstallationParseTest {
     public void InstallationWnsFull() throws IOException, ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
         InputStream inputJson = this.getClass().getResourceAsStream("InstallationWnsFull");
-        WindowsInstallation installation = BaseInstallationFactory.createInstallation(inputJson);
+        WindowsInstallation installation = BaseInstallation.fromJson(inputJson);
         assertNotNull(installation);
         assertEquals("123", installation.getInstallationId());
         assertEquals(NotificationPlatform.Wns, installation.getPlatform());

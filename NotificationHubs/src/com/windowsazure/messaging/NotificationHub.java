@@ -1653,7 +1653,7 @@ public class NotificationHub implements NotificationHubClient {
                             return;
                         }
 
-                        callback.completed(BaseInstallationFactory.createInstallation(response.getEntity().getContent()));
+                        callback.completed(BaseInstallation.fromJson(response.getEntity().getContent()));
                     } catch (Exception e) {
                         callback.failed(e);
                     } finally {

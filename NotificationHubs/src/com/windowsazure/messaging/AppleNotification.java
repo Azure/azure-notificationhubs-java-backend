@@ -17,7 +17,7 @@ public class AppleNotification extends Notification {
      * @param body The JSON body for the notification.
      */
     public AppleNotification(String body) {
-        this(body, getTomorrow(), null);
+        this(body, getDefaultExpiration(), null);
     }
 
     /**
@@ -26,7 +26,7 @@ public class AppleNotification extends Notification {
      * @param headers The headers for the notification.
      */
     public AppleNotification(String body, Map<String, String> headers) {
-        this(body, getTomorrow(), headers);
+        this(body, getDefaultExpiration(), headers);
     }
 
     /**
@@ -63,7 +63,7 @@ public class AppleNotification extends Notification {
         }
     }
 
-    private static Date getTomorrow() {
+    private static Date getDefaultExpiration() {
         Date now = new Date();
         return new Date(now.getTime() + 24 * 60 * 60 * 1000);
     }

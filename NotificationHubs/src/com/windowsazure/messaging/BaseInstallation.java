@@ -1,7 +1,12 @@
 package com.windowsazure.messaging;
 
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.commons.io.IOUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -13,30 +18,6 @@ public abstract class BaseInstallation implements Cloneable {
     private String expirationTime;
     private List<String> tags;
     private Map<String, InstallationTemplate> templates;
-
-    /**
-    * Creates a new installation.
-    */
-    public BaseInstallation() {}
-
-    /**
-     * Creates a new installation with the given installation ID.
-     *
-     * @param installationId The ID for the installation.
-     */
-    public BaseInstallation(String installationId) {
-        this(installationId, (String[]) null);
-    }
-
-    /**
-     * Creates an installation from the Installation ID and tags.
-     *
-     * @param installationId The ID for the installation.
-     * @param tags           The tags for the installation.
-     */
-    public BaseInstallation(String installationId, String... tags) {
-        this(installationId, null, tags);
-    }
 
     /**
      * Creates an installation with an installation ID, platform and push channel.
@@ -281,5 +262,32 @@ public abstract class BaseInstallation implements Cloneable {
      */
     public String toJson() {
         return new GsonBuilder().disableHtmlEscaping().create().toJson(this);
+    }
+
+    /**
+     * Creates an installation from the JSON string.
+     *
+     * @param jsonString The JSON string that represents the installation.
+     * @return An installation created from the JSON string.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends BaseInstallation> T fromJson(String jsonString) {
+
+        Gson gson = new GsonBuilder()
+            .registerTypeAdapter(BaseInstallation.class, new BaseInstallationDeserializer())
+            .create();
+
+        return (T)gson.fromJson(jsonString, BaseInstallation.class);
+    }
+
+    /**
+     * Creates an installation from the JSON stream.
+     *
+     * @param json The JSON string that represents the installation.
+     * @return An installation created from the JSON stream.
+     * @throws IOException An exception reading from the stream occurred.
+     */
+    public static <T extends BaseInstallation> T fromJson(InputStream json) throws IOException {
+        return fromJson(IOUtils.toString(json, StandardCharsets.UTF_8));
     }
 }
