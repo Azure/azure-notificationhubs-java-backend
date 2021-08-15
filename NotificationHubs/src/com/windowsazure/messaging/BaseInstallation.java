@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public abstract class BaseInstallation {
+public abstract class BaseInstallation implements Cloneable {
     private String installationId;
     private String userId;
     private NotificationPlatform platform;
@@ -13,7 +13,6 @@ public abstract class BaseInstallation {
     private String expirationTime;
     private List<String> tags;
     private Map<String, InstallationTemplate> templates;
-    private Map<String, WnsSecondaryTile> secondaryTiles;
 
     /**
     * Creates a new installation.
@@ -49,6 +48,12 @@ public abstract class BaseInstallation {
         this(installationId, platform, (String[]) null);
     }
 
+    /**
+     * Creates a new instance of the BaseInstallation class.
+     * @param installationId The ID for the installation.
+     * @param platform The platform for the installation.
+     * @param tags The tags for the installation.
+     */
     public BaseInstallation(String installationId, NotificationPlatform platform, String... tags) {
         // Validate that this is not FCM
         validateNotificationPlatform(platform);
@@ -59,6 +64,18 @@ public abstract class BaseInstallation {
             for (String tag : tags) {
                 this.addTag(tag);
             }
+        }
+    }
+
+    /**
+     * Clones the current registration.
+     * @return A clone of the current registration.
+     */
+    public BaseInstallation clone() {
+        try {
+            return (BaseInstallation) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -255,48 +272,6 @@ public abstract class BaseInstallation {
         }
 
         templates.clear();
-    }
-
-    /**
-     * Gets the secondary tiles for WNS
-     *
-     * @return The secondary tiles for WNS.
-     */
-    public Map<String, WnsSecondaryTile> getSecondaryTiles() {
-        return secondaryTiles;
-    }
-
-    /**
-     * Adds a secondary tile to the installation template.
-     *
-     * @param tileName The name for the tile.
-     * @param tile     THe WNS secondary tile.
-     */
-    public void addSecondaryTile(String tileName, WnsSecondaryTile tile) {
-        if (templates == null) {
-            secondaryTiles = new HashMap<>();
-        }
-
-        secondaryTiles.put(tileName, tile);
-    }
-
-    public void removeSecondaryTile(String tileName) {
-        if (templates == null) {
-            return;
-        }
-
-        secondaryTiles.remove(tileName);
-    }
-
-    /**
-     * Clears the WNS secondary tiles.
-     */
-    public void clearSecondaryTiles() {
-        if (templates == null) {
-            return;
-        }
-
-        secondaryTiles.clear();
     }
 
     /**

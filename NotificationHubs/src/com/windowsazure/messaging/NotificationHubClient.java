@@ -99,16 +99,7 @@ public interface NotificationHubClient {
      * @return The matching installation by the installation ID.
      * @throws NotificationHubsException Thrown if there is a client error.
      */
-    Installation getInstallation(String installationId) throws NotificationHubsException;
-
-    /**
-     * Gets an installation by the given installation ID.
-     *
-     * @param installationId The installation ID for the installation to get.
-     * @return The matching installation by the installation ID.
-     * @throws NotificationHubsException Thrown if there is a client error.
-     */
-    BrowserInstallation getBrowserInstallation(String installationId) throws NotificationHubsException;
+    <T extends BaseInstallation> T getInstallation(String installationId) throws NotificationHubsException;
 
     /**
      * Gets an installation by the given installation ID.
@@ -117,16 +108,7 @@ public interface NotificationHubClient {
      * @param callback       A callback, when invoked, returns the matching
      *                       installation by the installation ID.
      */
-    void getInstallationAsync(String installationId, FutureCallback<Installation> callback);
-
-    /**
-     * Gets a browser installation by the given installation ID.
-     *
-     * @param installationId The installation ID for the installation to get.
-     * @param callback       A callback, when invoked, returns the matching
-     *                       installation by the installation ID.
-     */
-    void getBrowserInstallationAsync(String installationId, FutureCallback<BrowserInstallation> callback);
+    <T extends BaseInstallation> void getInstallationAsync(String installationId, FutureCallback<T> callback);
 
     /**
      * Submits a notification hub job such as import or export.

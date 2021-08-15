@@ -1636,7 +1636,7 @@ public class NotificationHub implements NotificationHubClient {
      *                       installation by the installation ID.
      */
     @Override
-    public void getInstallationAsync(String installationId, final FutureCallback<Installation> callback) {
+    public <T extends BaseInstallation> void getInstallationAsync(String installationId, final FutureCallback<T> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
             final HttpGet get = new HttpGet(uri);
@@ -1653,7 +1653,7 @@ public class NotificationHub implements NotificationHubClient {
                             return;
                         }
 
-                        callback.completed(Installation.fromJson(response.getEntity().getContent()));
+                        callback.completed(BaseInstallationFactory.createInstallation(response.getEntity().getContent()));
                     } catch (Exception e) {
                         callback.failed(e);
                     } finally {
@@ -1684,71 +1684,9 @@ public class NotificationHub implements NotificationHubClient {
      * @throws NotificationHubsException Thrown if there is a client error.
      */
     @Override
-    public Installation getInstallation(String installationId) throws NotificationHubsException {
-        SyncCallback<Installation> callback = new SyncCallback<>();
+    public <T extends BaseInstallation> T getInstallation(String installationId) throws NotificationHubsException {
+        SyncCallback<T> callback = new SyncCallback<>();
         getInstallationAsync(installationId, callback);
-        return callback.getResult();
-    }
-
-    /**
-     * Gets a browser installation by the given installation ID.
-     *
-     * @param installationId The installation ID for the installation to get.
-     * @param callback       A callback, when invoked, returns the matching
-     *                       installation by the installation ID.
-     */
-    @Override
-    public void getBrowserInstallationAsync(String installationId, final FutureCallback<BrowserInstallation> callback) {
-        try {
-            URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
-            final HttpGet get = new HttpGet(uri);
-            get.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            get.setHeader("User-Agent", getUserAgent());
-
-            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
-                    try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(BrowserInstallation.fromJson(response.getEntity().getContent()));
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    } finally {
-                        get.releaseConnection();
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    get.releaseConnection();
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    get.releaseConnection();
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Gets an installation by the given installation ID.
-     *
-     * @param installationId The installation ID for the installation to get.
-     * @return The matching installation by the installation ID.
-     * @throws NotificationHubsException Thrown if there is a client error.
-     */
-    @Override
-    public BrowserInstallation getBrowserInstallation(String installationId) throws NotificationHubsException {
-        SyncCallback<BrowserInstallation> callback = new SyncCallback<>();
-        getBrowserInstallationAsync(installationId, callback);
         return callback.getResult();
     }
 

@@ -16,13 +16,14 @@ public class BaseInstallationFactory {
      * @param jsonString The JSON string that represents the installation.
      * @return An installation created from the JSON string.
      */
-    public static BaseInstallation createInstallation(String jsonString) {
+    @SuppressWarnings("unchecked")
+    public static <T extends BaseInstallation> T createInstallation(String jsonString) {
 
         Gson gson = new GsonBuilder()
             .registerTypeAdapter(BaseInstallation.class, new BaseInstallationDeserializer())
             .create();
 
-        return gson.fromJson(jsonString, BaseInstallation.class);
+        return (T)gson.fromJson(jsonString, BaseInstallation.class);
     }
 
     /**
@@ -32,7 +33,7 @@ public class BaseInstallationFactory {
      * @return An installation created from the JSON stream.
      * @throws IOException An exception reading from the stream occurred.
      */
-    public static BaseInstallation createInstallation(InputStream json) throws IOException {
+    public static <T extends BaseInstallation> T createInstallation(InputStream json) throws IOException {
         return createInstallation(IOUtils.toString(json, StandardCharsets.UTF_8));
     }
 }

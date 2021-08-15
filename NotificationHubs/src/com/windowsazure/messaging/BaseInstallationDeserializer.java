@@ -16,14 +16,27 @@ public class BaseInstallationDeserializer implements JsonDeserializer<BaseInstal
         JsonElement jsonType = jsonObject.get("platform");
         String platformString = jsonType.getAsString();
 
-        BaseInstallation installation;
+        return jsonDeserializationContext.deserialize(jsonElement, getClass(platformString));
+    }
 
-        if (platformString.equalsIgnoreCase("browser")) {
-            installation = jsonDeserializationContext.deserialize(jsonElement, BrowserInstallation.class);
-        } else {
-            installation = jsonDeserializationContext.deserialize(jsonElement, Installation.class);
+    private static Class<?> getClass(String platformString) {
+        switch (platformString) {
+            case "adm":
+                return AdmInstallation.class;
+            case "apple":
+                return AppleInstallation.class;
+            case "baidu":
+                return BaiduInstallation.class;
+            case "browser":
+                return BrowserInstallation.class;
+            case "fcm":
+                return FcmInstallation.class;
+            case "mpns":
+                return MpnsInstallation.class;
+            case "wns":
+                return WindowsInstallation.class;
+            default:
+                return Installation.class;
         }
-
-        return installation;
     }
 }
