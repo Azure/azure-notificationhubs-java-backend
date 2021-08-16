@@ -219,6 +219,10 @@ public abstract class Registration implements Cloneable {
             BaiduRegistration.class);
         digester.addObjectCreate("*/BaiduTemplateRegistrationDescription",
             BaiduTemplateRegistration.class);
+        digester.addObjectCreate("*/BrowserRegistrationDescription",
+            BrowserRegistration.class);
+        digester.addObjectCreate("*/BrowserTemplateRegistrationDescription",
+            BrowserTemplateRegistration.class);
         digester.addCallMethod("*/RegistrationId", "setRegistrationId", 1);
         digester.addCallParam("*/RegistrationId", 0);
         digester.addCallMethod("*/ETag", "setEtag", 1);
@@ -251,6 +255,12 @@ public abstract class Registration implements Cloneable {
         digester.addCallParam("*/BaiduUserId", 0);
         digester.addCallMethod("*/BaiduChannelId", "setBaiduChannelId", 1);
         digester.addCallParam("*/BaiduChannelId", 0);
+        digester.addCallMethod("*/Endpoint", "setEndpoint", 1);
+        digester.addCallParam("*/Endpoint", 0);
+        digester.addCallMethod("*/P256DH", "setP256dh", 1);
+        digester.addCallParam("*/P256DH", 0);
+        digester.addCallMethod("*/Auth", "setAuth", 1);
+        digester.addCallParam("*/Auth", 0);
     }
 
     public static CollectionResult parseRegistrations(InputStream content)

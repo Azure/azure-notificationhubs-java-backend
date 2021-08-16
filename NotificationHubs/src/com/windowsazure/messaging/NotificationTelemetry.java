@@ -13,6 +13,9 @@ import java.util.Map;
 import org.apache.commons.digester3.Digester;
 import org.xml.sax.SAXException;
 
+/**
+ * This class represents notification telemetry counts.
+ */
 public class NotificationTelemetry {
 
     private String notificationId;
@@ -30,6 +33,7 @@ public class NotificationTelemetry {
     private Map<String, Integer> fcmOutcomeCounts;
     private Map<String, Integer> admOutcomeCounts;
     private Map<String, Integer> baiduOutcomeCounts;
+    private Map<String, Integer> browserOutcomeCounts;
     private String pnsErrorDetailsUri;
 
     private static final ThreadLocal<Digester> parser;
@@ -46,6 +50,10 @@ public class NotificationTelemetry {
         return parser.get().parse(content);
     }
 
+    /**
+     * Gets the notification ID.
+     * @return The notification ID.
+     */
     public String getNotificationId() {
         return notificationId;
     }
@@ -182,6 +190,14 @@ public class NotificationTelemetry {
         this.admOutcomeCounts = admOutcomeCounts;
     }
 
+    public Map<String, Integer> getBrowserOutcomeCounts() {
+        return browserOutcomeCounts;
+    }
+
+    public void setBrowserOutcomeCounts(Map<String, Integer> browserOutcomeCounts) {
+        this.browserOutcomeCounts = browserOutcomeCounts;
+    }
+
     public String getPnsErrorDetailsUri() {
         return pnsErrorDetailsUri;
     }
@@ -252,5 +268,11 @@ public class NotificationTelemetry {
         digester.addCallParam("*/Name", 0);
         digester.addCallParam("*/Count", 1);
         digester.addSetNext("*/BaiduOutcomeCounts", "setBaiduOutcomeCounts", Map.class.getName());
+
+        digester.addObjectCreate("*/BrowserOutcomeCounts", HashMap.class);
+        digester.addCallMethod("*/Outcome", "put", 2, new Class[]{String.class, Integer.class});
+        digester.addCallParam("*/Name", 0);
+        digester.addCallParam("*/Count", 1);
+        digester.addSetNext("*/BrowserOutcomeCounts", "setBrowserOutcomeCounts", Map.class.getName());
     }
 }

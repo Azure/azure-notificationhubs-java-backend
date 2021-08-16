@@ -1100,6 +1100,21 @@ public class NotificationHub implements NotificationHubClient {
     }
 
     /**
+     * Sends a direct notification to a given browser push channel.
+     *
+     * @param notification The notification to send directly to the browser push channel.
+     * @param pushChannel The browser push channel to target for the notification.
+     * @return A notification outcome with the tracking ID and notification ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
+    @Override
+    public NotificationOutcome sendDirectNotification(BrowserNotification notification, BrowserPushChannel pushChannel) throws NotificationHubsException {
+        SyncCallback<NotificationOutcome> callback = new SyncCallback<>();
+        sendDirectNotificationAsync(notification, pushChannel, callback);
+        return callback.getResult();
+    }
+
+    /**
      * Sends a direct notification to the given device handles.  Note that this is not available on the free SKU.
      *
      * @param notification  The notification to send directly to the device handles.
@@ -1133,6 +1148,81 @@ public class NotificationHub implements NotificationHubClient {
             final HttpPost post = new HttpPost(uri);
             final String trackingId = java.util.UUID.randomUUID().toString();
             post.setHeader("ServiceBusNotification-DeviceHandle", deviceHandle);
+            post.setHeader("Authorization", tokenProvider.generateSasToken(uri));
+            post.setHeader(TRACKING_ID_HEADER, trackingId);
+            post.setHeader("User-Agent", getUserAgent());
+
+            for (String header : notification.getHeaders().keySet()) {
+                post.setHeader(header, notification.getHeaders().get(header));
+            }
+
+            post.setEntity(new StringEntity(notification.getBody(), notification.getContentType()));
+
+            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
+                public void completed(final HttpResponse response) {
+                    try {
+                        int httpStatusCode = response.getStatusLine().getStatusCode();
+                        if (httpStatusCode != 201) {
+                            String msg = "";
+                            if (response.getEntity() != null && response.getEntity().getContent() != null) {
+                                msg = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
+                            }
+                            msg = "Error: " + response.getStatusLine() + " body: " + msg;
+                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response, httpStatusCode, msg));
+                            return;
+                        }
+
+                        String notificationId = null;
+                        Header locationHeader = response.getFirstHeader(CONTENT_LOCATION_HEADER);
+                        if (locationHeader != null) {
+                            URI location = new URI(locationHeader.getValue());
+                            String[] segments = location.getPath().split("/");
+                            notificationId = segments[segments.length - 1];
+                        }
+
+                        callback.completed(new NotificationOutcome(trackingId, notificationId));
+                    } catch (Exception e) {
+                        callback.failed(e);
+                    } finally {
+                        post.releaseConnection();
+                    }
+                }
+
+                public void failed(final Exception ex) {
+                    post.releaseConnection();
+                    callback.failed(ex);
+                }
+
+                public void cancelled() {
+                    post.releaseConnection();
+                    callback.cancelled();
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Sends a direct notification to a given browser push channel.
+     *
+     * @param notification The notification to send directly to the push channel.
+     * @param pushChannel  The browser push channel to send directly to.
+     * @param callback     A callback, when invoked, returns a notification outcome
+     */
+    @Override
+    public void sendDirectNotificationAsync(
+        BrowserNotification notification,
+        BrowserPushChannel pushChannel,
+        FutureCallback<NotificationOutcome> callback
+    ) {
+        try {
+            URI uri = new URI(endpoint + hubPath + "/messages" + API_VERSION + "&direct");
+            final HttpPost post = new HttpPost(uri);
+            final String trackingId = java.util.UUID.randomUUID().toString();
+            post.setHeader("ServiceBusNotification-DeviceHandle", pushChannel.getEndpoint());
+            post.setHeader("P256DH", pushChannel.getP256dh());
+            post.setHeader("Auth", pushChannel.getAuth());
             post.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             post.setHeader(TRACKING_ID_HEADER, trackingId);
             post.setHeader("User-Agent", getUserAgent());

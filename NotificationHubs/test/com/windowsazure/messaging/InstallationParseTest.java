@@ -21,6 +21,21 @@ import static org.junit.Assert.assertNotNull;
 public class InstallationParseTest {
 
     @Test
+    public void InstallationBrowser() throws IOException {
+        BrowserPushChannel pushChannel = new BrowserPushChannel(
+            "https://some.url",
+            "p256-value",
+            "auth-value");
+
+        InputStream inputJson = this.getClass().getResourceAsStream("InstallationBrowserMinimal");
+        BrowserInstallation installation = BaseInstallation.fromJson(inputJson);
+        assertNotNull(installation);
+        assertEquals("123", installation.getInstallationId());
+        assertEquals(NotificationPlatform.Browser, installation.getPlatform());
+        assertEquals(pushChannel, installation.getPushChannel());
+    }
+
+    @Test
     public void InstallationMinimal() throws IOException {
         InputStream inputJson = this.getClass().getResourceAsStream("InstallationMinimal");
         Installation installation = Installation.fromJson(inputJson);
