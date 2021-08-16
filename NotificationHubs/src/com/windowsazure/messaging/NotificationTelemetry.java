@@ -13,6 +13,9 @@ import java.util.Map;
 import org.apache.commons.digester3.Digester;
 import org.xml.sax.SAXException;
 
+/**
+ * This class represents notification telemetry counts.
+ */
 public class NotificationTelemetry {
 
     private String notificationId;
@@ -47,6 +50,10 @@ public class NotificationTelemetry {
         return parser.get().parse(content);
     }
 
+    /**
+     * Gets the notification ID.
+     * @return The notification ID.
+     */
     public String getNotificationId() {
         return notificationId;
     }
@@ -181,6 +188,14 @@ public class NotificationTelemetry {
 
     public void setAdmOutcomeCounts(Map<String, Integer> admOutcomeCounts) {
         this.admOutcomeCounts = admOutcomeCounts;
+    }
+
+    public Map<String, Integer> getBrowserOutcomeCounts() {
+        return browserOutcomeCounts;
+    }
+
+    public void setBrowserOutcomeCounts(Map<String, Integer> browserOutcomeCounts) {
+        this.browserOutcomeCounts = browserOutcomeCounts;
     }
 
     public String getPnsErrorDetailsUri() {
