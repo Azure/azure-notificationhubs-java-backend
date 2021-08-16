@@ -17,6 +17,13 @@ Installation i = new Installation();
 i.setPlatform(NotificationPlatform.Gcm);
 ```
 
+Alternatively, we have created installations specific to each platform, for example, the `FcmInstallation` exists so you do not need to set the `NotificationPlatform` type.
+
+```java
+FcmInstallation i = new FcmInstallation();
+i.getPlatform(); // Set to NotificationPlatform.Gcm
+```
+
 ## Building the Azure Notification Hubs Java SDK
 
 To build, use [Maven](http://maven.apache.org/):
@@ -160,7 +167,7 @@ The following are some key advantages to using installations:
 Using this SDK, you can do these Installation API operations.  For example, we can create an installation for an Amazon Kindle Fire.
 
 ```java
-Installation installation = new Installation("installation-id", NotificationPlatform.Adm, "adm-push-channel");
+AdmInstallation installation = new AdmInstallation("installation-id", "adm-push-channel");
 hub.createOrUpdateInstallation(installation);
 ```
 
@@ -200,7 +207,7 @@ A registration associates the Platform Notification Service (PNS) handle for a d
 WindowsRegistration reg = new WindowsRegistration(new URI(CHANNELURI));
 reg.addTag("platform_uwp");
 reg.addTag("os_windows10");
-Registration created = hub.createRegistrationAsync(reg);
+WindowsRegistration created = hub.createRegistrationAsync(reg);
 ```
 
 ### Create an Apple Registration
@@ -209,7 +216,7 @@ Registration created = hub.createRegistrationAsync(reg);
 AppleRegistration reg = new AppleRegistration(DEVICETOKEN);
 reg.addTag("platform_ios");
 reg.addTag("os_tvos");
-Registration created = hub.createRegistrationAsync(reg);
+AppleRegistration created = hub.createRegistrationAsync(reg);
 ```
 
 Analogous for Android (GCM), Windows Phone (MPNS), and Kindle Fire (ADM).
@@ -219,7 +226,7 @@ Analogous for Android (GCM), Windows Phone (MPNS), and Kindle Fire (ADM).
 ```java
 WindowsTemplateRegistration reg = new WindowsTemplateRegistration(new URI(CHANNELURI), WNSBODYTEMPLATE);
 reg.addHeader("X-WNS-Type", "wns/toast");
-Registration created = hub.createRegistration(reg);
+WindowsTemplateRegistration created = hub.createRegistration(reg);
 ```
 
 Create registrations using create registrationid+upsert pattern (removes duplicates deriving from lost responses if registration ids are stored on the device):
@@ -227,7 +234,7 @@ Create registrations using create registrationid+upsert pattern (removes duplica
 ```java
 String id = hub.createRegistrationId();
 WindowsRegistration reg = new WindowsRegistration(id, new URI(CHANNELURI));
-Registration upserted = hub.upsertRegistration(reg);
+WindowsRegistration upserted = hub.upsertRegistration(reg);
 ```
 
 ### Update a Registration
@@ -253,19 +260,19 @@ All collection queries support $top and continuation tokens.
 ### Get All Registrations in an Azure Notification Hub
 
 ```java
-List<Registration> registrations = hub.getRegistrations();
+CollectionResult registrations = hub.getRegistrations();
 ```
 
 ### Get Registrations With a Given Tag
 
 ```java
-List<Registration> registrations = hub.getRegistrationsByTag("platform_ios");
+CollectionResult registrations = hub.getRegistrationsByTag("platform_ios");
 ```
 
 ### Get Registrations By Channel
 
 ```java
-List<Registration> registrations = hub.getRegistrationsByChannel("devicetoken");
+CollectionResult registrations = hub.getRegistrationsByChannel("devicetoken");
 ```
 
 ## Send Notifications
@@ -292,7 +299,7 @@ NotificationOutcome outcome = hub.sendNotification(n, "platform_ios && ! platfor
 ### Send an Apple Push Notification
 
 ```java
-Notification n = Notification.createAppleNotifiation("APNS body");
+AppleNotification n = Notification.createAppleNotifiation("APNS body");
 NotificationOutcome outcome = hub.sendNotification(n);
 ```
 
@@ -301,12 +308,12 @@ Analogous for Android, Windows Phone, Kindle Fire and Baidu PNS.
 ### Send a Template Notification
 
 ```java
-Map<String, String> prop =  new HashMap<String, String>();
-prop.put("prop1", "v1");
-prop.put("prop2", "v2");
-Notification n = Notification.createTemplateNotification(prop);
+Map<String, String> props =  new HashMap<String, String>();
+props.put("prop1", "v1");
+props.put("prop2", "v2");
+TemplateNotification n = Notification.createTemplateNotification(props);
 
-NotificationOutcome outcome = hub.sendNotificationn);
+NotificationOutcome outcome = hub.sendNotification);
 ```
 
 ### Send To An Installation ID
@@ -314,7 +321,7 @@ NotificationOutcome outcome = hub.sendNotificationn);
 Send flow for Installations is the same as for Registrations. We've just introduced an option to target notification to the particular Installation - just use tag "$InstallationId:{desired-id}". For case above it would look like this:
 
 ```java
-Notification n = Notification.createWindowsNotification("WNS body");
+WindowsNotification n = Notification.createWindowsNotification("WNS body");
 NotificationOutcome outcome = hub.sendNotification(n, "$InstallationId:{installation-id}");
 ```
 
@@ -336,16 +343,16 @@ String jsonPayload = "{\"aps\":{\"alert\":\"Notification Hub test notification\"
 Set<String> tags = new HashSet<String>();
 tags.add("$UserId:user1234");
 
-Notification n = Notification.createAppleNotification(jsonPayload);
+AppleNotification n = Notification.createAppleNotification(jsonPayload);
 NotificationOutcome outcome = hub.sendNotification(n, tags);
 ```
 
 ### Send To An Installation Template For An Installation
 
 ```java
-Map<String, String> prop =  new HashMap<String, String>();
-prop.put("value3", "some value");
-Notification n = Notification.createTemplateNotification(prop);
+Map<String, String> props =  new HashMap<String, String>();
+props.put("value3", "some value");
+TemplateNotification n = Notification.createTemplateNotification(prop);
 NotificationOutcome outcome = hub.sendNotification(n, "$InstallationId:{installation-id} && tag-for-template1");
 ```
 

@@ -30,7 +30,6 @@ public class NotificationTelemetry {
     private Map<String, Integer> fcmOutcomeCounts;
     private Map<String, Integer> admOutcomeCounts;
     private Map<String, Integer> baiduOutcomeCounts;
-    private Map<String, Integer> browserOutcomeCounts;
     private String pnsErrorDetailsUri;
 
     private static final ThreadLocal<Digester> parser;
@@ -253,11 +252,5 @@ public class NotificationTelemetry {
         digester.addCallParam("*/Name", 0);
         digester.addCallParam("*/Count", 1);
         digester.addSetNext("*/BaiduOutcomeCounts", "setBaiduOutcomeCounts", Map.class.getName());
-
-        digester.addObjectCreate("*/BrowserOutcomeCounts", HashMap.class);
-        digester.addCallMethod("*/Outcome", "put", 2, new Class[]{String.class, Integer.class});
-        digester.addCallParam("*/Name", 0);
-        digester.addCallParam("*/Count", 1);
-        digester.addSetNext("*/BrowserOutcomeCounts", "setBrowserOutcomeCounts", Map.class.getName());
     }
 }

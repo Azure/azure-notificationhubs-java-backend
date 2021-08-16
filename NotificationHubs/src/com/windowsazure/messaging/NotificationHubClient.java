@@ -636,19 +636,6 @@ public interface NotificationHubClient {
         throws NotificationHubsException;
 
     /**
-     * Sends a direct notification to a given browser push channel.
-     *
-     * @param notification The notification to send directly to the browser push channel.
-     * @param pushChannel The browser push channel to target for the notification.
-     * @return A notification outcome with the tracking ID and notification ID.
-     * @throws NotificationHubsException Thrown if there is a client error.
-     */
-    NotificationOutcome sendDirectNotification(
-        BrowserNotification notification,
-        BrowserPushChannel pushChannel
-    ) throws NotificationHubsException;
-
-    /**
      * Sends a direct notification to a given device handle.
      *
      * @param notification The notification to send directly to the device handle.
@@ -659,20 +646,6 @@ public interface NotificationHubClient {
     void sendDirectNotificationAsync(
         Notification notification,
         String deviceHandle,
-        FutureCallback<NotificationOutcome> callback
-    );
-
-    /**
-     * Sends a direct notification to a given browser push channel.
-     *
-     * @param notification The notification to send directly to the push channel.
-     * @param pushChannel The browser push channel to send directly to.
-     * @param callback     A callback, when invoked, returns a notification outcome
-     *                     with the tracking ID and notification ID.
-     */
-    void sendDirectNotificationAsync(
-        BrowserNotification notification,
-        BrowserPushChannel pushChannel,
         FutureCallback<NotificationOutcome> callback
     );
 
