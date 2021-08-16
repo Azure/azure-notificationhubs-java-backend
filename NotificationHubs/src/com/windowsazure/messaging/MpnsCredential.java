@@ -8,35 +8,54 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class represents Windows Phone credentials for Azure Notification Hubs.
+ */
 public final class MpnsCredential extends PnsCredential {
     private String mpnsCertificate;
     private String certificateKey;
 
+    /**
+     * Creates a new instance of the MpnsCredential class.
+     */
     public MpnsCredential() {
-        this(null, null);
+        super();
     }
 
+    /**
+     * Creates a new instance of the MpnsCredential class with certificate and certificate key.
+     * @param mpnsCertificate The Windows Phone PNS certificate.
+     * @param certificateKey THe Windows Phone PNS certificate key.
+     */
     public MpnsCredential(String mpnsCertificate, String certificateKey) {
         super();
-        this.setMpnsCertificate(mpnsCertificate);
-        this.setCertificateKey(certificateKey);
-    }
-
-    public String getMpnsCertificate() {
-        return mpnsCertificate;
-    }
-
-    public void setMpnsCertificate(String mpnsCertificate) {
         this.mpnsCertificate = mpnsCertificate;
-    }
-
-    public String getCertificateKey() {
-        return certificateKey;
-    }
-
-    public void setCertificateKey(String certificateKey) {
         this.certificateKey = certificateKey;
     }
+
+    /**
+     * Gets the Windows Phone PNS certificate.
+     * @return The Windows Phone PNS certificate.
+     */
+    public String getMpnsCertificate() { return mpnsCertificate; }
+
+    /**
+     * Sets the Windows Phone PNS certificate.
+     * @param value The Windows Phone PNS certificate to set.
+     */
+    public void setMpnsCertificate(String value) { mpnsCertificate = value; }
+
+    /**
+     * Gets the Windows Phone PNS certificate key.
+     * @return The Windows Phone PNS certificate key.
+     */
+    public String getCertificateKey() { return certificateKey; }
+
+    /**
+     * Sets the Windows Phone PNS certificate key.
+     * @param value THe Windows Phone PNS certificate key.
+     */
+    public void setCertificateKey(String value) { certificateKey = value; }
 
     @Override
     public List<SimpleEntry<String, String>> getProperties() {

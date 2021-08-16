@@ -40,7 +40,9 @@ public enum NotificationPlatform {
      */
     @SerializedName("adm")
     Adm,
-
+    /**
+     * The Baidu Push Platform.
+     */
     @SerializedName("baidu")
     Baidu,
 }

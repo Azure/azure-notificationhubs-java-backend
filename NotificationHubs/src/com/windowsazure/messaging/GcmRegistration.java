@@ -4,6 +4,8 @@
 
 package com.windowsazure.messaging;
 
+import java.util.Objects;
+
 /**
  * Class representing a native registration for devices using GCM.
  *
@@ -18,59 +20,63 @@ public class GcmRegistration extends Registration {
 
     protected String gcmRegistrationId;
 
+    /**
+     * Creates a new instance of the GcmRegistration class.
+     */
     public GcmRegistration() {
         super();
     }
 
+    /**
+     * Creates a new instance of the GcmRegistration class.
+     * @param registrationId The Azure Notification Hubs registration ID.
+     * @param gcmRegistrationId The Google Cloud Messaging registration ID.
+     */
     public GcmRegistration(String registrationId, String gcmRegistrationId) {
         super(registrationId);
         this.gcmRegistrationId = gcmRegistrationId;
     }
 
+    /**
+     * Creates a new instance of the GcmRegistration class.
+     * @param gcmRegistrationId The Google Cloud Messaging registration ID.
+     */
     public GcmRegistration(String gcmRegistrationId) {
         super();
         this.gcmRegistrationId = gcmRegistrationId;
     }
 
-    public String getGcmRegistrationId() {
-        return gcmRegistrationId;
-    }
+    /**
+     * Gets the Google Cloud Messaging registration ID.
+     * @return The Google Cloud Messaging registration ID.
+     */
+    public String getGcmRegistrationId() { return gcmRegistrationId; }
 
-    public void setGcmRegistrationId(String gcmRegistrationId) {
-        this.gcmRegistrationId = gcmRegistrationId;
-    }
+    /**
+     * Sets the Google Cloud Messaging registration ID.
+     * @param value The Google Cloud Messaging registration ID to set.
+     */
+    public void setGcmRegistrationId(String value) { gcmRegistrationId = value; }
+
+    /**
+     * Gets the PNS handle for getting devices by channel.
+     * @return The PNS handle for getting devices by channel.
+     */
+    @Override
+    public String getPnsHandle() { return gcmRegistrationId; }
 
     @Override
-    public String getPnsHandle() {
-        return gcmRegistrationId;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        GcmRegistration that = (GcmRegistration) o;
+        return Objects.equals(getGcmRegistrationId(), that.getGcmRegistrationId());
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime
-            * result
-            + ((gcmRegistrationId == null) ? 0 : gcmRegistrationId
-            .hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        GcmRegistration other = (GcmRegistration) obj;
-        if (gcmRegistrationId == null) {
-            if (other.gcmRegistrationId != null)
-                return false;
-        } else if (!gcmRegistrationId.equals(other.gcmRegistrationId))
-            return false;
-        return true;
+        return Objects.hash(super.hashCode(), getGcmRegistrationId());
     }
 
     @Override
@@ -81,5 +87,4 @@ public class GcmRegistration extends Registration {
             gcmRegistrationId +
             GCM_NATIVE_REGISTRATION3;
     }
-
 }

@@ -16,14 +16,14 @@ public abstract class PnsCredential {
     private static final String PROPERTY_END = "</Value></Property>";
     private static final String PROPERTIES_END = "</Properties>";
 
-    public static void setupDigister(Digester digester) {
+    public void setProperty(String propertyName, String propertyValue) throws Exception {
+        this.getClass().getMethod("set" + propertyName, String.class).invoke(this, propertyValue);
+    }
+
+    public static void setupDigester(Digester digester) {
         digester.addCallMethod("*/Property", "setProperty", 2);
         digester.addCallParam("*/Name", 0);
         digester.addCallParam("*/Value", 1);
-    }
-
-    public void setProperty(String propertyName, String propertyValue) throws Exception {
-        this.getClass().getMethod("set" + propertyName, String.class).invoke(this, propertyValue);
     }
 
     public String getXml() {

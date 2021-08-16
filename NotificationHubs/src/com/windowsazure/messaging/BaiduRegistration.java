@@ -4,6 +4,8 @@
 
 package com.windowsazure.messaging;
 
+import java.util.Objects;
+
 /**
  * Class representing a native registration for devices using Baidu PNS.
  */
@@ -16,63 +18,79 @@ public class BaiduRegistration extends Registration {
     protected String baiduUserId;
     protected String baiduChannelId;
 
+    /**
+     * Creates a new instance of the BaiduRegistration class.
+     */
     public BaiduRegistration() {
-        this(null, null);
+        super();
     }
 
+    /**
+     * Creates a new instance of the BaiduRegistration class.
+     * @param baiduUserId The Baidu user ID for the device.
+     * @param baiduChannelId The Baidu channel ID for the device.
+     */
     public BaiduRegistration(String baiduUserId, String baiduChannelId) {
-        this(null, baiduUserId, baiduChannelId);
+        super();
+        this.baiduUserId = baiduUserId;
+        this.baiduChannelId = baiduChannelId;
     }
 
+    /**
+     * Creates a new instance of the BaiduRegistration class.
+     * @param registrationId The Azure Notification Hubs registration ID.
+     * @param baiduUserId The Baidu user ID for the device.
+     * @param baiduChannelId The Baidu channel ID for the device.
+     */
     public BaiduRegistration(String registrationId, String baiduUserId, String baiduChannelId) {
         super(registrationId);
         this.baiduUserId = baiduUserId;
         this.baiduChannelId = baiduChannelId;
     }
 
-    public String getBaiduUserId() {
-        return baiduUserId;
-    }
+    /**
+     * Gets the Baidu user ID for the device.
+     * @return The Baidu user ID for the device.
+     */
+    public String getBaiduUserId() { return baiduUserId; }
 
-    public void setBaiduUserId(String baiduUserId) {
-        this.baiduUserId = baiduUserId;
-    }
+    /**
+     * Sets the Baidu user ID for the device.
+     * @param value The Baidu user ID for the device to set.
+     */
+    public void setBaiduUserId(String value) { baiduUserId = value; }
 
-    public String getBaiduChannelId() {
-        return baiduChannelId;
-    }
+    /**
+     * Gets the Baidu channel ID for the device.
+     * @return The Baidu channel ID for the device.
+     */
+    public String getBaiduChannelId() { return baiduChannelId; }
 
-    public void setBaiduChannelId(String baiduChannelId) {
-        this.baiduChannelId = baiduChannelId;
-    }
+    /**
+     * Sets the Baidu channel ID for the device.
+     * @param value The Baidu channel ID for the device to set.
+     */
+    public void setBaiduChannelId(String value) { baiduChannelId = value; }
+
+    /**
+     * Gets the PNS handle for getting devices by channel.
+     * @return The PNS handle for getting devices by channel.
+     */
+    @Override
+    public String getPnsHandle() { return baiduUserId + "-" + baiduChannelId; }
 
     @Override
-    public String getPnsHandle() {
-        return baiduUserId + "-" + baiduChannelId;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        BaiduRegistration that = (BaiduRegistration) o;
+        return Objects.equals(getBaiduUserId(), that.getBaiduUserId()) && Objects.equals(getBaiduChannelId(), that.getBaiduChannelId());
     }
 
     @Override
     public int hashCode() {
-        String channel = getPnsHandle();
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime
-            * result
-            + ((baiduUserId == null && baiduChannelId == null) ? 0 : channel.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-
-        BaiduRegistration other = (BaiduRegistration) obj;
-        return baiduUserId.equals(other.baiduUserId) && baiduChannelId.equals(other.baiduChannelId);
+        return Objects.hash(super.hashCode(), getBaiduUserId(), getBaiduChannelId());
     }
 
     @Override
@@ -85,5 +103,4 @@ public class BaiduRegistration extends Registration {
             baiduChannelId +
             BAIDU_NATIVE_REGISTRATION4;
     }
-
 }

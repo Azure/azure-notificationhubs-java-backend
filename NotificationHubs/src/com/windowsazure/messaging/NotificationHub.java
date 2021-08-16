@@ -4,6 +4,20 @@
 
 package com.windowsazure.messaging;
 
+import com.google.gson.GsonBuilder;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.*;
+import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.FormBodyPart;
+import org.apache.http.entity.mime.FormBodyPartBuilder;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.StringBody;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
@@ -12,37 +26,12 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPatch;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.*;
-import org.apache.http.entity.mime.content.StringBody;
-
-import com.google.gson.GsonBuilder;
-
 /**
- * Class implementing the INotificationHub interface.
+ * This class represents all actions that can be done on an Azure Notification Hub.
  */
 public class NotificationHub implements NotificationHubClient {
 
@@ -52,11 +41,18 @@ public class NotificationHub implements NotificationHubClient {
     private static final String TRACKING_ID_HEADER = "TrackingId";
     private String endpoint;
     private final String hubPath;
-    private String SasKeyName;
-    private String SasKeyValue;
+    private final SasTokenProvider tokenProvider;
 
+    /**
+     * Creates a new instance of the NotificationHub class with connection string and hub path.
+     * @param connectionString The connection string from the Azure Notification Hub access policies.
+     * @param hubPath The name of the Azure Notification Hub name.
+     */
     public NotificationHub(String connectionString, String hubPath) {
         this.hubPath = hubPath;
+
+        String sasKeyName = null;
+        String sasKeyValue = null;
 
         String[] parts = connectionString.split(";");
         if (parts.length != 3)
@@ -67,19 +63,31 @@ public class NotificationHub implements NotificationHubClient {
             if (part.startsWith("Endpoint")) {
                 this.endpoint = "https" + part.substring(11);
             } else if (part.startsWith("SharedAccessKeyName")) {
-                this.SasKeyName = part.substring(20);
+                sasKeyName = part.substring(20);
             } else if (part.startsWith("SharedAccessKey")) {
-                this.SasKeyValue = part.substring(16);
+                sasKeyValue = part.substring(16);
             }
         }
+
+        tokenProvider = new SasTokenProvider(sasKeyName, sasKeyValue);
     }
 
+    /**
+     * This method creates a new registration
+     *
+     * @param registration A registration object containing the description of the
+     *                     registration to create. ETag and registration ID are
+     *                     ignored
+     * @param callback     A callback when invoked returns created registration
+     *                     containing the read-only parameters (registration ID,
+     *                     ETag, and expiration time)
+     */
     @Override
-    public void createRegistrationAsync(Registration registration, final FutureCallback<Registration> callback) {
+    public <T extends Registration> void createRegistrationAsync(T registration, final FutureCallback<T> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/registrations" + API_VERSION);
             final HttpPost post = new HttpPost(uri);
-            post.setHeader("Authorization", generateSasToken(uri));
+            post.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             post.setHeader("User-Agent", getUserAgent());
 
             StringEntity entity = new StringEntity(registration.getXml(), ContentType.APPLICATION_ATOM_XML);
@@ -119,19 +127,36 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * This method creates a new registration
+     *
+     * @param registration A registration object containing the description of the
+     *                     registration to create. ETag and registration ID are
+     *                     ignored
+     * @return The created registration containing the read-only parameters
+     * (registration ID, ETag, and expiration time).
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
-    public Registration createRegistration(Registration registration) throws NotificationHubsException {
-        SyncCallback<Registration> callback = new SyncCallback<>();
+    public <T extends Registration> T createRegistration(T registration) throws NotificationHubsException {
+        SyncCallback<T> callback = new SyncCallback<>();
         createRegistrationAsync(registration, callback);
         return callback.getResult();
     }
 
+    /**
+     * Create a registrationId, without creating an actual registration. To create
+     * use upsert. This method is used when the registration id is stored only on
+     * the device.
+     *
+     * @param callback A callback with the newly created registration ID.
+     */
     @Override
     public void createRegistrationIdAsync(final FutureCallback<String> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/registrationids" + API_VERSION);
             final HttpPost post = new HttpPost(uri);
-            post.setHeader("Authorization", generateSasToken(uri));
+            post.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             post.setHeader("User-Agent", getUserAgent());
 
             HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
@@ -147,9 +172,13 @@ public class NotificationHub implements NotificationHubClient {
                         String location = response.getFirstHeader(CONTENT_LOCATION_HEADER).getValue();
                         Pattern extractId = Pattern.compile("(\\S+)/registrationids/([^?]+).*");
                         Matcher m = extractId.matcher(location);
-                        m.matches();
-                        String id = m.group(2);
-                        callback.completed(id);
+
+                        if (m.matches()) {
+                            String id = m.group(2);
+                            callback.completed(id);
+                        } else {
+                            callback.completed(null);
+                        }
                     } catch (Exception e) {
                         callback.failed(e);
                     } finally {
@@ -172,6 +201,14 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * Create a registrationId, without creating an actual registration. To create
+     * use upsert. This method is used when the registration id is stored only on
+     * the device.
+     *
+     * @return The newly created registration ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public String createRegistrationId() throws NotificationHubsException {
         SyncCallback<String> callback = new SyncCallback<>();
@@ -179,12 +216,23 @@ public class NotificationHub implements NotificationHubClient {
         return callback.getResult();
     }
 
+    /**
+     * This method updates an existing registration
+     *
+     * @param registration A registration object containing the description of the
+     *                     registration to update. The registration ID must be
+     *                     populated.
+     * @param callback     A callback when invoked, returns the updated registration
+     *                     containing the read-only parameters (registration ID,
+     *                     ETag, and expiration time).
+     * @param <T> The type of Registration class.
+     */
     @Override
-    public void updateRegistrationAsync(Registration registration, final FutureCallback<Registration> callback) {
+    public <T extends Registration> void updateRegistrationAsync(T registration, final FutureCallback<T> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + API_VERSION);
             final HttpPut put = new HttpPut(uri);
-            put.setHeader("Authorization", generateSasToken(uri));
+            put.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             put.setHeader("If-Match", registration.getEtag() == null ? "*" : "W/\"" + registration.getEtag() + "\"");
             put.setHeader("User-Agent", getUserAgent());
             put.setEntity(new StringEntity(registration.getXml(), ContentType.APPLICATION_ATOM_XML));
@@ -222,19 +270,42 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * This method updates an existing registration
+     *
+     * @param registration A registration object containing the description of the
+     *                     registration to update. The registration ID has to be
+     *                     populated.
+     * @return The updated registration containing the read-only parameters
+     * (registration ID, ETag, and expiration time).
+     * @param <T> The type of Registration class.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
-    public Registration updateRegistration(Registration registration) throws NotificationHubsException {
-        SyncCallback<Registration> callback = new SyncCallback<>();
+    public <T extends Registration> T updateRegistration(T registration) throws NotificationHubsException {
+        SyncCallback<T> callback = new SyncCallback<>();
         updateRegistrationAsync(registration, callback);
         return callback.getResult();
     }
 
+    /**
+     * This method updates or creates a new registration with the registration id
+     * specified.
+     *
+     * @param registration A registration object containing the description of the
+     *                     registration to create or update. The registration ID
+     *                     must be populated.
+     * @param callback     A callback, when invoked, returns the updated
+     *                     registration containing the read-only parameters
+     *                     (registration ID, ETag, and expiration time).
+     * @param <T> The type of Registration class.
+     */
     @Override
-    public void upsertRegistrationAsync(Registration registration, final FutureCallback<Registration> callback) {
+    public <T extends Registration> void upsertRegistrationAsync(T registration, final FutureCallback<T> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + API_VERSION);
             final HttpPut put = new HttpPut(uri);
-            put.setHeader("Authorization", generateSasToken(uri));
+            put.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             put.setHeader("User-Agent", getUserAgent());
             put.setEntity(new StringEntity(registration.getXml(), ContentType.APPLICATION_ATOM_XML));
 
@@ -271,18 +342,46 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * This method updates or creates a new registration with the registration ID
+     * specified.
+     *
+     * @param registration A registration object containing the description of the
+     *                     registration to create or update. The registration ID
+     *                     must be populated.
+     * @return The updated registration containing the read-only parameters
+     * (registration ID, ETag, and expiration time).
+     * @throws NotificationHubsException Thrown if there is a client error.
+     * @param <T> The type of Registration class.
+     */
     @Override
-    public Registration upsertRegistration(Registration registration) throws NotificationHubsException {
-        SyncCallback<Registration> callback = new SyncCallback<>();
+    public <T extends Registration> T upsertRegistration(T registration) throws NotificationHubsException {
+        SyncCallback<T> callback = new SyncCallback<>();
         upsertRegistrationAsync(registration, callback);
         return callback.getResult();
     }
 
+    /**
+     * Deletes a registration with the given registration containing a populated
+     * registrationId.
+     *
+     * @param registration The registration containing the registrationId field
+     *                     populated.
+     * @param callback     A callback when invoked returns nothing.
+     */
     @Override
     public void deleteRegistrationAsync(Registration registration, final FutureCallback<Object> callback) {
         deleteRegistrationAsync(registration.getRegistrationId(), callback);
     }
 
+    /**
+     * Deletes a registration with the given registration containing a populated
+     * registrationId.
+     *
+     * @param registration The registration containing the registrationId field
+     *                     populated.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public void deleteRegistration(Registration registration) throws NotificationHubsException {
         SyncCallback<Object> callback = new SyncCallback<>();
@@ -290,12 +389,18 @@ public class NotificationHub implements NotificationHubClient {
         callback.getResult();
     }
 
+    /**
+     * Deletes a registration by the given registration ID.
+     *
+     * @param registrationId The registration ID for the registration to delete.
+     * @param callback       A callback when invoked returns nothing.
+     */
     @Override
     public void deleteRegistrationAsync(String registrationId, final FutureCallback<Object> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + API_VERSION);
             final HttpDelete delete = new HttpDelete(uri);
-            delete.setHeader("Authorization", generateSasToken(uri));
+            delete.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             delete.setHeader("If-Match", "*");
             delete.setHeader("User-Agent", getUserAgent());
 
@@ -332,6 +437,12 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * Deletes a registration by the given registration ID.
+     *
+     * @param registrationId The registration ID for the registration to delete.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public void deleteRegistration(String registrationId) throws NotificationHubsException {
         SyncCallback<Object> callback = new SyncCallback<>();
@@ -339,12 +450,20 @@ public class NotificationHub implements NotificationHubClient {
         callback.getResult();
     }
 
+    /**
+     * Retrieves the description of a registration based on the ID.
+     *
+     * @param registrationId The ID for the registration to retrieve.
+     * @param callback       A callback, when invoked, returns the registration with
+     *                       the ID matching the given registration ID.
+     * @param <T> The type of Registration class.
+     */
     @Override
-    public void getRegistrationAsync(String registrationId, final FutureCallback<Registration> callback) {
+    public <T extends Registration> void getRegistrationAsync(String registrationId, final FutureCallback<T> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + API_VERSION);
             final HttpGet get = new HttpGet(uri);
-            get.setHeader("Authorization", generateSasToken(uri));
+            get.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             get.setHeader("User-Agent", getUserAgent());
 
             HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
@@ -380,24 +499,58 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * Retrieves the description of a registration based on the ID.
+     *
+     * @param registrationId The ID for the registration to retrieve.
+     * @return The registration with the ID matching the given registration ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     * @param <T> The type of Registration class.
+     */
     @Override
-    public Registration getRegistration(String registrationId) throws NotificationHubsException {
-        SyncCallback<Registration> callback = new SyncCallback<>();
+    public <T extends Registration> T getRegistration(String registrationId) throws NotificationHubsException {
+        SyncCallback<T> callback = new SyncCallback<>();
         getRegistrationAsync(registrationId, callback);
         return callback.getResult();
     }
 
+    /**
+     * Return all registrations in the current notification hub.
+     *
+     * @param callback The callback when invoked, returns a collection containing
+     *                 registrations.
+     */
     @Override
     public void getRegistrationsAsync(FutureCallback<CollectionResult> callback) {
         getRegistrationsAsync(0, null, callback);
     }
 
+    /**
+     * Returns all registrations in this hub
+     *
+     * @param top               The maximum number of registrations to return (max
+     *                          100)
+     * @param continuationToken If not-null, continues iterating through a
+     *                          previously requested query.
+     * @param callback          A callback when invoked returns a collection
+     *                          containing the registrations.
+     */
     @Override
     public void getRegistrationsAsync(int top, String continuationToken, final FutureCallback<CollectionResult> callback) {
         String queryUri = endpoint + hubPath + "/registrations" + API_VERSION + getQueryString(top, continuationToken);
         retrieveRegistrationCollectionAsync(queryUri, callback);
     }
 
+    /**
+     * Returns all registrations in this hub
+     *
+     * @param top               The maximum number of registrations to return (max
+     *                          100)
+     * @param continuationToken If not-null, continues iterating through a
+     *                          previously requested query.
+     * @return A collection containing the registrations.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public CollectionResult getRegistrations(int top, String continuationToken) throws NotificationHubsException {
         SyncCallback<CollectionResult> callback = new SyncCallback<>();
@@ -405,11 +558,28 @@ public class NotificationHub implements NotificationHubClient {
         return callback.getResult();
     }
 
+    /**
+     * Return all registrations in the current notification hub.
+     *
+     * @return Collection containing the registrations.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public CollectionResult getRegistrations() throws NotificationHubsException {
         return getRegistrations(0, null);
     }
 
+    /**
+     * Returns all registrations with a specific tag
+     *
+     * @param tag               The tag to search for registrations.
+     * @param top               The maximum number of registrations to return (max
+     *                          100)
+     * @param continuationToken If not-null, continues iterating through a
+     *                          previously requested query.
+     * @param callback          A callback when invoked, returns a collection of
+     *                          registrations with the given tag.
+     */
     @Override
     public void getRegistrationsByTagAsync(String tag, int top, String continuationToken, final FutureCallback<CollectionResult> callback) {
         String queryUri = endpoint + hubPath + "/tags/" + tag
@@ -418,6 +588,17 @@ public class NotificationHub implements NotificationHubClient {
         retrieveRegistrationCollectionAsync(queryUri, callback);
     }
 
+    /**
+     * Returns all registrations with a specific tag
+     *
+     * @param tag               The tag to search for registrations.
+     * @param top               The maximum number of registrations to return (max
+     *                          100)
+     * @param continuationToken If not-null, continues iterating through a
+     *                          previously requested query.
+     * @return A collection of registrations with the given tag.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public CollectionResult getRegistrationsByTag(String tag, int top, String continuationToken) throws NotificationHubsException {
         SyncCallback<CollectionResult> callback = new SyncCallback<>();
@@ -425,11 +606,25 @@ public class NotificationHub implements NotificationHubClient {
         return callback.getResult();
     }
 
+    /**
+     * Returns all registrations with a specific tag
+     *
+     * @param tag      The tag to search for registrations.
+     * @param callback A callback, when invoked, returns a collection of
+     *                 registrations with the given tag.
+     */
     @Override
     public void getRegistrationsByTagAsync(String tag, final FutureCallback<CollectionResult> callback) {
         getRegistrationsByTagAsync(tag, 0, null, callback);
     }
 
+    /**
+     * Returns all registrations with a specific tag
+     *
+     * @param tag The tag to search for registrations.
+     * @return A collection of registrations with the given tag.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public CollectionResult getRegistrationsByTag(String tag) throws NotificationHubsException {
         SyncCallback<CollectionResult> callback = new SyncCallback<>();
@@ -437,6 +632,19 @@ public class NotificationHub implements NotificationHubClient {
         return callback.getResult();
     }
 
+    /**
+     * Returns all registration with a specific channel (e.g. ChannelURI, device
+     * token)
+     *
+     * @param channel           The channel URI, device token or other unique PNS
+     *                          identifier.
+     * @param top               The maximum number of registrations to return (max
+     *                          100)
+     * @param continuationToken If not-null, continues iterating through a
+     *                          previously requested query.
+     * @param callback          A callback, when invoked, returns a collection of
+     *                          registrations with matching channels.
+     */
     @Override
     public void getRegistrationsByChannelAsync(String channel, int top, String continuationToken, final FutureCallback<CollectionResult> callback) {
         String queryUri;
@@ -451,6 +659,19 @@ public class NotificationHub implements NotificationHubClient {
         retrieveRegistrationCollectionAsync(queryUri, callback);
     }
 
+    /**
+     * Returns all registration with a specific channel (e.g. ChannelURI, device
+     * token)
+     *
+     * @param channel           The channel URI, device token or other unique PNS
+     *                          identifier.
+     * @param top               The maximum number of registrations to return (max
+     *                          100)
+     * @param continuationToken If not-null, continues iterating through a
+     *                          previously requested query.
+     * @return A collection of registrations with matching channels.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public CollectionResult getRegistrationsByChannel(String channel, int top, String continuationToken) throws NotificationHubsException {
         SyncCallback<CollectionResult> callback = new SyncCallback<>();
@@ -458,11 +679,27 @@ public class NotificationHub implements NotificationHubClient {
         return callback.getResult();
     }
 
+    /**
+     * Returns all registration with a specific channel (e.g. ChannelURI, device
+     * token)
+     *
+     * @param channel  The channel URI, device token or other unique PNS identifier.
+     * @param callback A callback, when invoked, returns a collection of
+     *                 registrations with matching channels.
+     */
     @Override
     public void getRegistrationsByChannelAsync(String channel, final FutureCallback<CollectionResult> callback) {
         getRegistrationsByChannelAsync(channel, 0, null, callback);
     }
 
+    /**
+     * Returns all registration with a specific channel (e.g. ChannelURI, device
+     * token)
+     *
+     * @param channel The channel URI, device token or other unique PNS identifier.
+     * @return A collection of registrations with matching channels.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public CollectionResult getRegistrationsByChannel(String channel) throws NotificationHubsException {
         SyncCallback<CollectionResult> callback = new SyncCallback<>();
@@ -485,7 +722,7 @@ public class NotificationHub implements NotificationHubClient {
         try {
             URI uri = new URI(queryUri);
             final HttpGet get = new HttpGet(uri);
-            get.setHeader("Authorization", generateSasToken(uri));
+            get.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             get.setHeader("User-Agent", getUserAgent());
 
             HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
@@ -527,11 +764,27 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * Sends a notification to all eligible registrations (i.e. only correct
+     * platform, if notification is platform specific)
+     *
+     * @param notification The notification to send to all eligible registrations.
+     * @param callback     A callback, when invoked, returns a notification outcome
+     *                     with the tracking ID and notification ID.
+     */
     @Override
     public void sendNotificationAsync(Notification notification, FutureCallback<NotificationOutcome> callback) {
         scheduleNotificationAsync(notification, "", null, callback);
     }
 
+    /**
+     * Sends a notification to all eligible registrations (i.e. only correct
+     * platform, if notification is platform specific)
+     *
+     * @param notification The notification to send to all eligible registrations.
+     * @return A notification outcome with the tracking ID and notification ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public NotificationOutcome sendNotification(Notification notification) throws NotificationHubsException {
         SyncCallback<NotificationOutcome> callback = new SyncCallback<>();
@@ -539,11 +792,31 @@ public class NotificationHub implements NotificationHubClient {
         return callback.getResult();
     }
 
+    /**
+     * Sends a notifications to all eligible registrations with at least one of the
+     * specified tags
+     *
+     * @param notification The notification to send to the audience with the
+     *                     specified tags.
+     * @param tags         The tags for targeting the notifications.
+     * @param callback     A callback, when invoked, returns a notification outcome
+     *                     with the tracking ID and notification ID.
+     */
     @Override
     public void sendNotificationAsync(Notification notification, Set<String> tags, FutureCallback<NotificationOutcome> callback) {
         scheduleNotificationAsync(notification, tags, null, callback);
     }
 
+    /**
+     * Sends a notifications to all eligible registrations with at least one of the
+     * specified tags
+     *
+     * @param notification The notification to send to the audience with the
+     *                     specified tags.
+     * @param tags         The tags for targeting the notifications.
+     * @return A notification outcome with the tracking ID and notification ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public NotificationOutcome sendNotification(Notification notification, Set<String> tags) throws NotificationHubsException {
         SyncCallback<NotificationOutcome> callback = new SyncCallback<>();
@@ -551,11 +824,31 @@ public class NotificationHub implements NotificationHubClient {
         return callback.getResult();
     }
 
+    /**
+     * Sends a notifications to all eligible registrations that satisfy the provided
+     * tag expression.
+     *
+     * @param notification  The notification to send to the audience that matches
+     *                      the specified tag expression.
+     * @param tagExpression The tag expression for targeting the notifications.
+     * @param callback      A callback, when invoked, returns a notification outcome
+     *                      with the tracking ID and notification ID.
+     */
     @Override
     public void sendNotificationAsync(Notification notification, String tagExpression, FutureCallback<NotificationOutcome> callback) {
         scheduleNotificationAsync(notification, tagExpression, null, callback);
     }
 
+    /**
+     * Sends a notifications to all eligible registrations that satisfy the provided
+     * tag expression.
+     *
+     * @param notification  The notification to send to the audience that matches
+     *                      the specified tag expression.
+     * @param tagExpression The tag expression for targeting the notifications.
+     * @return A notification outcome with the tracking ID and notification ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public NotificationOutcome sendNotification(Notification notification, String tagExpression) throws NotificationHubsException {
         SyncCallback<NotificationOutcome> callback = new SyncCallback<>();
@@ -563,11 +856,27 @@ public class NotificationHub implements NotificationHubClient {
         return callback.getResult();
     }
 
+    /**
+     * Schedules a notification at the given scheduled time.  Note that this is not available on the free SKU.
+     *
+     * @param notification  The notification to send at the scheduled time.
+     * @param scheduledTime The scheduled time for the notification.
+     * @param callback      A callback, when invoked, returns a notification outcome
+     *                      with the tracking ID and notification ID.
+     */
     @Override
     public void scheduleNotificationAsync(Notification notification, Date scheduledTime, FutureCallback<NotificationOutcome> callback) {
         scheduleNotificationAsync(notification, "", scheduledTime, callback);
     }
 
+    /**
+     * Schedules a notification at the given scheduled time.  Note that this is not available on the free SKU.
+     *
+     * @param notification  The notification to send at the scheduled time.
+     * @param scheduledTime The scheduled time for the notification.
+     * @return A notification outcome with the tracking ID and notification ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public NotificationOutcome scheduleNotification(Notification notification, Date scheduledTime) throws NotificationHubsException {
         SyncCallback<NotificationOutcome> callback = new SyncCallback<>();
@@ -575,6 +884,15 @@ public class NotificationHub implements NotificationHubClient {
         return callback.getResult();
     }
 
+    /**
+     * Schedules a notification at the given time with a set of tags.  Note that this is not available on the free SKU.
+     *
+     * @param notification  The notification to send at the given time.
+     * @param tags          The tags associated with the notification targeting.
+     * @param scheduledTime The scheduled time for the notification.
+     * @param callback      A callback, when invoked, returns a notification outcome
+     *                      with the tracking ID and notification ID.
+     */
     @Override
     public void scheduleNotificationAsync(Notification notification, Set<String> tags, Date scheduledTime, FutureCallback<NotificationOutcome> callback) {
         if (tags.isEmpty())
@@ -591,6 +909,15 @@ public class NotificationHub implements NotificationHubClient {
         scheduleNotificationAsync(notification, exp.toString(), scheduledTime, callback);
     }
 
+    /**
+     * Schedules a notification at the given time with a set of tags.  Note that this is not available on the free SKU.
+     *
+     * @param notification  The notification to send at the given time.
+     * @param tags          The tags associated with the notification targeting.
+     * @param scheduledTime The scheduled time for the notification.
+     * @return A notification outcome with the tracking ID and notification ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public NotificationOutcome scheduleNotification(Notification notification, Set<String> tags, Date scheduledTime) throws NotificationHubsException {
         SyncCallback<NotificationOutcome> callback = new SyncCallback<>();
@@ -598,13 +925,23 @@ public class NotificationHub implements NotificationHubClient {
         return callback.getResult();
     }
 
+    /**
+     * Schedules a notification at the given time with a tag expression.  Note that this is not available on the free SKU.
+     *
+     * @param notification  The notification to send at the given time.
+     * @param tagExpression The tag expression associated with the notification
+     *                      targeting.
+     * @param scheduledTime The scheduled time for the notification.
+     * @param callback      A callback, when invoked, returns a notification outcome
+     *                      with the tracking ID and notification ID.
+     */
     @Override
     public void scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime, final FutureCallback<NotificationOutcome> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + (scheduledTime == null ? "/messages" : "/schedulednotifications") + API_VERSION);
             final HttpPost post = new HttpPost(uri);
             final String trackingId = java.util.UUID.randomUUID().toString();
-            post.setHeader("Authorization", generateSasToken(uri));
+            post.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             post.setHeader(TRACKING_ID_HEADER, trackingId);
             post.setHeader("User-Agent", getUserAgent());
 
@@ -670,6 +1007,16 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * Schedules a notification at the given time with a tag expression.  Note that this is not available on the free SKU.
+     *
+     * @param notification  The notification to send at the given time.
+     * @param tagExpression The tag expression associated with the notification
+     *                      targeting.
+     * @param scheduledTime The scheduled time for the notification.
+     * @return A notification outcome with the tracking ID and notification ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public NotificationOutcome scheduleNotification(Notification notification, String tagExpression, Date scheduledTime) throws NotificationHubsException {
         SyncCallback<NotificationOutcome> callback = new SyncCallback<>();
@@ -677,6 +1024,12 @@ public class NotificationHub implements NotificationHubClient {
         return callback.getResult();
     }
 
+    /**
+     * Cancels the scheduled notification with the given notification ID.
+     *
+     * @param notificationId The notification ID of the notification to cancel.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public void cancelScheduledNotification(String notificationId) throws NotificationHubsException {
         SyncCallback<Object> callback = new SyncCallback<>();
@@ -684,12 +1037,18 @@ public class NotificationHub implements NotificationHubClient {
         callback.getResult();
     }
 
+    /**
+     * Cancels the scheduled notification with the given notification ID.
+     *
+     * @param notificationId The notification ID of the notification to cancel.
+     * @param callback       A callback, when invoked, returns nothing.
+     */
     @Override
     public void cancelScheduledNotificationAsync(String notificationId, final FutureCallback<Object> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/schedulednotifications/" + notificationId + API_VERSION);
             final HttpDelete delete = new HttpDelete(uri);
-            delete.setHeader("Authorization", generateSasToken(uri));
+            delete.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             delete.setHeader("User-Agent", getUserAgent());
 
             HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
@@ -725,6 +1084,14 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * Sends a direct notification to a given device handle.
+     *
+     * @param notification The notification to send directly to the device handle.
+     * @param deviceHandle The device handle to target for the notification.
+     * @return A notification outcome with the tracking ID and notification ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public NotificationOutcome sendDirectNotification(Notification notification, String deviceHandle) throws NotificationHubsException {
         SyncCallback<NotificationOutcome> callback = new SyncCallback<>();
@@ -732,6 +1099,14 @@ public class NotificationHub implements NotificationHubClient {
         return callback.getResult();
     }
 
+    /**
+     * Sends a direct notification to the given device handles.  Note that this is not available on the free SKU.
+     *
+     * @param notification  The notification to send directly to the device handles.
+     * @param deviceHandles The device handles to target for the notification.
+     * @return A notification outcome with the tracking ID and notification ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public NotificationOutcome sendDirectNotification(Notification notification, List<String> deviceHandles) throws NotificationHubsException {
         SyncCallback<NotificationOutcome> callback = new SyncCallback<>();
@@ -739,15 +1114,26 @@ public class NotificationHub implements NotificationHubClient {
         return callback.getResult();
     }
 
+    /**
+     * Sends a direct notification to a given device handle.
+     *
+     * @param notification The notification to send directly to the device handle.
+     * @param deviceHandle The device handle to target for the notification.
+     * @param callback     A callback, when invoked, returns a notification outcome
+     *                     with the tracking ID and notification ID.
+     */
     @Override
-    public void sendDirectNotificationAsync(Notification notification,
-                                            String deviceHandle, final FutureCallback<NotificationOutcome> callback) {
+    public void sendDirectNotificationAsync(
+        Notification notification,
+        String deviceHandle,
+        final FutureCallback<NotificationOutcome> callback
+    ) {
         try {
             URI uri = new URI(endpoint + hubPath + "/messages" + API_VERSION + "&direct");
             final HttpPost post = new HttpPost(uri);
             final String trackingId = java.util.UUID.randomUUID().toString();
             post.setHeader("ServiceBusNotification-DeviceHandle", deviceHandle);
-            post.setHeader("Authorization", generateSasToken(uri));
+            post.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             post.setHeader(TRACKING_ID_HEADER, trackingId);
             post.setHeader("User-Agent", getUserAgent());
 
@@ -802,13 +1188,21 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * Sends a direct notification to the given device handles.  Note that this is not available on the free SKU.
+     *
+     * @param notification  The notification to send directly to the device handles.
+     * @param deviceHandles The device handles to target for the notification.
+     * @param callback      A callback, when invoked, returns a notification outcome
+     *                      with the tracking ID and notification ID.
+     */
     @Override
     public void sendDirectNotificationAsync(Notification notification, List<String> deviceHandles, final FutureCallback<NotificationOutcome> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/messages/$batch" + API_VERSION + "&direct");
             final HttpPost post = new HttpPost(uri);
             final String trackingId = java.util.UUID.randomUUID().toString();
-            post.setHeader("Authorization", generateSasToken(uri));
+            post.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             post.setHeader(TRACKING_ID_HEADER, trackingId);
             post.setHeader("User-Agent", getUserAgent());
 
@@ -879,9 +1273,15 @@ public class NotificationHub implements NotificationHubClient {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
     }
 
+    /**
+     * Gets notification telemetry by the notification ID.
+     *
+     * @param notificationId The notification ID for the telemetry.
+     * @return The notification telemetry for the given notification.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public NotificationTelemetry getNotificationTelemetry(String notificationId)
         throws NotificationHubsException {
@@ -890,12 +1290,19 @@ public class NotificationHub implements NotificationHubClient {
         return callback.getResult();
     }
 
+    /**
+     * Gets notification telemetry by the notification ID.
+     *
+     * @param notificationId The notification ID for the telemetry.
+     * @param callback       A callback, when invoked, returns the notification
+     *                       telemetry for the given notification.
+     */
     @Override
     public void getNotificationTelemetryAsync(String notificationId, final FutureCallback<NotificationTelemetry> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/messages/" + notificationId + API_VERSION);
             final HttpGet get = new HttpGet(uri);
-            get.setHeader("Authorization", generateSasToken(uri));
+            get.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             get.setHeader("User-Agent", getUserAgent());
 
             HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
@@ -931,12 +1338,18 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * Creates or updates an installation.
+     *
+     * @param installation The installation to create or update.
+     * @param callback     A callback, when invoked, returns nothing.
+     */
     @Override
-    public void createOrUpdateInstallationAsync(Installation installation, final FutureCallback<Object> callback) {
+    public void createOrUpdateInstallationAsync(BaseInstallation installation, final FutureCallback<Object> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/installations/" + installation.getInstallationId() + API_VERSION);
             final HttpPut put = new HttpPut(uri);
-            put.setHeader("Authorization", generateSasToken(uri));
+            put.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             put.setHeader("User-Agent", getUserAgent());
 
             StringEntity entity = new StringEntity(installation.toJson(), ContentType.APPLICATION_JSON);
@@ -976,18 +1389,38 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * Creates or updates an installation.
+     *
+     * @param installation The installation to create or update.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
-    public void createOrUpdateInstallation(Installation installation) throws NotificationHubsException {
+    public void createOrUpdateInstallation(BaseInstallation installation) throws NotificationHubsException {
         SyncCallback<Object> callback = new SyncCallback<>();
         createOrUpdateInstallationAsync(installation, callback);
         callback.getResult();
     }
 
+    /**
+     * Patches an installation with the given installation ID.
+     *
+     * @param installationId The installation ID to patch.
+     * @param callback       A callback, when invoked, returns nothing.
+     * @param operations     The list of operations to perform on the installation.
+     */
     @Override
     public void patchInstallationAsync(String installationId, FutureCallback<Object> callback, PartialUpdateOperation... operations) {
         patchInstallationInternalAsync(installationId, PartialUpdateOperation.toJson(operations), callback);
     }
 
+    /**
+     * Patches an installation with the given installation ID.
+     *
+     * @param installationId The installation ID to patch.
+     * @param operations     The list of operations to perform on the installation.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public void patchInstallation(String installationId, PartialUpdateOperation... operations) throws NotificationHubsException {
         SyncCallback<Object> callback = new SyncCallback<>();
@@ -995,11 +1428,25 @@ public class NotificationHub implements NotificationHubClient {
         callback.getResult();
     }
 
+    /**
+     * Patches an installation with the given installation ID.
+     *
+     * @param installationId The installation ID to patch.
+     * @param operations     The list of operations to perform on the installation.
+     * @param callback       A callback, when invoked, returns nothing.
+     */
     @Override
     public void patchInstallationAsync(String installationId, List<PartialUpdateOperation> operations, FutureCallback<Object> callback) {
         patchInstallationInternalAsync(installationId, PartialUpdateOperation.toJson(operations), callback);
     }
 
+    /**
+     * Patches an installation with the given installation ID.
+     *
+     * @param installationId The installation ID to patch.
+     * @param operations     The list of operations to perform on the installation.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public void patchInstallation(String installationId, List<PartialUpdateOperation> operations) throws NotificationHubsException {
         SyncCallback<Object> callback = new SyncCallback<>();
@@ -1011,7 +1458,7 @@ public class NotificationHub implements NotificationHubClient {
         try {
             URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
             final HttpPatch patch = new HttpPatch(uri);
-            patch.setHeader("Authorization", generateSasToken(uri));
+            patch.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             patch.setHeader("User-Agent", getUserAgent());
 
             StringEntity entity = new StringEntity(operationsJson, ContentType.APPLICATION_JSON);
@@ -1051,12 +1498,18 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * Deletes an installation with the given installation ID.
+     *
+     * @param installationId The installation ID.
+     * @param callback       A callback, when invoked, returns nothing.
+     */
     @Override
     public void deleteInstallationAsync(String installationId, final FutureCallback<Object> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
             final HttpDelete delete = new HttpDelete(uri);
-            delete.setHeader("Authorization", generateSasToken(uri));
+            delete.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             delete.setHeader("User-Agent", getUserAgent());
 
             HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
@@ -1092,6 +1545,12 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * Deletes an installation with the given installation ID.
+     *
+     * @param installationId The installation ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public void deleteInstallation(String installationId) throws NotificationHubsException {
         SyncCallback<Object> callback = new SyncCallback<>();
@@ -1099,12 +1558,20 @@ public class NotificationHub implements NotificationHubClient {
         callback.getResult();
     }
 
+    /**
+     * Gets an installation by the given installation ID.
+     *
+     * @param installationId The installation ID for the installation to get.
+     * @param callback       A callback, when invoked, returns the matching
+     *                       installation by the installation ID.
+     * @param <T> The type of Installation class.
+     */
     @Override
-    public void getInstallationAsync(String installationId, final FutureCallback<Installation> callback) {
+    public <T extends BaseInstallation> void getInstallationAsync(String installationId, final FutureCallback<T> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
             final HttpGet get = new HttpGet(uri);
-            get.setHeader("Authorization", generateSasToken(uri));
+            get.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             get.setHeader("User-Agent", getUserAgent());
 
             HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
@@ -1117,7 +1584,7 @@ public class NotificationHub implements NotificationHubClient {
                             return;
                         }
 
-                        callback.completed(Installation.fromJson(response.getEntity().getContent()));
+                        callback.completed(BaseInstallation.fromJson(response.getEntity().getContent()));
                     } catch (Exception e) {
                         callback.failed(e);
                     } finally {
@@ -1140,19 +1607,34 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * Gets an installation by the given installation ID.
+     *
+     * @param installationId The installation ID for the installation to get.
+     * @return The matching installation by the installation ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     * @param <T> The type of Installation class.
+     */
     @Override
-    public Installation getInstallation(String installationId) throws NotificationHubsException {
-        SyncCallback<Installation> callback = new SyncCallback<>();
+    public <T extends BaseInstallation> T getInstallation(String installationId) throws NotificationHubsException {
+        SyncCallback<T> callback = new SyncCallback<>();
         getInstallationAsync(installationId, callback);
         return callback.getResult();
     }
 
+    /**
+     * Submits a notification hub job such as import or export. Note this is not available on the free or basic SKU.
+     *
+     * @param job      The notification hubs job to submit.
+     * @param callback A callback, when invoked, returns the notification job with
+     *                 status.
+     */
     @Override
     public void submitNotificationHubJobAsync(NotificationHubJob job, final FutureCallback<NotificationHubJob> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/jobs" + API_VERSION);
             final HttpPost post = new HttpPost(uri);
-            post.setHeader("Authorization", generateSasToken(uri));
+            post.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             post.setHeader("User-Agent", getUserAgent());
 
             StringEntity entity = new StringEntity(job.getXml(), ContentType.APPLICATION_ATOM_XML);
@@ -1192,6 +1674,13 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * Submits a notification hub job such as import or export. Note this is not available on the free or basic SKU.
+     *
+     * @param job The notification hubs job to submit.
+     * @return The notification job with status.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public NotificationHubJob submitNotificationHubJob(NotificationHubJob job) throws NotificationHubsException {
         SyncCallback<NotificationHubJob> callback = new SyncCallback<>();
@@ -1199,12 +1688,19 @@ public class NotificationHub implements NotificationHubClient {
         return callback.getResult();
     }
 
+    /**
+     * Gets a notification hub job by the job ID.
+     *
+     * @param jobId    The job ID of the notification hub job to get.
+     * @param callback A callback, when invoked, returns the notification hub job
+     *                 with the matching job ID.
+     */
     @Override
     public void getNotificationHubJobAsync(String jobId, final FutureCallback<NotificationHubJob> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/jobs/" + jobId + API_VERSION);
             final HttpGet get = new HttpGet(uri);
-            get.setHeader("Authorization", generateSasToken(uri));
+            get.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             get.setHeader("User-Agent", getUserAgent());
 
             HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
@@ -1240,6 +1736,13 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * Gets a notification hub job by the job ID.
+     *
+     * @param jobId The job ID of the notification hub job to get.
+     * @return The notification hub job with the matching job ID.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public NotificationHubJob getNotificationHubJob(String jobId) throws NotificationHubsException {
         SyncCallback<NotificationHubJob> callback = new SyncCallback<>();
@@ -1247,12 +1750,18 @@ public class NotificationHub implements NotificationHubClient {
         return callback.getResult();
     }
 
+    /**
+     * Gets all notification hub jobs for this namespace.
+     *
+     * @param callback A callback, when invoked, returns all notification hub jobs
+     *                 for this namespace.
+     */
     @Override
     public void getAllNotificationHubJobsAsync(final FutureCallback<List<NotificationHubJob>> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/jobs" + API_VERSION);
             final HttpGet get = new HttpGet(uri);
-            get.setHeader("Authorization", generateSasToken(uri));
+            get.setHeader("Authorization", tokenProvider.generateSasToken(uri));
             get.setHeader("User-Agent", getUserAgent());
 
             HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
@@ -1288,6 +1797,12 @@ public class NotificationHub implements NotificationHubClient {
         }
     }
 
+    /**
+     * Gets all notification hub jobs for this namespace.
+     *
+     * @return All notification hub jobs for this namespace.
+     * @throws NotificationHubsException Thrown if there is a client error.
+     */
     @Override
     public List<NotificationHubJob> getAllNotificationHubJobs() throws NotificationHubsException {
         SyncCallback<List<NotificationHubJob>> callback = new SyncCallback<>();
@@ -1301,41 +1816,6 @@ public class NotificationHub implements NotificationHubClient {
         IOUtils.copy(response.getEntity().getContent(), writer, "UTF-8");
         String body = writer.toString();
         return "Error: " + response.getStatusLine() + " - " + body;
-    }
-
-    private String generateSasToken(URI uri) {
-        String targetUri;
-        try {
-            targetUri = URLEncoder
-                .encode(uri.toString().toLowerCase(), "UTF-8")
-                .toLowerCase();
-
-            long expiresOnDate = System.currentTimeMillis();
-            expiresOnDate += SdkGlobalSettings.getAuthorizationTokenExpirationInMinutes() * 60 * 1000;
-            long expires = expiresOnDate / 1000;
-            String toSign = targetUri + "\n" + expires;
-
-            // Get an hmac_sha1 key from the raw key bytes
-            byte[] keyBytes = SasKeyValue.getBytes(StandardCharsets.UTF_8);
-            SecretKeySpec signingKey = new SecretKeySpec(keyBytes, "HmacSHA256");
-
-            // Get an hmac_sha1 Mac instance and initialize with the signing key
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(signingKey);
-
-            // Compute the hmac on input data bytes
-            byte[] rawHmac = mac.doFinal(toSign.getBytes(StandardCharsets.UTF_8));
-
-            // Convert raw bytes to Hex
-            String signature = URLEncoder.encode(
-                Base64.encodeBase64String(rawHmac), "UTF-8");
-
-            // construct authorization string
-            return "SharedAccessSignature sr=" + targetUri + "&sig="
-                + signature + "&se=" + expires + "&skn=" + SasKeyName;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private static String getUserAgent() {

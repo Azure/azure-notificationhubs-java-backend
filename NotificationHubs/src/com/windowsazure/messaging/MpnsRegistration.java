@@ -6,6 +6,7 @@ package com.windowsazure.messaging;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Objects;
 
 /**
  * Class representing a native registration for a device using MPNS.
@@ -17,23 +18,41 @@ public class MpnsRegistration extends Registration {
 
     protected URI channelUri;
 
+    /**
+     * Creates a new instance of the MpnsRegistration class.
+     */
     public MpnsRegistration() {
     }
 
+    /**
+     * Creates a new instance of the MpnsRegistration class.
+     * @param channelUri The Windows Phone PNS channel URI.
+     */
     public MpnsRegistration(URI channelUri) {
         super();
         this.channelUri = channelUri;
     }
 
+    /**
+     * Creates a new instance of the MpnsRegistration class.
+     * @param registrationId The Azure Notification Hubs registration ID.
+     * @param channelUri The Windows Phone PNS channel URI.
+     */
     public MpnsRegistration(String registrationId, URI channelUri) {
         super(registrationId);
         this.channelUri = channelUri;
     }
 
-    public URI getChannelUri() {
-        return channelUri;
-    }
+    /**
+     * Gets the Windows Phone PNS channel URI.
+     * @return The Windows Phone PNS channel URI.
+     */
+    public URI getChannelUri() { return channelUri; }
 
+    /**
+     * Sets the Windows Phone PNS channel URI.
+     * @param channelUri The Windows Phone PNS channel URI to set.
+     */
     public void setChannelUri(String channelUri) {
         try {
             this.channelUri = new URI(channelUri);
@@ -42,35 +61,25 @@ public class MpnsRegistration extends Registration {
         }
     }
 
+    /**
+     * Gets the PNS handle for getting devices by channel.
+     * @return The PNS handle for getting devices by channel.
+     */
     @Override
-    public String getPnsHandle() {
-        return channelUri.toString();
+    public String getPnsHandle() { return channelUri.toString(); }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        MpnsRegistration that = (MpnsRegistration) o;
+        return Objects.equals(getChannelUri(), that.getChannelUri());
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result
-            + ((channelUri == null) ? 0 : channelUri.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        MpnsRegistration other = (MpnsRegistration) obj;
-        if (channelUri == null) {
-            if (other.channelUri != null)
-                return false;
-        } else if (!channelUri.equals(other.channelUri))
-            return false;
-        return true;
+        return Objects.hash(super.hashCode(), getChannelUri());
     }
 
     @Override
@@ -81,5 +90,4 @@ public class MpnsRegistration extends Registration {
             channelUri.toString() +
             MPNS_NATIVE_REGISTRATION3;
     }
-
 }

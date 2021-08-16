@@ -27,16 +27,12 @@ public class NotificationOutcome {
      *
      * @return The tracking ID for the notification outcome.
      */
-    public String getTrackingId() {
-        return this.trackingId;
-    }
+    public String getTrackingId() { return trackingId; }
 
     /**
      * Gets the notification ID from the notification outcome.
      *
      * @return The notification ID from the notification outcome.
      */
-    public String getNotificationId() {
-        return this.notificationId;
-    }
+    public String getNotificationId() { return notificationId; }
 }

@@ -21,7 +21,7 @@ public class InstallationCrudsE2E {
         String connectionString = p.getProperty("connectionstring");
         assertTrue(connectionString != null && !connectionString.isEmpty());
 
-        hubPath = "JavaSDK_" + UUID.randomUUID().toString();
+        hubPath = "JavaSDK_" + UUID.randomUUID();
         namespaceManager = new NamespaceManager(connectionString);
         NotificationHubDescription hubDescription = new NotificationHubDescription(hubPath);
         namespaceManager.createNotificationHub(hubDescription);
@@ -38,25 +38,24 @@ public class InstallationCrudsE2E {
 
     @Test
     public void BasicCrudScenarioTest() throws Exception {
-        Installation installation = new Installation("installation-id", NotificationPlatform.Adm, "adm-push-channel");
+        AdmInstallation installation = new AdmInstallation("installation-id", "adm-push-channel");
         hub.createOrUpdateInstallation(installation);
         Thread.sleep(3000);
 
-        installation = hub.getInstallation(installation.getInstallationId());
+        installation = (AdmInstallation)hub.getInstallation(installation.getInstallationId());
         assertNotNull(installation);
         assertEquals("installation-id", installation.getInstallationId());
         assertEquals(NotificationPlatform.Adm, installation.getPlatform());
         assertEquals("adm-push-channel", installation.getPushChannel());
         assertNull(installation.getTags());
         assertNull(installation.getTemplates());
-        assertNull(installation.getSecondaryTiles());
 
         installation.addTag("foo");
         installation.addTemplate("template1", new InstallationTemplate("{\"data\":{\"key1\":\"value1\"}}"));
         hub.createOrUpdateInstallation(installation);
         Thread.sleep(3000);
 
-        installation = hub.getInstallation(installation.getInstallationId());
+        installation = (AdmInstallation)hub.getInstallation(installation.getInstallationId());
         assertEquals("installation-id", installation.getInstallationId());
         assertEquals(NotificationPlatform.Adm, installation.getPlatform());
         assertEquals("adm-push-channel", installation.getPushChannel());
@@ -67,7 +66,6 @@ public class InstallationCrudsE2E {
         assertEquals(1, installation.getTemplates().size());
         assertTrue(installation.getTemplates().get("template1").getBody().equalsIgnoreCase("{\"data\":{\"key1\":\"value1\"}}"));
         assertNull(installation.getTemplates().get("template1").getTags());
-        assertNull(installation.getSecondaryTiles());
 
         PartialUpdateOperation addChannel = new PartialUpdateOperation(UpdateOperationType.Add, "/pushChannel", "adm-push-channel2");
         PartialUpdateOperation addTag = new PartialUpdateOperation(UpdateOperationType.Add, "/tags", "bar");
@@ -75,7 +73,7 @@ public class InstallationCrudsE2E {
         hub.patchInstallation(installation.getInstallationId(), addChannel, addTag, replaceTemplate);
         Thread.sleep(3000);
 
-        installation = hub.getInstallation(installation.getInstallationId());
+        installation = (AdmInstallation)hub.getInstallation(installation.getInstallationId());
         assertNotNull(installation);
         assertEquals("installation-id", installation.getInstallationId());
         assertEquals(NotificationPlatform.Adm, installation.getPlatform());
@@ -88,7 +86,6 @@ public class InstallationCrudsE2E {
         assertEquals(1, installation.getTemplates().size());
         assertTrue(installation.getTemplates().get("template1").getBody().equalsIgnoreCase("{\"data\":{\"key2\":\"value2\"}}"));
         assertNull(installation.getTemplates().get("template1").getTags());
-        assertNull(installation.getSecondaryTiles());
 
         hub.deleteInstallation(installation.getInstallationId());
         Thread.sleep(3000);

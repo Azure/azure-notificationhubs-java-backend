@@ -4,10 +4,11 @@
 
 package com.windowsazure.messaging;
 
-import java.text.SimpleDateFormat;
-import java.util.*;
-
 import org.apache.http.entity.ContentType;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class representing a generic notification.
@@ -28,23 +29,7 @@ public class Notification {
      * @return a new Windows Notification.
      */
     public static Notification createWindowsNotification(String body) {
-        Notification n = new Notification();
-        n.body = body;
-
-        n.headers.put("ServiceBusNotification-Format", "windows");
-
-        if (body.matches("\\s*<toast[\\s\\S]*>[\\s\\S]+</toast>$"))
-            n.headers.put("X-WNS-Type", "wns/toast");
-        if (body.matches("\\s*<tile[\\s\\S]*>[\\s\\S]+</tile>$"))
-            n.headers.put("X-WNS-Type", "wns/tile");
-        if (body.matches("\\s*<badge[\\s\\S]*>[\\s\\S]+</badge>$"))
-            n.headers.put("X-WNS-Type", "wns/badge");
-
-        if (body.startsWith("<")) {
-            n.contentType = ContentType.APPLICATION_XML;
-        }
-
-        return n;
+        return new WindowsNotification(body);
     }
 
     /**
@@ -55,24 +40,7 @@ public class Notification {
      * @return A native notification for WNS.
      */
     public static Notification createWindowsRawNotification(String body) {
-        Notification n = new Notification();
-        n.body = body;
-        n.headers.put("ServiceBusNotification-Format", "windows");
-        n.headers.put("X-WNS-Type", "wns/raw");
-        n.contentType = ContentType.APPLICATION_OCTET_STREAM;
-        return n;
-    }
-
-    /**
-     * @param body the body for the Apple notification
-     * @return A native notification for APNS.
-     * @deprecated Typo in name, use createAppleNotification instead.
-     * Utility method to set up a native notification for APNs. An expiry Date of 1
-     * day is set by default.
-     */
-    @Deprecated
-    public static Notification createAppleNotifiation(String body) {
-        return createAppleNotification(body);
+        return new WindowsRawNotification(body);
     }
 
     /**
@@ -83,9 +51,7 @@ public class Notification {
      * @return A native notification for APNS.
      */
     public static Notification createAppleNotification(String body) {
-        Date now = new Date();
-        Date tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-        return createAppleNotification(body, tomorrow);
+        return new AppleNotification(body);
     }
 
     /**
@@ -97,9 +63,7 @@ public class Notification {
      * @return a native APNS notification
      */
     public static Notification createAppleNotification(String body, Map<String, String> headers) {
-        Date now = new Date();
-        Date tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-        return createAppleNotification(body, tomorrow, headers);
+        return new AppleNotification(body, headers);
     }
 
     /**
@@ -112,7 +76,7 @@ public class Notification {
      * @return an APNS notification with expiration time.
      */
     public static Notification createAppleNotification(String body, Date expiry) {
-        return createAppleNotification(body, expiry, null);
+        return new AppleNotification(body, expiry);
     }
 
     /**
@@ -125,41 +89,11 @@ public class Notification {
      * @param headers the APNS headers
      * @return an APNS notification with expiration time and headers.
      */
-    public static Notification createAppleNotification(String body, Date expiry, Map<String, String> headers) {
-        Notification n = new Notification();
-        n.body = body;
-        n.contentType = ContentType.APPLICATION_JSON;
-
-        n.headers.put("ServiceBusNotification-Format", "apple");
-
-        if (expiry != null) {
-            SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
-            formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-            String expiryString = formatter.format(expiry.getTime());
-
-            n.headers.put("ServiceBusNotification-Apns-Expiry", expiryString);
-        }
-
-        if (headers != null) {
-            n.headers = headers;
-        }
-
-        return n;
+    public static AppleNotification createAppleNotification(String body, Date expiry, Map<String, String> headers) {
+        return new AppleNotification(body, expiry, headers);
     }
 
-    /**
-     * Utility method to set up a native notification for GCM.
-     *
-     * @param body the body for the GCM message.
-     * @return a GCM notification with the body
-     * @deprecated use {@link #createFcmNotification(String)} instead.
-     */
-    @Deprecated
-    public static Notification createGcmNotifiation(String body) {
-        return createGcmNotification(body);
-    }
-
-    /**
+        /**
      * Utility method to set up a native notification for GCM.
      *
      * @param body the body for the GCM message.
@@ -168,25 +102,7 @@ public class Notification {
      */
     @Deprecated
     public static Notification createGcmNotification(String body) {
-        Notification n = new Notification();
-        n.body = body;
-        n.contentType = ContentType.APPLICATION_JSON;
-
-        n.headers.put("ServiceBusNotification-Format", "gcm");
-
-        return n;
-    }
-
-    /**
-     * Utility method to set up a native notification for FCM.
-     *
-     * @param body the body for the FCM message.
-     * @return a FCM notification with the body
-     * @deprecated use {@link #createFcmNotification(String)} instead.
-     */
-    @Deprecated
-    public static Notification createFcmNotifiation(String body) {
-        return createFcmNotification(body);
+        return new FcmNotification(body);
     }
 
     /**
@@ -196,23 +112,7 @@ public class Notification {
      * @return an FCM notification
      */
     public static Notification createFcmNotification(String body) {
-        Notification n = new Notification();
-        n.body = body;
-        n.contentType = ContentType.APPLICATION_JSON;
-        n.headers.put("ServiceBusNotification-Format", "gcm");
-        return n;
-    }
-
-    /**
-     * Utility method to set up a native notification for ADM.
-     *
-     * @param body The body for the ADM notification.
-     * @return an ADM notification with the given body.
-     * @deprecated use {@link #createAdmNotification(String)} instead.
-     */
-    @Deprecated
-    public static Notification createAdmNotifiation(String body) {
-        return createAdmNotification(body);
+        return new FcmNotification(body);
     }
 
     /**
@@ -222,25 +122,7 @@ public class Notification {
      * @return an ADM notification with the given body.
      */
     public static Notification createAdmNotification(String body) {
-        Notification n = new Notification();
-        n.body = body;
-        n.contentType = ContentType.APPLICATION_JSON;
-
-        n.headers.put("ServiceBusNotification-Format", "adm");
-
-        return n;
-    }
-
-    /**
-     * Utility method to set up a native notification for Baidu PNS.
-     *
-     * @param body the body for the Baidu notification
-     * @return a Baidu notification with the given body.
-     * @deprecated use {@link #createBaiduNotification(String)} instead.
-     */
-    @Deprecated
-    public static Notification createBaiduNotifiation(String body) {
-        return createBaiduNotification(body);
+        return new AdmNotification(body);
     }
 
     /**
@@ -250,27 +132,7 @@ public class Notification {
      * @return a Baidu notification with the given body.
      */
     public static Notification createBaiduNotification(String body) {
-        Notification n = new Notification();
-        n.body = body;
-        n.contentType = ContentType.APPLICATION_JSON;
-
-        n.headers.put("ServiceBusNotification-Format", "baidu");
-
-        return n;
-    }
-
-    /**
-     * Utility method to set up a native notification for MPNS. Sets the
-     * X-WindowsPhone-Target and X-NotificationClass headers based on the body
-     * provided. Raw notifications are not supported for MPNS.
-     *
-     * @param body the body for the MPNS notification.
-     * @return an initialized MPNS notification
-     * @deprecated use {@link #createMpnsNotification(String)} instead.
-     */
-    @Deprecated
-    public static Notification createMpnsNotifiation(String body) {
-        return createMpnsNotification(body);
+        return new BaiduNotification(body);
     }
 
     /**
@@ -282,25 +144,7 @@ public class Notification {
      * @return an initialized MPNS notification
      */
     public static Notification createMpnsNotification(String body) {
-        Notification n = new Notification();
-        n.body = body;
-
-        n.headers.put("ServiceBusNotification-Format", "windowsphone");
-
-        if (body.contains("<wp:Toast>")) {
-            n.headers.put("X-WindowsPhone-Target", "toast");
-            n.headers.put("X-NotificationClass", "2");
-        }
-        if (body.contains("<wp:Tile>")) {
-            n.headers.put("X-WindowsPhone-Target", "tile");
-            n.headers.put("X-NotificationClass", "1");
-        }
-
-        if (body.startsWith("<")) {
-            n.contentType = ContentType.APPLICATION_XML;
-        }
-
-        return n;
+        return new MpnsNotification(body);
     }
 
     /**
@@ -311,23 +155,7 @@ public class Notification {
      * @return a template notification with the associated properties.
      */
     public static Notification createTemplateNotification(Map<String, String> properties) {
-        Notification n = new Notification();
-        StringBuilder buf = new StringBuilder();
-        buf.append("{");
-        for (Iterator<String> iterator = properties.keySet().iterator(); iterator.hasNext(); ) {
-            String key = iterator.next();
-            buf.append("\"").append(key).append("\":\"").append(properties.get(key)).append("\"");
-            if (iterator.hasNext())
-                buf.append(",");
-        }
-        buf.append("}");
-        n.body = buf.toString();
-
-        n.contentType = ContentType.APPLICATION_JSON;
-
-        n.headers.put("ServiceBusNotification-Format", "template");
-
-        return n;
+        return new TemplateNotification(properties);
     }
 
     /**

@@ -42,29 +42,28 @@ public final class ApnsCredential extends PnsCredential {
     private String appId;
 
     /**
-     * Creates a new Apple credential
+     * Creates a new instance of the ApnsCredential class.
      */
     public ApnsCredential() {
-        this(null, null);
+        super();
     }
 
     /**
-     * Creates an Apple credential with API endpoint.
-     *
-     * @param endpoint The API endpoint
+     * Creates a new instance of the ApnsCredential class.
+     * @param endpoint The APNS API endpoint
      */
     public ApnsCredential(String endpoint) {
-        this(null, null, endpoint);
+        super();
+        this.endpoint = endpoint;
     }
 
     /**
-     * Creates an Apple credential with APNS certificate and certificate key.
-     *
+     * Creates a new instance of the ApnsCredential class.
      * @param apnsCertificate The APNS certificate.
      * @param certificateKey  The APNS certificate key.
      */
     public ApnsCredential(String apnsCertificate, String certificateKey) {
-        this(apnsCertificate, certificateKey, PROD_ENDPOINT);
+        this(apnsCertificate, certificateKey, APNS2_PROD_ENDPOINT);
     }
 
     /**
@@ -116,144 +115,112 @@ public final class ApnsCredential extends PnsCredential {
      *
      * @return The APNS API endpoint.
      */
-    public String getEndpoint() {
-        return endpoint;
-    }
+    public String getEndpoint() { return endpoint; }
 
     /**
      * Sets the APNS API endpoint.
      *
-     * @param endpoint The APNS API endpoint.
+     * @param value The APNS API endpoint.
      */
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
-    }
+    public void setEndpoint(String value) { this.endpoint = value; }
 
     /**
      * Gets the APNS certificate.
      *
      * @return The APNS certificate.
      */
-    public String getApnsCertificate() {
-        return apnsCertificate;
-    }
+    public String getApnsCertificate() { return apnsCertificate; }
 
     /**
      * Sets the APNS certificate.
      *
-     * @param apnsCertificate The APNS certificate.
+     * @param value The APNS certificate.
      */
-    public void setApnsCertificate(String apnsCertificate) {
-        this.apnsCertificate = apnsCertificate;
-    }
+    public void setApnsCertificate(String value) { apnsCertificate = value; }
 
     /**
      * Gets the certificate thumbprint.
      *
      * @return The certificate thumbprint.
      */
-    public String getThumbprint() {
-        return this.thumbprint;
-    }
+    public String getThumbprint() { return thumbprint; }
 
     /**
      * Sets the certificate Thumbprint
      *
      * @param value The certificate thumbprint.
      */
-    public void setThumbprint(String value) {
-        this.thumbprint = value;
-    }
+    public void setThumbprint(String value) { thumbprint = value; }
 
     /**
      * Gets the APNS Certificate key.
      *
      * @return The APNS certificate key.
      */
-    public String getCertificateKey() {
-        return certificateKey;
-    }
+    public String getCertificateKey() { return certificateKey; }
 
     /**
      * Gets the APNS certificate key.
      *
-     * @param certificateKey The APNS certificate key.
+     * @param value The APNS certificate key.
      */
-    public void setCertificateKey(String certificateKey) {
-        this.certificateKey = certificateKey;
-    }
+    public void setCertificateKey(String value) { certificateKey = value; }
 
     /**
      * Gets the APNS token for authentication.
      *
      * @return The APNS token for authentication.
      */
-    public String getToken() {
-        return token;
-    }
+    public String getToken() { return token; }
 
     /**
      * Sets the APNS token for authentication.
      *
-     * @param token The APNS token for authentication.
+     * @param value The APNS token for authentication.
      */
-    public void setToken(String token) {
-        this.token = token;
-    }
+    public void setToken(String value) { token = value; }
 
     /**
      * Gets the APNS key ID.
      *
      * @return The APNS key ID.
      */
-    public String getKeyId() {
-        return keyId;
-    }
+    public String getKeyId() { return keyId; }
 
     /**
      * Sets the APNS key ID.
      *
-     * @param keyId The APNS key ID.
+     * @param value The APNS key ID.
      */
-    public void setKeyId(String keyId) {
-        this.keyId = keyId;
-    }
+    public void setKeyId(String value) { keyId = value; }
 
     /**
      * Gets the Apple App name.
      *
      * @return The Apple App name.
      */
-    public String getAppName() {
-        return appName;
-    }
+    public String getAppName() { return appName; }
 
     /**
      * Sets the Apple App name
      *
-     * @param appName The Apple App name.
+     * @param value The Apple App name.
      */
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
+    public void setAppName(String value) { this.appName = value; }
 
     /**
      * Gets the Apple App ID.
      *
      * @return The Apple App ID.
      */
-    public String getAppId() {
-        return appId;
-    }
+    public String getAppId() { return appId; }
 
     /**
      * Sets the Apple App ID.
      *
-     * @param appId The Apple App ID.
+     * @param value The Apple App ID.
      */
-    public void setAppId(String appId) {
-        this.appId = appId;
-    }
+    public void setAppId(String value) { appId = value; }
 
     @Override
     public List<SimpleEntry<String, String>> getProperties() {
