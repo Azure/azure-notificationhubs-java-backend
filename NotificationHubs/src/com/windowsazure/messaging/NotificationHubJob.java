@@ -66,81 +66,151 @@ public class NotificationHubJob {
         jobId = value;
     }
 
-    public double getProgress() {
-        return progress;
-    }
+    /**
+     * Gets the Azure Notification Hubs job progress.
+     * @return The Azure Notification Hubs job progress.
+     */
+    public double getProgress() { return progress; }
 
-    public void setProgressFromString(String progress) {
-        this.progress = Double.parseDouble(progress);
-    }
+    /**
+     * Sets the Azure Notification Hubs job progress.
+     * @param value The Azure Notification Hubs job progress value to set.
+     */
+    public void setProgress(double value) { progress = value; }
 
+    /**
+     * Sets the Azure Notification Hubs job progress fom a string value.
+     * @param value The Azure Notification Hubs job progress value to set from a string.
+     */
+    public void setProgressFromString(String value) { progress = Double.parseDouble(value); }
+
+    /**
+     * Gets the Azure Notification Hubs job type.
+     * @return The Azure Notification Hubs job type.
+     */
     public NotificationHubJobType getJobType() {
         return jobType;
     }
 
-    public void setJobType(NotificationHubJobType jobType) {
-        this.jobType = jobType;
+    /**
+     * Sets the Azure Notification Hubs job type.
+     * @param value The Azure Notification Hubs job type value to set.
+     */
+    public void setJobType(NotificationHubJobType value) {
+        jobType = value;
     }
 
-    public void setJobTypeFromString(String jobType) {
-        this.jobType = Enum.valueOf(NotificationHubJobType.class, jobType);
-    }
+    /**
+     * Sets the Azure Notification Hubs job type from a string value.
+     * @param value The Azure Notification Hubs job type string value to set.
+     */
+    public void setJobTypeFromString(String value) { jobType = Enum.valueOf(NotificationHubJobType.class, value); }
 
+    /**
+     * Gets the Azure Notification Hubs job status.
+     * @return The Azure Notification Hubs job status.
+     */
     public NotificationHubJobStatus getJobStatus() {
         return jobStatus;
     }
 
-    public void setJobStatusFromString(String jobStatus) {
-        this.jobStatus = Enum.valueOf(NotificationHubJobStatus.class, jobStatus);
-    }
+    /**
+     * Sets the Azure Notification Hubs job status.
+     * @param value The Azure Notification Hubs job status value to set.
+     */
+    public void setJobStatus(NotificationHubJobStatus value) { jobStatus = value; }
 
-    public String getOutputContainerUri() {
-        return outputContainerUri;
-    }
+    /**
+     * Sets the Azure Notification Hubs job status from a string value.
+     * @param value The Azure Notification Hubs job status string value to set.
+     */
+    public void setJobStatusFromString(String value) { jobStatus = Enum.valueOf(NotificationHubJobStatus.class, value); }
 
-    public void setOutputContainerUri(String outputContainerUri) {
-        this.outputContainerUri = outputContainerUri;
-    }
+    /**
+     * Gets the Azure Notification Hubs job output container URI.
+     * @return The Azure Notification Hubs job output container URI.
+     */
+    public String getOutputContainerUri() { return outputContainerUri; }
 
-    public String getImportFileUri() {
-        return importFileUri;
-    }
+    /**
+     * Sets the Azure Notification Hubs job output container URI.
+     * @param value The Azure Notification Hubs job output container URI value to set.
+     */
+    public void setOutputContainerUri(String value) { outputContainerUri = value; }
 
-    public void setImportFileUri(String importFileUri) {
-        this.importFileUri = importFileUri;
-    }
+    /**
+     * Gets the Azure Notification Hubs job file import URI.
+     * @return The Azure Notification Hubs job file import URI.
+     */
+    public String getImportFileUri() { return importFileUri; }
 
-    public String getFailure() {
-        return failure;
-    }
+    /**
+     * Sets the Azure Notification Hubs job file import URI.
+     * @param value The Azure Notification Hubs job file import URI value to set.
+     */
+    public void setImportFileUri(String value) { importFileUri = value; }
 
-    public void setFailure(String failure) {
-        this.failure = failure;
-    }
+    /**
+     * Gets the Azure Notification Hubs job failure message.
+     * @return The Azure Notification Hubs job failure message.
+     */
+    public String getFailure() { return failure; }
 
+    /**
+     * Sets the Azure Notification Hubs job failure message.
+     * @param value The Azure Notification Hubs job failure message value to set.
+     */
+    public void setFailure(String value) { failure = value; }
+
+    /**
+     * Gets the Azure Notification Hubs job output properties.
+     * @return The Azure Notification Hubs job output properties.
+     */
     public Map<String, String> getOutputProperties() {
         return outputProperties;
     }
 
-    public void setOutputProperties(Map<String, String> outputProperties) {
-        this.outputProperties = outputProperties;
-    }
+    /**
+     * Sets the Azure Notification Hubs job output properties.
+     * @param value The Azure Notification Hubs job output properties value to set.
+     */
+    public void setOutputProperties(Map<String, String> value) { outputProperties = value; }
 
-    public Date getCreatedAt() {
-        return createdAt;
-    }
+    /**
+     * Gets the Azure Notification Hubs job created time.
+     * @return The Azure Notification Hubs job created time.
+     */
+    public Date getCreatedAt() { return createdAt; }
 
-    public void setCreatedAtFromString(String createdAt) {
-        this.createdAt = javax.xml.bind.DatatypeConverter.parseDateTime(createdAt).getTime();
-    }
+    /**
+     * Sets the Azure Notification Hubs job created time.
+     * @param value The Azure Notification Hubs job created time value to set.
+     */
+    public void setCreatedAt(Date value) { createdAt = value; }
 
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
+    /**
+     * Sets the Azure Notification Hubs job created time from a string value.
+     * @param value The Azure Notification Hubs job created time string value to set.
+     */
+    public void setCreatedAtFromString(String value) { createdAt = javax.xml.bind.DatatypeConverter.parseDateTime(value).getTime(); }
 
-    public void setUpdatedAtFromString(String updatedAt) {
-        this.updatedAt = javax.xml.bind.DatatypeConverter.parseDateTime(updatedAt).getTime();
-    }
+    /**
+     * Gets the Azure Notification Hubs job updated time.
+     * @return The Azure Notification Hubs job updated time.
+     */
+    public Date getUpdatedAt() { return updatedAt; }
+
+    /**
+     * Sets the Azure Notification Hubs job updated time.
+     * @param value The Azure Notification Hubs job updated time value to set.
+     */
+    public void setUpdatedAt(Date value) { updatedAt = value; }
+
+    /**
+     * Sets the Azure Notification Hubs job updated time from a string value.
+     * @param value The Azure Notification Hubs job updated time string value to set.
+     */
+    public void setUpdatedAtFromString(String value) { updatedAt = javax.xml.bind.DatatypeConverter.parseDateTime(value).getTime(); }
 
     public static NotificationHubJob parseOne(InputStream content) throws IOException, SAXException {
         return singleEntryParser.get().parse(content);

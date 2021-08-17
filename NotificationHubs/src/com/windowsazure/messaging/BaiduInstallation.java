@@ -11,7 +11,7 @@ public class BaiduInstallation extends Installation {
      * @param installationId The ID for the installation.
      */
     public BaiduInstallation(String installationId) {
-        super(installationId, NotificationPlatform.Baidu, null, null);
+        super(installationId, NotificationPlatform.Baidu, null, (String[])null);
     }
 
     /**
@@ -28,6 +28,7 @@ public class BaiduInstallation extends Installation {
      * Creates a new instance of the BaiduInstallation class.
      *
      * @param installationId The ID for the installation.
+     * @param pushChannel The push channel for the Baidu installation.
      */
     public BaiduInstallation(String installationId, String pushChannel) {
         super(installationId, NotificationPlatform.Baidu, pushChannel, (String[]) null);

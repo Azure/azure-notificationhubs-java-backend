@@ -23,10 +23,10 @@ public class NotificationHubDescription {
     private ApnsCredential apnsCredential;
     private WindowsCredential windowsCredential;
     private MpnsCredential mpnsCredential;
+    @SuppressWarnings("deprecation")
     private GcmCredential gcmCredential;
     private FcmCredential fcmCredential;
     private BaiduCredential baiduCredential;
-    private BrowserCredential browserCredential;
 
     private static final ThreadLocal<Digester> singleEntryParser;
     private static final ThreadLocal<Digester> collectionParser;
@@ -55,41 +55,31 @@ public class NotificationHubDescription {
      * Creates a new instance of the NotificationHubDescription class.
      * @param path The notification hub path.
      */
-    public NotificationHubDescription(String path) {
-        this.path = path;
-    }
+    public NotificationHubDescription(String path) { this.path = path; }
 
     /**
      * Gets the notification hub path.
      * @return The notification hub path.
      */
-    public String getPath() {
-        return path;
-    }
+    public String getPath() { return path;  }
 
     /**
      * Sets the notification hub path.
      * @param value The notification hub path to set.
      */
-    public void setPath(String value) {
-        path = value;
-    }
+    public void setPath(String value) { path = value; }
 
     /**
      * Gets the Amazon PNS credentials for the notification hub.
      * @return The Amazon PNS credentials for the notification hub.
      */
-    public AdmCredential getAdmCredential() {
-        return admCredential;
-    }
+    public AdmCredential getAdmCredential() { return admCredential; }
 
     /**
      * Sets the Amazon PNS credentials for the notification hub.
      * @param value The Amazon PNS credentials for the notification hub to set.
      */
-    public void setAdmCredential(AdmCredential value) {
-        admCredential = value;
-    }
+    public void setAdmCredential(AdmCredential value) { admCredential = value; }
 
     /**
      * Sets the Apple PNS credentials for the notification hub.
@@ -152,26 +142,12 @@ public class NotificationHubDescription {
     public void setBaiduCredential(BaiduCredential value) { baiduCredential = value; }
 
     /**
-     * Gets the Browser PNS credentials for the notification hub.
-     * @return The Browser PNS credentials for the notification hub.
-     */
-    public BrowserCredential getBrowserCredential() { return browserCredential; }
-
-    /**
-     * Sets the Browser PNS credentials for the notification hub.
-     * @param value The Browser PNS credentials for the notification hub to set.
-     */
-    public void setBrowserCredential(BrowserCredential value) { browserCredential = value; }
-
-    /**
      * Gets the Google Cloud Messaging PNS credentials for the notification hub.
      * @return The Google Cloud Messaging PNS credentials for the notification hub.
      * @deprecated GCM is deprecated.  Use getFcmCredential instead.
      */
     @Deprecated
-    public GcmCredential getGcmCredential() {
-        return gcmCredential;
-    }
+    public GcmCredential getGcmCredential() { return gcmCredential; }
 
     /**
      * Sets the Google Cloud Messaging credentials for the notification hub.
@@ -199,11 +175,10 @@ public class NotificationHubDescription {
         if (apnsCredential != null) buf.append(apnsCredential.getXml());
         if (windowsCredential != null) buf.append(windowsCredential.getXml());
         if (fcmCredential != null) buf.append(fcmCredential.getXml());
-        if (this.gcmCredential != null) buf.append(this.gcmCredential.getXml());
+        if (gcmCredential != null) buf.append(gcmCredential.getXml());
         if (mpnsCredential != null) buf.append(mpnsCredential.getXml());
         if (admCredential != null) buf.append(admCredential.getXml());
         if (baiduCredential != null) buf.append(baiduCredential.getXml());
-        if (browserCredential != null) buf.append(browserCredential.getXml());
         buf.append(XML_FOOTER);
         return buf.toString();
     }
@@ -214,6 +189,7 @@ public class NotificationHubDescription {
         digester.addSetNext("*/entry", "add", NotificationHubDescription.class.getName());
     }
 
+    @SuppressWarnings("deprecation")
     private static void setupSingleEntryParser(Digester digester) {
         digester.addObjectCreate("*/entry", NotificationHubDescription.class);
         digester.addCallMethod("*/entry/title", "setPath", 1);
@@ -225,7 +201,6 @@ public class NotificationHubDescription {
         digester.addObjectCreate("*/GcmCredential", GcmCredential.class);
         digester.addObjectCreate("*/FcmCredential", FcmCredential.class);
         digester.addObjectCreate("*/BaiduCredential", BaiduCredential.class);
-        digester.addObjectCreate("*/BrowserCredential", BrowserCredential.class);
         PnsCredential.setupDigester(digester);
         digester.addSetNext("*/ApnsCredential", "setApnsCredential", ApnsCredential.class.getName());
         digester.addSetNext("*/AdmCredential", "setAdmCredential", AdmCredential.class.getName());
@@ -234,6 +209,5 @@ public class NotificationHubDescription {
         digester.addSetNext("*/GcmCredential", "setGcmCredential", GcmCredential.class.getName());
         digester.addSetNext("*/FcmCredential", "setFcmCredential", FcmCredential.class.getName());
         digester.addSetNext("*/BaiduCredential", "setBaiduCredential", BaiduCredential.class.getName());
-        digester.addSetNext("*/BrowserCredential", "setBrowserCredential", BrowserCredential.class.getName());
     }
 }

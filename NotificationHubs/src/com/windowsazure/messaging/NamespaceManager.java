@@ -72,7 +72,7 @@ public class NamespaceManager implements NamespaceManagerClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                            callback.failed(NotificationHubsException.create(response,
                                 httpStatusCode));
                             return;
                         }
@@ -132,7 +132,7 @@ public class NamespaceManager implements NamespaceManagerClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                            callback.failed(NotificationHubsException.create(response,
                                 httpStatusCode));
                             return;
                         }
@@ -245,7 +245,7 @@ public class NamespaceManager implements NamespaceManagerClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != (isUpdate ? 200 : 201)) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                            callback.failed(NotificationHubsException.create(response,
                                 httpStatusCode));
                             return;
                         }
@@ -291,7 +291,7 @@ public class NamespaceManager implements NamespaceManagerClient {
                     try {
                         int httpStatusCode = response.getStatusLine().getStatusCode();
                         if (httpStatusCode != 200 && httpStatusCode != 404) {
-                            callback.failed(NotificationHubsExceptionFactory.createNotificationHubException(response,
+                            callback.failed(NotificationHubsException.create(response,
                                 httpStatusCode));
                             return;
                         }

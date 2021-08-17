@@ -13,6 +13,9 @@ import java.util.Map;
 import org.apache.commons.digester3.Digester;
 import org.xml.sax.SAXException;
 
+/**
+ * This class represents Azure Notification Hubs telemetry.
+ */
 public class NotificationTelemetry {
 
     private String notificationId;
@@ -46,149 +49,225 @@ public class NotificationTelemetry {
         return parser.get().parse(content);
     }
 
-    public String getNotificationId() {
-        return notificationId;
-    }
+    /**
+     * Gets the Azure Notification Hubs notification ID.
+     * @return The Azure Notification Hubs notification ID.
+     */
+    public String getNotificationId() { return notificationId; }
 
-    public void setNotificationId(String notificationId) {
-        this.notificationId = notificationId;
-    }
+    /**
+     * Sets the Azure Notification Hubs notification ID.
+     * @param value The Azure Notification Hubs notification ID value to set.
+     */
+    public void setNotificationId(String value) { notificationId = value; }
 
-    public String getLocation() {
-        return location;
-    }
+    /**
+     * Gets the location of the Azure Notification Hubs telemetry.
+     * @return The location of the Azure Notification Hubs telemetry.
+     */
+    public String getLocation() { return location; }
 
-    public void setLocation(String location) {
-        this.location = location;
-    }
+    /**
+     * Sets the location of the Azure Notification Hubs telemetry.
+     * @param value The location of the Azure Notification Hubs telemetry value to set.
+     */
+    public void setLocation(String value) { location = value; }
 
+    /**
+     * Gets the status of the Azure Notification Hub notification.
+     * @return The status of the Azure Notification Hub notification.
+     */
     public NotificationStatus getNotificationStatus() {
         return notificationStatus;
     }
 
-    public void setNotificationStatusFromString(String status) {
-        this.notificationStatus = Enum.valueOf(NotificationStatus.class, status);
+    /**
+     * Sets the status of the Azure Notification Hub notification.
+     * @param value The status of the Azure Notification Hub notification value to set.
+     */
+    public void setNotificationStatus(NotificationStatus value) {
+        notificationStatus = value;
     }
 
-    public void setNotificationStatus(NotificationStatus notificationStatus) {
-        this.notificationStatus = notificationStatus;
-    }
+    /**
+     * Sets the status of the Azure Notification Hub notification from a string value
+     * @param value The status of the Azure Notification Hub notification string value to set.
+     */
+    public void setNotificationStatusFromString(String value) { notificationStatus = Enum.valueOf(NotificationStatus.class, value); }
 
-    public Date getEnqueueTime() {
-        return enqueueTime;
-    }
+    /**
+     * Gets the enqueue time of the Azure Notification Hub notification.
+     * @return The enqueue time of the Azure Notification Hub notification.
+     */
+    public Date getEnqueueTime() { return enqueueTime; }
 
-    public void setEnqueueTimeFromString(String enqueueTime) {
-        this.enqueueTime = javax.xml.bind.DatatypeConverter.parseDateTime(enqueueTime).getTime();
-    }
+    /**
+     * Sets the enqueue time of the Azure Notification Hub notification.
+     * @param value The enqueue time of the Azure Notification Hub notification value to set.
+     */
+    public void setEnqueueTime(Date value) { enqueueTime = value; }
 
-    public void setEnqueueTime(Date enqueueTime) {
-        this.enqueueTime = enqueueTime;
-    }
+    /**
+     * Sets the enqueue time of the Azure Notification Hub notification from a string value
+     * @param value The enqueue time of the Azure Notification Hub notification string value to set.
+     */
+    public void setEnqueueTimeFromString(String value) { enqueueTime = javax.xml.bind.DatatypeConverter.parseDateTime(value).getTime(); }
 
-    public Date getStartTime() {
-        return startTime;
-    }
+    /**
+     * Gets the start time of the Azure Notification Hub notification.
+     * @return The start time of the Azure Notification Hub notification.
+     */
+    public Date getStartTime() { return startTime; }
 
-    public void setStartTimeFromString(String startTime) {
-        this.startTime = javax.xml.bind.DatatypeConverter.parseDateTime(startTime).getTime();
-    }
+    /**
+     * Sets the start time of the Azure Notification Hub notification.
+     * @param value The start time of the Azure Notification Hub notification value to set.
+     */
+    public void setStartTime(Date value) { startTime = value; }
 
-    public void setStartTime(Date startTime) {
-        this.startTime = startTime;
-    }
+    /**
+     * Sets the start time of the Azure Notification Hub notification from a string value
+     * @param value The start time of the Azure Notification Hub notification string value to set.
+     */
+    public void setStartTimeFromString(String value) { startTime = javax.xml.bind.DatatypeConverter.parseDateTime(value).getTime(); }
 
-    public Date getEndTime() {
-        return endTime;
-    }
+    /**
+     * Gets the end time of the Azure Notification Hub notification.
+     * @return The end time of the Azure Notification Hub notification.
+     */
+    public Date getEndTime() { return endTime; }
 
-    public void setEndTimeFromString(String endTime) {
-        this.endTime = javax.xml.bind.DatatypeConverter.parseDateTime(endTime).getTime();
-    }
+    /**
+     * Sets the end time of the Azure Notification Hub notification.
+     * @param value The end time of the Azure Notification Hub notification value to set.
+     */
+    public void setEndTime(Date value) { endTime = value; }
 
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
-    }
+    /**
+     * Sets the end time of the Azure Notification Hub notification from a string value
+     * @param value The end time of the Azure Notification Hub notification string value to set.
+     */
+    public void setEndTimeFromString(String value) { endTime = javax.xml.bind.DatatypeConverter.parseDateTime(value).getTime(); }
 
-    public String getNotificationBody() {
-        return notificationBody;
-    }
+    /**
+     * Gets the body of the Azure Notification Hub notification.
+     * @return The body of the Azure Notification Hub notification.
+     */
+    public String getNotificationBody() { return notificationBody; }
 
-    public void setNotificationBody(String notificationBody) {
-        this.notificationBody = notificationBody;
-    }
+    /**
+     * Sets the body of the Azure Notification Hub notification.
+     * @param value The body of the Azure Notification Hub notification value to set.
+     */
+    public void setNotificationBody(String value) { notificationBody = value; }
 
-    public String getTargetPlatforms() {
-        return targetPlatforms;
-    }
+    /**
+     * Gets the target platforms of the Azure Notification Hub notification.
+     * @return The target platforms of the Azure Notification Hub notification.
+     */
+    public String getTargetPlatforms() { return targetPlatforms; }
 
-    public void setTargetPlatforms(String targetPlatforms) {
-        this.targetPlatforms = targetPlatforms;
-    }
+    /**
+     * Sets the target platforms of the Azure Notification Hub notification.
+     * @param value The target platforms of the Azure Notification Hub notification value to set.
+     */
+    public void setTargetPlatforms(String value) { targetPlatforms = value; }
 
-    public Map<String, Integer> getApnsOutcomeCounts() {
-        return apnsOutcomeCounts;
-    }
+    /**
+     * Gets the APNS outcome counts for the Azure Notification Hub notification.
+     * @return The APNS outcome counts for the Azure Notification Hub notification.
+     */
+    public Map<String, Integer> getApnsOutcomeCounts() { return apnsOutcomeCounts; }
 
-    public void setApnsOutcomeCounts(Map<String, Integer> apnsOutcomeCounts) {
-        this.apnsOutcomeCounts = apnsOutcomeCounts;
-    }
+    /**
+     * Sets the APNS outcome counts for the Azure Notification Hub notification.
+     * @param value The APNS outcome counts for the Azure Notification Hub notification value to set.
+     */
+    public void setApnsOutcomeCounts(Map<String, Integer> value) { apnsOutcomeCounts = value; }
 
-    public Map<String, Integer> getMpnsOutcomeCounts() {
-        return mpnsOutcomeCounts;
-    }
+    /**
+     * Gets the MPNS outcome counts for the Azure Notification Hub notification.
+     * @return The MPNS outcome counts for the Azure Notification Hub notification.
+     */
+    public Map<String, Integer> getMpnsOutcomeCounts() { return mpnsOutcomeCounts; }
 
-    public void setMpnsOutcomeCounts(Map<String, Integer> mpnsOutcomeCounts) {
-        this.mpnsOutcomeCounts = mpnsOutcomeCounts;
-    }
+    /**
+     * Sets the MPNS outcome counts for the Azure Notification Hub notification.
+     * @param value The MPNS outcome counts for the Azure Notification Hub notification value to set.
+     */
+    public void setMpnsOutcomeCounts(Map<String, Integer> value) { mpnsOutcomeCounts = value; }
 
-    public Map<String, Integer> getWnsOutcomeCounts() {
-        return wnsOutcomeCounts;
-    }
+    /**
+     * Gets the WNS outcome counts for the Azure Notification Hub notification.
+     * @return The WNS outcome counts for the Azure Notification Hub notification.
+     */
+    public Map<String, Integer> getWnsOutcomeCounts() { return wnsOutcomeCounts; }
 
-    public void setWnsOutcomeCounts(Map<String, Integer> wnsOutcomeCounts) {
-        this.wnsOutcomeCounts = wnsOutcomeCounts;
-    }
+    /**
+     * Sets the WNS outcome counts for the Azure Notification Hub notification.
+     * @param value The WNS outcome counts for the Azure Notification Hub notification value to set.
+     */
+    public void setWnsOutcomeCounts(Map<String, Integer> value) { wnsOutcomeCounts = value; }
 
-    public Map<String, Integer> getGcmOutcomeCounts() {
-        return gcmOutcomeCounts;
-    }
+    /**
+     * Gets the GCM outcome counts for the Azure Notification Hub notification.
+     * @return The GCM outcome counts for the Azure Notification Hub notification.
+     */
+    public Map<String, Integer> getGcmOutcomeCounts() { return gcmOutcomeCounts; }
 
-    public void setGcmOutcomeCounts(Map<String, Integer> gcmOutcomeCounts) {
-        this.gcmOutcomeCounts = gcmOutcomeCounts;
-    }
+    /**
+     * Sets the GCM outcome counts for the Azure Notification Hub notification.
+     * @param value The GCM outcome counts for the Azure Notification Hub notification value to set.
+     */
+    public void setGcmOutcomeCounts(Map<String, Integer> value) { gcmOutcomeCounts = value; }
 
-    public Map<String, Integer> getFcmOutcomeCounts() {
-        return fcmOutcomeCounts;
-    }
+    /**
+     * Gets the FCM outcome counts for the Azure Notification Hub notification.
+     * @return The FCM outcome counts for the Azure Notification Hub notification.
+     */
+    public Map<String, Integer> getFcmOutcomeCounts() { return fcmOutcomeCounts; }
 
-    public void setFcmOutcomeCounts(Map<String, Integer> fcmOutcomeCounts) {
-        this.fcmOutcomeCounts = fcmOutcomeCounts;
-    }
+    /**
+     * Sets the FCM outcome counts for the Azure Notification Hub notification.
+     * @param value The FCM outcome counts for the Azure Notification Hub notification value to set.
+     */
+    public void setFcmOutcomeCounts(Map<String, Integer> value) { fcmOutcomeCounts = value; }
 
-    public Map<String, Integer> getBaiduOutcomeCounts() {
-        return baiduOutcomeCounts;
-    }
+    /**
+     * Gets the Baidu outcome counts for the Azure Notification Hub notification.
+     * @return The Baidu outcome counts for the Azure Notification Hub notification.
+     */
+    public Map<String, Integer> getBaiduOutcomeCounts() { return baiduOutcomeCounts; }
 
-    public void setBaiduOutcomeCounts(Map<String, Integer> baiduOutcomeCounts) {
-        this.baiduOutcomeCounts = baiduOutcomeCounts;
-    }
+    /**
+     * Sets the Baidu outcome counts for the Azure Notification Hub notification.
+     * @param value The Baidu outcome counts for the Azure Notification Hub notification value to set.
+     */
+    public void setBaiduOutcomeCounts(Map<String, Integer> value) { baiduOutcomeCounts = value; }
 
-    public Map<String, Integer> getAdmOutcomeCounts() {
-        return admOutcomeCounts;
-    }
+    /**
+     * Gets the ADM outcome counts for the Azure Notification Hub notification.
+     * @return The ADM outcome counts for the Azure Notification Hub notification.
+     */
+    public Map<String, Integer> getAdmOutcomeCounts() { return admOutcomeCounts; }
 
-    public void setAdmOutcomeCounts(Map<String, Integer> admOutcomeCounts) {
-        this.admOutcomeCounts = admOutcomeCounts;
-    }
+    /**
+     * Sets the ADM outcome counts for the Azure Notification Hub notification.
+     * @param value The ADM outcome counts for the Azure Notification Hub notification value to set.
+     */
+    public void setAdmOutcomeCounts(Map<String, Integer> value) { admOutcomeCounts = value; }
 
-    public String getPnsErrorDetailsUri() {
-        return pnsErrorDetailsUri;
-    }
+    /**
+     * Gets the PNS Error Details container URI for the Azure Notification Hub notification.
+     * @return The PNS Error Details container URI for the Azure Notification Hub notification.
+     */
+    public String getPnsErrorDetailsUri() { return pnsErrorDetailsUri; }
 
-    public void setPnsErrorDetailsUri(String pnsErrorDetailsUri) {
-        this.pnsErrorDetailsUri = pnsErrorDetailsUri;
-    }
+    /**
+     * Sets the PNS Error Details container URI for the Azure Notification Hub notification.
+     * @param value The PNS Error Details container URI for the Azure Notification Hub notification value to set.
+     */
+    public void setPnsErrorDetailsUri(String value) { pnsErrorDetailsUri = value; }
 
     private static void setupParser(Digester digester) {
         digester.addObjectCreate("*/NotificationDetails", NotificationTelemetry.class);

@@ -11,7 +11,7 @@ public class AdmInstallation extends Installation {
      * @param installationId The ID for the installation.
      */
     public AdmInstallation(String installationId) {
-        super(installationId, NotificationPlatform.Adm, null, null);
+        super(installationId, NotificationPlatform.Adm, null, (String[])null);
     }
 
     /**
@@ -28,6 +28,7 @@ public class AdmInstallation extends Installation {
      * Creates a new instance of the AdmInstallation class.
      *
      * @param installationId The ID for the installation.
+     * @param pushChannel The push channel for the installation.
      */
     public AdmInstallation(String installationId, String pushChannel) {
         super(installationId, NotificationPlatform.Adm, pushChannel, (String[]) null);

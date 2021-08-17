@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.windowsazure</groupId>
 	<artifactId>Notification-Hubs-java-sdk</artifactId>
-	<version>0.5.0</version>
+	<version>1.0.0</version>
 	<name>Windows Azure Notification Hubs Java SDK</name>
   <url>https://github.com/Azure/azure-notificationhubs-java-backend</url>
   <description>Azure Notification Hubs Java SDK for interacting with the data and management plane operations.</description>
@@ -136,7 +136,7 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.3.0</version>
         <configuration>
-          <show>private</show>
+          <show>protected</show>
           <nohelp>true</nohelp>
         </configuration>
       </plugin>

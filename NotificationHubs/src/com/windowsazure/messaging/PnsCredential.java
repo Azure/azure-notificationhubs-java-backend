@@ -9,6 +9,9 @@ import java.util.List;
 
 import org.apache.commons.digester3.Digester;
 
+/**
+ * This class represents a platform notification service (PNS) credentials in Azure Notification Hubs.
+ */
 public abstract class PnsCredential {
     private static final String PROPERTIES_START = "<Properties>";
     private static final String PROPERTY_START = "<Property><Name>";

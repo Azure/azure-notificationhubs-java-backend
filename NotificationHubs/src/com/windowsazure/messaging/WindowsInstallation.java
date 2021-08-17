@@ -33,6 +33,7 @@ public class WindowsInstallation extends Installation {
      * Creates a new instance of the WindowsInstallation class.
      *
      * @param installationId The ID for the installation.
+     * @param pushChannel The push channel for the installation.
      */
     public WindowsInstallation(String installationId, String pushChannel) {
         super(installationId, NotificationPlatform.Wns, pushChannel, (String[]) null);

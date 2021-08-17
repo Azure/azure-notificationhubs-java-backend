@@ -11,7 +11,7 @@ public class AppleInstallation extends Installation {
      * @param installationId The ID for the installation.
      */
     public AppleInstallation(String installationId) {
-        super(installationId, NotificationPlatform.Apns, null, null);
+        super(installationId, NotificationPlatform.Apns, null, (String[])null);
     }
 
     /**
@@ -28,6 +28,7 @@ public class AppleInstallation extends Installation {
      * Creates a new instance of the AppleInstallation class.
      *
      * @param installationId The ID for the installation.
+     * @param pushChannel The push channel for the installation.
      */
     public AppleInstallation(String installationId, String pushChannel) {
         super(installationId, NotificationPlatform.Apns, pushChannel, (String[]) null);
