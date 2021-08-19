@@ -4,6 +4,7 @@
 
 package com.windowsazure.messaging;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
@@ -212,12 +213,20 @@ public class NotificationHubJob {
      */
     public void setUpdatedAtFromString(String value) { updatedAt = javax.xml.bind.DatatypeConverter.parseDateTime(value).getTime(); }
 
-    public static NotificationHubJob parseOne(InputStream content) throws IOException, SAXException {
-        return singleEntryParser.get().parse(content);
+    public static NotificationHubJob parseOne(InputStream inputStream) throws IOException, SAXException {
+        return singleEntryParser.get().parse(inputStream);
     }
 
-    public static List<NotificationHubJob> parseCollection(InputStream content) throws IOException, SAXException {
-        return collectionParser.get().parse(content);
+    public static NotificationHubJob parseOne(byte[] bodyBytes) throws IOException, SAXException {
+        return singleEntryParser.get().parse(new ByteArrayInputStream(bodyBytes));
+    }
+
+    public static List<NotificationHubJob> parseCollection(InputStream inputStream) throws IOException, SAXException {
+        return collectionParser.get().parse(inputStream);
+    }
+
+    public static List<NotificationHubJob> parseCollection(byte[] bodyBytes) throws IOException, SAXException {
+        return collectionParser.get().parse(new ByteArrayInputStream(bodyBytes));
     }
 
     public String getXml() {

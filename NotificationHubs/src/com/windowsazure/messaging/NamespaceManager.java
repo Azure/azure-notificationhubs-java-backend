@@ -4,13 +4,12 @@
 
 package com.windowsazure.messaging;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
+import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
+import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
+import org.apache.hc.core5.concurrent.FutureCallback;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.Method;
+import org.apache.hc.core5.http.message.StatusLine;
 
 import java.net.URI;
 import java.util.List;
@@ -19,14 +18,12 @@ import java.util.List;
  * This interface represents the operations that can be performed by the Azure
  * Notification Hub management API.
  */
-public class NamespaceManager implements NamespaceManagerClient {
+public class NamespaceManager extends NotificationHubsService implements NamespaceManagerClient {
     private static final String IF_MATCH_HEADER_NAME = "If-Match";
-    private static final String AUTHORIZATION_HEADER_NAME = "Authorization";
     private static final String HUBS_COLLECTION_PATH = "$Resources/NotificationHubs/";
     private static final String API_VERSION = "?api-version=2014-09";
     private static final String SKIP_TOP_PARAM = "&$skip=0&$top=2147483647";
     private String endpoint;
-    private final SasTokenProvider tokenProvider;
 
     /**
      * Creates a new instance of the NamespaceManager class.
@@ -38,8 +35,7 @@ public class NamespaceManager implements NamespaceManagerClient {
 
         String[] parts = connectionString.split(";");
         if (parts.length != 3)
-            throw new RuntimeException("Error parsing connection string: "
-                + connectionString);
+            throw new RuntimeException(String.format("Error parsing connection string: %s", connectionString));
 
         for (String part : parts) {
             if (part.startsWith("Endpoint")) {
@@ -64,34 +60,30 @@ public class NamespaceManager implements NamespaceManagerClient {
     public void getNotificationHubAsync(String hubPath, final FutureCallback<NotificationHubDescription> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + API_VERSION);
-            final HttpGet get = new HttpGet(uri);
-            get.setHeader(AUTHORIZATION_HEADER_NAME, tokenProvider.generateSasToken(uri));
+            final SimpleHttpRequest get = createRequest(uri, Method.GET)
+                .build();
 
-            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
+            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 200) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
+                    }
+
                     try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(NotificationHubDescription.parseOne(response.getEntity().getContent()));
+                        callback.completed(NotificationHubDescription.parseOne(response.getBodyBytes()));
                     } catch (Exception e) {
                         callback.failed(e);
-                    } finally {
-                        get.releaseConnection();
                     }
                 }
 
                 public void failed(final Exception ex) {
-                    get.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    get.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -124,34 +116,30 @@ public class NamespaceManager implements NamespaceManagerClient {
     public void getNotificationHubsAsync(final FutureCallback<List<NotificationHubDescription>> callback) {
         try {
             URI uri = new URI(endpoint + HUBS_COLLECTION_PATH + API_VERSION + SKIP_TOP_PARAM);
-            final HttpGet get = new HttpGet(uri);
-            get.setHeader(AUTHORIZATION_HEADER_NAME, tokenProvider.generateSasToken(uri));
+            final SimpleHttpRequest get = createRequest(uri, Method.GET)
+                .build();
 
-            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
+            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 200) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
+                    }
+
                     try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(NotificationHubDescription.parseCollection(response.getEntity().getContent()));
+                        callback.completed(NotificationHubDescription.parseCollection(response.getBodyBytes()));
                     } catch (Exception e) {
                         callback.failed(e);
-                    } finally {
-                        get.releaseConnection();
                     }
                 }
 
                 public void failed(final Exception ex) {
-                    get.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    get.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -230,41 +218,37 @@ public class NamespaceManager implements NamespaceManagerClient {
     private void createOrUpdateNotificationHubAsync(NotificationHubDescription hubDescription, final boolean isUpdate, final FutureCallback<NotificationHubDescription> callback) {
         try {
             URI uri = new URI(endpoint + hubDescription.getPath() + API_VERSION);
-            final HttpPut put = new HttpPut(uri);
-            put.setHeader(AUTHORIZATION_HEADER_NAME, tokenProvider.generateSasToken(uri));
+            final SimpleHttpRequest put = createRequest(uri, Method.PUT)
+                .build();
+
             if (isUpdate) {
                 put.setHeader(IF_MATCH_HEADER_NAME, "*");
             }
 
-            StringEntity entity = new StringEntity(hubDescription.getXml(), ContentType.APPLICATION_ATOM_XML);
-            entity.setContentEncoding("utf-8");
-            put.setEntity(entity);
+            put.setBody(hubDescription.getXml(), ContentType.APPLICATION_ATOM_XML);
 
-            HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
+            HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != (isUpdate ? 200 : 201)) {
+                        callback.failed(NotificationHubsException.create(response,
+                            httpStatusCode));
+                        return;
+                    }
+
                     try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != (isUpdate ? 200 : 201)) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(NotificationHubDescription.parseOne(response.getEntity().getContent()));
+                        callback.completed(NotificationHubDescription.parseOne(response.getBodyBytes()));
                     } catch (Exception e) {
                         callback.failed(e);
-                    } finally {
-                        put.releaseConnection();
                     }
                 }
 
                 public void failed(final Exception ex) {
-                    put.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    put.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -283,34 +267,26 @@ public class NamespaceManager implements NamespaceManagerClient {
     public void deleteNotificationHubAsync(String hubPath, final FutureCallback<Object> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + API_VERSION);
-            final HttpDelete delete = new HttpDelete(uri);
-            delete.setHeader(AUTHORIZATION_HEADER_NAME, tokenProvider.generateSasToken(uri));
+            final SimpleHttpRequest delete = createRequest(uri, Method.DELETE)
+                .build();
 
-            HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
-                    try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 200 && httpStatusCode != 404) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(null);
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    } finally {
-                        delete.releaseConnection();
+            HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 200 && httpStatusCode != 404) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
                     }
+
+                    callback.completed(null);
                 }
 
                 public void failed(final Exception ex) {
-                    delete.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    delete.releaseConnection();
                     callback.cancelled();
                 }
             });

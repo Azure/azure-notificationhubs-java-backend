@@ -6,9 +6,11 @@ package com.windowsazure.messaging;
 
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.ObjectCreationFactory;
+import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -183,9 +185,13 @@ public abstract class Registration implements Cloneable {
         return Objects.hash(getRegistrationId(), getTags(), getEtag(), getExpirationTime());
     }
 
-    public static <T extends Registration> T parse(InputStream content) throws IOException,
+    public static <T extends Registration> T parse(InputStream inputStream) throws IOException, SAXException {
+        return singleRegParser.get().parse(inputStream);
+    }
+
+    public static <T extends Registration> T parse(byte[] bodyBytes) throws IOException,
         SAXException {
-        return singleRegParser.get().parse(content);
+        return singleRegParser.get().parse(new ByteArrayInputStream(bodyBytes));
     }
 
     private static void addRegistrationRules(Digester digester) {
@@ -253,9 +259,14 @@ public abstract class Registration implements Cloneable {
         digester.addCallParam("*/BaiduChannelId", 0);
     }
 
-    public static CollectionResult parseRegistrations(InputStream content)
+    public static CollectionResult parseRegistrations(InputStream inputStream)
         throws IOException, SAXException {
-        return multiRegParser.get().parse(content);
+        return multiRegParser.get().parse(inputStream);
+    }
+
+    public static CollectionResult parseRegistrations(byte[] bodyBytes)
+        throws IOException, SAXException {
+        return multiRegParser.get().parse(new ByteArrayInputStream(bodyBytes));
     }
 
     private static void addCollectionRules(Digester digester) {

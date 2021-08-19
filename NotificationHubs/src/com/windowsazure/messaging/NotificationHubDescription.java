@@ -4,6 +4,7 @@
 
 package com.windowsazure.messaging;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
@@ -161,12 +162,20 @@ public class NotificationHubDescription {
         this.getClass().getMethod("set" + propertyName, String.class).invoke(this, propertyValue);
     }
 
-    public static NotificationHubDescription parseOne(InputStream content) throws IOException, SAXException {
-        return singleEntryParser.get().parse(content);
+    public static NotificationHubDescription parseOne(InputStream inputStream) throws IOException, SAXException {
+        return singleEntryParser.get().parse(inputStream);
     }
 
-    public static List<NotificationHubDescription> parseCollection(InputStream content) throws IOException, SAXException {
-        return collectionParser.get().parse(content);
+    public static NotificationHubDescription parseOne(byte[] bodyBytes) throws IOException, SAXException {
+        return singleEntryParser.get().parse(new ByteArrayInputStream(bodyBytes));
+    }
+
+    public static List<NotificationHubDescription> parseCollection(InputStream inputStream) throws IOException, SAXException {
+        return collectionParser.get().parse(inputStream);
+    }
+
+    public static List<NotificationHubDescription> parseCollection(byte[] bodyBytes) throws IOException, SAXException {
+        return collectionParser.get().parse(new ByteArrayInputStream(bodyBytes));
     }
 
     public String getXml() {

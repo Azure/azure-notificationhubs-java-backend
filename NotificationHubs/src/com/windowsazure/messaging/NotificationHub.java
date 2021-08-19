@@ -5,43 +5,42 @@
 package com.windowsazure.messaging;
 
 import com.google.gson.GsonBuilder;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.*;
-import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.FormBodyPart;
-import org.apache.http.entity.mime.FormBodyPartBuilder;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.StringBody;
+import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
+import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
+import org.apache.hc.client5.http.entity.mime.FormBodyPart;
+import org.apache.hc.client5.http.entity.mime.FormBodyPartBuilder;
+import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
+import org.apache.hc.client5.http.entity.mime.StringBody;
+import org.apache.hc.core5.concurrent.FutureCallback;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.Method;
+import org.apache.hc.core5.http.message.StatusLine;
 
-import java.io.IOException;
-import java.io.StringWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * This class represents all actions that can be done on an Azure Notification Hub.
  */
-public class NotificationHub implements NotificationHubClient {
+public class NotificationHub extends NotificationHubsService implements NotificationHubClient {
 
-    private static final String USER_AGENT = "NHub/2020-06 (api-origin=JavaSDK;os=%s;os-version=%s)";
     private static final String API_VERSION = "?api-version=2020-06";
     private static final String CONTENT_LOCATION_HEADER = "Location";
-    private static final String TRACKING_ID_HEADER = "TrackingId";
     private String endpoint;
     private final String hubPath;
-    private final SasTokenProvider tokenProvider;
 
     /**
      * Creates a new instance of the NotificationHub class with connection string and hub path.
@@ -86,39 +85,31 @@ public class NotificationHub implements NotificationHubClient {
     public <T extends Registration> void createRegistrationAsync(T registration, final FutureCallback<T> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/registrations" + API_VERSION);
-            final HttpPost post = new HttpPost(uri);
-            post.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            post.setHeader("User-Agent", getUserAgent());
+            final SimpleHttpRequest post = createRequest(uri, Method.POST)
+                .setBody(registration.getXml(), ContentType.APPLICATION_ATOM_XML)
+                .build();
 
-            StringEntity entity = new StringEntity(registration.getXml(), ContentType.APPLICATION_ATOM_XML);
-            entity.setContentEncoding("utf-8");
-            post.setEntity(entity);
+            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 200) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
+                    }
 
-            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
                     try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(Registration.parse(response.getEntity().getContent()));
+                        callback.completed(Registration.parse(response.getBodyBytes()));
                     } catch (Exception e) {
                         callback.failed(e);
-                    } finally {
-                        post.releaseConnection();
                     }
                 }
 
                 public void failed(final Exception ex) {
-                    post.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    post.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -155,20 +146,19 @@ public class NotificationHub implements NotificationHubClient {
     public void createRegistrationIdAsync(final FutureCallback<String> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/registrationids" + API_VERSION);
-            final HttpPost post = new HttpPost(uri);
-            post.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            post.setHeader("User-Agent", getUserAgent());
+            final SimpleHttpRequest post = createRequest(uri, Method.POST)
+                .build();
 
-            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
+            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 201) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
+                    }
+
                     try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 201) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
                         String location = response.getFirstHeader(CONTENT_LOCATION_HEADER).getValue();
                         Pattern extractId = Pattern.compile("(\\S+)/registrationids/([^?]+).*");
                         Matcher m = extractId.matcher(location);
@@ -181,18 +171,14 @@ public class NotificationHub implements NotificationHubClient {
                         }
                     } catch (Exception e) {
                         callback.failed(e);
-                    } finally {
-                        post.releaseConnection();
                     }
                 }
 
                 public void failed(final Exception ex) {
-                    post.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    post.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -231,37 +217,32 @@ public class NotificationHub implements NotificationHubClient {
     public <T extends Registration> void updateRegistrationAsync(T registration, final FutureCallback<T> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + API_VERSION);
-            final HttpPut put = new HttpPut(uri);
-            put.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            put.setHeader("If-Match", registration.getEtag() == null ? "*" : "W/\"" + registration.getEtag() + "\"");
-            put.setHeader("User-Agent", getUserAgent());
-            put.setEntity(new StringEntity(registration.getXml(), ContentType.APPLICATION_ATOM_XML));
+            final SimpleHttpRequest put = createRequest(uri, Method.PUT)
+                .setHeader("If-Match", registration.getEtag() == null ? "*" : "W/\"" + registration.getEtag() + "\"")
+                .setBody(registration.getXml(), ContentType.APPLICATION_ATOM_XML)
+                .build();
 
-            HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
+            HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 200) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
+                    }
+
                     try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(Registration.parse(response.getEntity().getContent()));
+                        callback.completed(Registration.parse(response.getBodyBytes()));
                     } catch (Exception e) {
                         callback.failed(e);
-                    } finally {
-                        put.releaseConnection();
                     }
                 }
 
                 public void failed(final Exception ex) {
-                    put.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    put.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -304,36 +285,31 @@ public class NotificationHub implements NotificationHubClient {
     public <T extends Registration> void upsertRegistrationAsync(T registration, final FutureCallback<T> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + API_VERSION);
-            final HttpPut put = new HttpPut(uri);
-            put.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            put.setHeader("User-Agent", getUserAgent());
-            put.setEntity(new StringEntity(registration.getXml(), ContentType.APPLICATION_ATOM_XML));
+            final SimpleHttpRequest put = createRequest(uri, Method.PUT)
+                .setBody(registration.getXml(), ContentType.APPLICATION_ATOM_XML)
+                    .build();
 
-            HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
+            HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 200) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
+                    }
+
                     try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(Registration.parse(response.getEntity().getContent()));
+                        callback.completed(Registration.parse(response.getBodyBytes()));
                     } catch (Exception e) {
                         callback.failed(e);
-                    } finally {
-                        put.releaseConnection();
                     }
                 }
 
                 public void failed(final Exception ex) {
-                    put.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    put.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -399,36 +375,27 @@ public class NotificationHub implements NotificationHubClient {
     public void deleteRegistrationAsync(String registrationId, final FutureCallback<Object> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + API_VERSION);
-            final HttpDelete delete = new HttpDelete(uri);
-            delete.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            delete.setHeader("If-Match", "*");
-            delete.setHeader("User-Agent", getUserAgent());
+            final SimpleHttpRequest delete = createRequest(uri, Method.DELETE)
+                .setHeader("If-Match", "*")
+                    .build();
 
-            HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
-                    try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 200 && httpStatusCode != 404) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(null);
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    } finally {
-                        delete.releaseConnection();
+            HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 200 && httpStatusCode != 404) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
                     }
+
+                    callback.completed(null);
                 }
 
                 public void failed(final Exception ex) {
-                    delete.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    delete.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -462,35 +429,30 @@ public class NotificationHub implements NotificationHubClient {
     public <T extends Registration> void getRegistrationAsync(String registrationId, final FutureCallback<T> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + API_VERSION);
-            final HttpGet get = new HttpGet(uri);
-            get.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            get.setHeader("User-Agent", getUserAgent());
+            final SimpleHttpRequest get = createRequest(uri, Method.GET)
+                .build();
 
-            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
+            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 200) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
+                    }
+
                     try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(Registration.parse(response.getEntity().getContent()));
+                        callback.completed(Registration.parse(response.getBodyBytes()));
                     } catch (Exception e) {
                         callback.failed(e);
-                    } finally {
-                        get.releaseConnection();
                     }
                 }
 
                 public void failed(final Exception ex) {
-                    get.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    get.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -721,21 +683,20 @@ public class NotificationHub implements NotificationHubClient {
     private void retrieveRegistrationCollectionAsync(String queryUri, final FutureCallback<CollectionResult> callback) {
         try {
             URI uri = new URI(queryUri);
-            final HttpGet get = new HttpGet(uri);
-            get.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            get.setHeader("User-Agent", getUserAgent());
+            final SimpleHttpRequest get = createRequest(uri, Method.GET)
+                .build();
 
-            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
+            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 200) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
+                    }
+
                     try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        CollectionResult result = Registration.parseRegistrations(response.getEntity().getContent());
+                        CollectionResult result = Registration.parseRegistrations(response.getBodyBytes());
                         Header contTokenHeader = response.getFirstHeader("X-MS-ContinuationToken");
                         if (contTokenHeader != null) {
                             result.setContinuationToken(contTokenHeader.getValue());
@@ -744,18 +705,14 @@ public class NotificationHub implements NotificationHubClient {
                         callback.completed(result);
                     } catch (Exception e) {
                         callback.failed(e);
-                    } finally {
-                        get.releaseConnection();
                     }
                 }
 
                 public void failed(final Exception ex) {
-                    get.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    get.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -895,9 +852,9 @@ public class NotificationHub implements NotificationHubClient {
      */
     @Override
     public void scheduleNotificationAsync(Notification notification, Set<String> tags, Date scheduledTime, FutureCallback<NotificationOutcome> callback) {
-        if (tags.isEmpty())
-            throw new IllegalArgumentException(
-                "tags has to contain at least an element");
+        if (tags.isEmpty()) {
+            throw new IllegalArgumentException("tags has to contain at least an element");
+        }
 
         StringBuilder exp = new StringBuilder();
         for (Iterator<String> iterator = tags.iterator(); iterator.hasNext(); ) {
@@ -939,11 +896,9 @@ public class NotificationHub implements NotificationHubClient {
     public void scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime, final FutureCallback<NotificationOutcome> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + (scheduledTime == null ? "/messages" : "/schedulednotifications") + API_VERSION);
-            final HttpPost post = new HttpPost(uri);
-            final String trackingId = java.util.UUID.randomUUID().toString();
-            post.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            post.setHeader(TRACKING_ID_HEADER, trackingId);
-            post.setHeader("User-Agent", getUserAgent());
+            final SimpleHttpRequest post = createRequest(uri, Method.POST)
+                .setBody(notification.getBody(), notification.getContentType())
+                .build();
 
             if (scheduledTime != null) {
                 DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -960,22 +915,17 @@ public class NotificationHub implements NotificationHubClient {
                 post.setHeader(header, notification.getHeaders().get(header));
             }
 
-            post.setEntity(new StringEntity(notification.getBody(), notification.getContentType()));
+            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 201) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
+                    }
 
-            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
                     try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 201) {
-                            String msg = "";
-                            if (response.getEntity() != null && response.getEntity().getContent() != null) {
-                                msg = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
-                            }
-                            msg = "Error: " + response.getStatusLine() + " body: " + msg;
-                            callback.failed(NotificationHubsException.create(response, httpStatusCode, msg));
-                            return;
-                        }
-
+                        String trackingId = post.getFirstHeader(TRACKING_ID_HEADER).getValue();
                         String notificationId = null;
                         Header locationHeader = response.getFirstHeader(CONTENT_LOCATION_HEADER);
                         if (locationHeader != null) {
@@ -987,18 +937,14 @@ public class NotificationHub implements NotificationHubClient {
                         callback.completed(new NotificationOutcome(trackingId, notificationId));
                     } catch (Exception e) {
                         callback.failed(e);
-                    } finally {
-                        post.releaseConnection();
                     }
                 }
 
                 public void failed(final Exception ex) {
-                    post.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    post.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -1047,35 +993,26 @@ public class NotificationHub implements NotificationHubClient {
     public void cancelScheduledNotificationAsync(String notificationId, final FutureCallback<Object> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/schedulednotifications/" + notificationId + API_VERSION);
-            final HttpDelete delete = new HttpDelete(uri);
-            delete.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            delete.setHeader("User-Agent", getUserAgent());
+            final SimpleHttpRequest delete = createRequest(uri, Method.DELETE)
+                .build();
 
-            HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
-                    try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 200 && httpStatusCode != 404) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(null);
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    } finally {
-                        delete.releaseConnection();
+            HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 200 && httpStatusCode != 404) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
                     }
+
+                    callback.completed(null);
                 }
 
                 public void failed(final Exception ex) {
-                    delete.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    delete.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -1130,33 +1067,26 @@ public class NotificationHub implements NotificationHubClient {
     ) {
         try {
             URI uri = new URI(endpoint + hubPath + "/messages" + API_VERSION + "&direct");
-            final HttpPost post = new HttpPost(uri);
-            final String trackingId = java.util.UUID.randomUUID().toString();
-            post.setHeader("ServiceBusNotification-DeviceHandle", deviceHandle);
-            post.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            post.setHeader(TRACKING_ID_HEADER, trackingId);
-            post.setHeader("User-Agent", getUserAgent());
+            final SimpleHttpRequest post = createRequest(uri, Method.POST)
+                .setHeader("ServiceBusNotification-DeviceHandle", deviceHandle)
+                .setBody(notification.getBody(), notification.getContentType())
+                .build();
 
             for (String header : notification.getHeaders().keySet()) {
                 post.setHeader(header, notification.getHeaders().get(header));
             }
 
-            post.setEntity(new StringEntity(notification.getBody(), notification.getContentType()));
+            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 201) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
+                    }
 
-            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
                     try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 201) {
-                            String msg = "";
-                            if (response.getEntity() != null && response.getEntity().getContent() != null) {
-                                msg = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
-                            }
-                            msg = "Error: " + response.getStatusLine() + " body: " + msg;
-                            callback.failed(NotificationHubsException.create(response, httpStatusCode, msg));
-                            return;
-                        }
-
+                        String trackingId = post.getFirstHeader(TRACKING_ID_HEADER).getValue();
                         String notificationId = null;
                         Header locationHeader = response.getFirstHeader(CONTENT_LOCATION_HEADER);
                         if (locationHeader != null) {
@@ -1168,18 +1098,14 @@ public class NotificationHub implements NotificationHubClient {
                         callback.completed(new NotificationOutcome(trackingId, notificationId));
                     } catch (Exception e) {
                         callback.failed(e);
-                    } finally {
-                        post.releaseConnection();
                     }
                 }
 
                 public void failed(final Exception ex) {
-                    post.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    post.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -1200,11 +1126,8 @@ public class NotificationHub implements NotificationHubClient {
     public void sendDirectNotificationAsync(Notification notification, List<String> deviceHandles, final FutureCallback<NotificationOutcome> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/messages/$batch" + API_VERSION + "&direct");
-            final HttpPost post = new HttpPost(uri);
-            final String trackingId = java.util.UUID.randomUUID().toString();
-            post.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            post.setHeader(TRACKING_ID_HEADER, trackingId);
-            post.setHeader("User-Agent", getUserAgent());
+            final SimpleHttpRequest post = createRequest(uri, Method.POST)
+                .build();
 
             for (String header : notification.getHeaders().keySet()) {
                 post.setHeader(header, notification.getHeaders().get(header));
@@ -1224,26 +1147,27 @@ public class NotificationHub implements NotificationHubClient {
                 .build();
 
             HttpEntity entity = MultipartEntityBuilder.create()
+                .setBoundary("nh-batch-multipart-boundary")
                 .addPart(notificationPart)
                 .addPart(devicesPart)
                 .build();
 
-            post.setEntity(entity);
+            ByteArrayOutputStream baoStream = new ByteArrayOutputStream();
+            entity.writeTo(baoStream);
 
-            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
+            post.setBody(baoStream.toByteArray(), ContentType.MULTIPART_MIXED);
+
+            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 201) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
+                    }
+
                     try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 201) {
-                            String msg = "";
-                            if (response.getEntity() != null && response.getEntity().getContent() != null) {
-                                msg = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
-                            }
-                            msg = "Error: " + response.getStatusLine() + " body: " + msg;
-                            callback.failed(NotificationHubsException.create(response, httpStatusCode, msg));
-                            return;
-                        }
-
+                        String trackingId = post.getFirstHeader(TRACKING_ID_HEADER).getValue();
                         String notificationId = null;
                         Header locationHeader = response.getFirstHeader(CONTENT_LOCATION_HEADER);
                         if (locationHeader != null) {
@@ -1255,18 +1179,14 @@ public class NotificationHub implements NotificationHubClient {
                         callback.completed(new NotificationOutcome(trackingId, notificationId));
                     } catch (Exception e) {
                         callback.failed(e);
-                    } finally {
-                        post.releaseConnection();
                     }
                 }
 
                 public void failed(final Exception ex) {
-                    post.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    post.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -1301,35 +1221,30 @@ public class NotificationHub implements NotificationHubClient {
     public void getNotificationTelemetryAsync(String notificationId, final FutureCallback<NotificationTelemetry> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/messages/" + notificationId + API_VERSION);
-            final HttpGet get = new HttpGet(uri);
-            get.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            get.setHeader("User-Agent", getUserAgent());
+            final SimpleHttpRequest get = createRequest(uri, Method.GET)
+                .build();
 
-            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
+            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 200) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
+                    }
+
                     try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(NotificationTelemetry.parseOne(response.getEntity().getContent()));
+                        callback.completed(NotificationTelemetry.parseOne(response.getBodyBytes()));
                     } catch (Exception e) {
                         callback.failed(e);
-                    } finally {
-                        get.releaseConnection();
                     }
                 }
 
                 public void failed(final Exception ex) {
-                    get.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    get.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -1348,39 +1263,27 @@ public class NotificationHub implements NotificationHubClient {
     public void createOrUpdateInstallationAsync(BaseInstallation installation, final FutureCallback<Object> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/installations/" + installation.getInstallationId() + API_VERSION);
-            final HttpPut put = new HttpPut(uri);
-            put.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            put.setHeader("User-Agent", getUserAgent());
+            final SimpleHttpRequest put = createRequest(uri, Method.PUT)
+                .setBody(installation.toJson(), ContentType.APPLICATION_JSON)
+                    .build();
 
-            StringEntity entity = new StringEntity(installation.toJson(), ContentType.APPLICATION_JSON);
-            entity.setContentEncoding("utf-8");
-            put.setEntity(entity);
-
-            HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
-                    try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(null);
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    } finally {
-                        put.releaseConnection();
+            HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 200) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
                     }
+
+                    callback.completed(null);
                 }
 
                 public void failed(final Exception ex) {
-                    put.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    put.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -1457,39 +1360,27 @@ public class NotificationHub implements NotificationHubClient {
     private void patchInstallationInternalAsync(String installationId, String operationsJson, final FutureCallback<Object> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
-            final HttpPatch patch = new HttpPatch(uri);
-            patch.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            patch.setHeader("User-Agent", getUserAgent());
+            final SimpleHttpRequest patch = createRequest(uri, Method.PATCH)
+                .setBody(operationsJson, ContentType.APPLICATION_JSON)
+                .build();
 
-            StringEntity entity = new StringEntity(operationsJson, ContentType.APPLICATION_JSON);
-            entity.setContentEncoding("utf-8");
-            patch.setEntity(entity);
-
-            HttpClientManager.getHttpAsyncClient().execute(patch, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
-                    try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(null);
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    } finally {
-                        patch.releaseConnection();
+            HttpClientManager.getHttpAsyncClient().execute(patch, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 200) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
                     }
+
+                    callback.completed(null);
                 }
 
                 public void failed(final Exception ex) {
-                    patch.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    patch.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -1508,35 +1399,26 @@ public class NotificationHub implements NotificationHubClient {
     public void deleteInstallationAsync(String installationId, final FutureCallback<Object> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
-            final HttpDelete delete = new HttpDelete(uri);
-            delete.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            delete.setHeader("User-Agent", getUserAgent());
+            final SimpleHttpRequest delete = createRequest(uri, Method.DELETE)
+                .build();
 
-            HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
-                    try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 204) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(null);
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    } finally {
-                        delete.releaseConnection();
+            HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 204) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
                     }
+
+                    callback.completed(null);
                 }
 
                 public void failed(final Exception ex) {
-                    delete.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    delete.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -1570,35 +1452,30 @@ public class NotificationHub implements NotificationHubClient {
     public <T extends BaseInstallation> void getInstallationAsync(String installationId, final FutureCallback<T> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
-            final HttpGet get = new HttpGet(uri);
-            get.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            get.setHeader("User-Agent", getUserAgent());
+            final SimpleHttpRequest get = createRequest(uri, Method.GET)
+                .build();
 
-            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
+            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 200) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
+                    }
+
                     try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(BaseInstallation.fromJson(response.getEntity().getContent()));
+                        callback.completed(BaseInstallation.fromJson(response.getBodyText()));
                     } catch (Exception e) {
                         callback.failed(e);
-                    } finally {
-                        get.releaseConnection();
                     }
                 }
 
                 public void failed(final Exception ex) {
-                    get.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    get.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -1633,39 +1510,31 @@ public class NotificationHub implements NotificationHubClient {
     public void submitNotificationHubJobAsync(NotificationHubJob job, final FutureCallback<NotificationHubJob> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/jobs" + API_VERSION);
-            final HttpPost post = new HttpPost(uri);
-            post.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            post.setHeader("User-Agent", getUserAgent());
+            final SimpleHttpRequest post = createRequest(uri, Method.POST)
+                .setBody(job.getXml(), ContentType.APPLICATION_ATOM_XML)
+                .build();
 
-            StringEntity entity = new StringEntity(job.getXml(), ContentType.APPLICATION_ATOM_XML);
-            entity.setContentEncoding("utf-8");
-            post.setEntity(entity);
+            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 201) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
+                    }
 
-            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
                     try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 201) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(NotificationHubJob.parseOne(response.getEntity().getContent()));
+                        callback.completed(NotificationHubJob.parseOne(response.getBodyBytes()));
                     } catch (Exception e) {
                         callback.failed(e);
-                    } finally {
-                        post.releaseConnection();
                     }
                 }
 
                 public void failed(final Exception ex) {
-                    post.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    post.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -1699,35 +1568,30 @@ public class NotificationHub implements NotificationHubClient {
     public void getNotificationHubJobAsync(String jobId, final FutureCallback<NotificationHubJob> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/jobs/" + jobId + API_VERSION);
-            final HttpGet get = new HttpGet(uri);
-            get.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            get.setHeader("User-Agent", getUserAgent());
+            final SimpleHttpRequest get = createRequest(uri, Method.GET)
+                .build();
 
-            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
+            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 200) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
+                    }
+
                     try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(NotificationHubJob.parseOne(response.getEntity().getContent()));
+                        callback.completed(NotificationHubJob.parseOne(response.getBodyBytes()));
                     } catch (Exception e) {
                         callback.failed(e);
-                    } finally {
-                        get.releaseConnection();
                     }
                 }
 
                 public void failed(final Exception ex) {
-                    get.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    get.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -1760,35 +1624,30 @@ public class NotificationHub implements NotificationHubClient {
     public void getAllNotificationHubJobsAsync(final FutureCallback<List<NotificationHubJob>> callback) {
         try {
             URI uri = new URI(endpoint + hubPath + "/jobs" + API_VERSION);
-            final HttpGet get = new HttpGet(uri);
-            get.setHeader("Authorization", tokenProvider.generateSasToken(uri));
-            get.setHeader("User-Agent", getUserAgent());
+            final SimpleHttpRequest get = createRequest(uri, Method.GET)
+                .build();
 
-            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<HttpResponse>() {
-                public void completed(final HttpResponse response) {
+            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<SimpleHttpResponse>() {
+                public void completed(final SimpleHttpResponse response) {
+                    StatusLine statusLine = new StatusLine(response);
+                    int httpStatusCode = statusLine.getStatusCode();
+                    if (httpStatusCode != 200) {
+                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
+                        return;
+                    }
+
                     try {
-                        int httpStatusCode = response.getStatusLine().getStatusCode();
-                        if (httpStatusCode != 200) {
-                            callback.failed(NotificationHubsException.create(response,
-                                httpStatusCode));
-                            return;
-                        }
-
-                        callback.completed(NotificationHubJob.parseCollection(response.getEntity().getContent()));
+                        callback.completed(NotificationHubJob.parseCollection(response.getBodyBytes()));
                     } catch (Exception e) {
                         callback.failed(e);
-                    } finally {
-                        get.releaseConnection();
                     }
                 }
 
                 public void failed(final Exception ex) {
-                    get.releaseConnection();
                     callback.failed(ex);
                 }
 
                 public void cancelled() {
-                    get.releaseConnection();
                     callback.cancelled();
                 }
             });
@@ -1808,19 +1667,5 @@ public class NotificationHub implements NotificationHubClient {
         SyncCallback<List<NotificationHubJob>> callback = new SyncCallback<>();
         getAllNotificationHubJobsAsync(callback);
         return callback.getResult();
-    }
-
-    private String getErrorString(HttpResponse response)
-        throws IllegalStateException, IOException {
-        StringWriter writer = new StringWriter();
-        IOUtils.copy(response.getEntity().getContent(), writer, "UTF-8");
-        String body = writer.toString();
-        return "Error: " + response.getStatusLine() + " - " + body;
-    }
-
-    private static String getUserAgent() {
-        String os = System.getProperty("os.name");
-        String osVersion = System.getProperty("os.version");
-        return String.format(USER_AGENT, os, osVersion);
     }
 }

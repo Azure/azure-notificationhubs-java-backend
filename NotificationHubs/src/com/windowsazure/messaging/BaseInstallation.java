@@ -265,6 +265,17 @@ public abstract class BaseInstallation implements Cloneable {
     }
 
     /**
+     * Creates an installation from the JSON stream.
+     *
+     * @param json The JSON string that represents the installation.
+     * @return An installation created from the JSON stream.
+     * @throws IOException An exception reading from the stream occurred.
+     */
+    public static <T extends BaseInstallation> T fromJson(InputStream json) throws IOException {
+        return BaseInstallation.fromJson(IOUtils.toString(json, StandardCharsets.UTF_8));
+    }
+
+    /**
      * Creates an installation from the JSON string.
      *
      * @param jsonString The JSON string that represents the installation.
@@ -278,16 +289,5 @@ public abstract class BaseInstallation implements Cloneable {
             .create();
 
         return (T)gson.fromJson(jsonString, BaseInstallation.class);
-    }
-
-    /**
-     * Creates an installation from the JSON stream.
-     *
-     * @param json The JSON string that represents the installation.
-     * @return An installation created from the JSON stream.
-     * @throws IOException An exception reading from the stream occurred.
-     */
-    public static <T extends BaseInstallation> T fromJson(InputStream json) throws IOException {
-        return fromJson(IOUtils.toString(json, StandardCharsets.UTF_8));
     }
 }

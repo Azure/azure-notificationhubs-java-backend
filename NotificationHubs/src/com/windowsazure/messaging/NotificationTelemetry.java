@@ -4,6 +4,7 @@
 
 package com.windowsazure.messaging;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
@@ -45,8 +46,12 @@ public class NotificationTelemetry {
         });
     }
 
-    public static NotificationTelemetry parseOne(InputStream content) throws IOException, SAXException {
-        return parser.get().parse(content);
+    public static NotificationTelemetry parseOne(InputStream inputStream) throws IOException, SAXException {
+        return parser.get().parse(inputStream);
+    }
+
+    public static NotificationTelemetry parseOne(byte[] bodyBytes) throws IOException, SAXException {
+        return parser.get().parse(new ByteArrayInputStream(bodyBytes));
     }
 
     /**

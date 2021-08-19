@@ -72,25 +72,4 @@ public class Installation extends BaseInstallation {
      * @param value The PNS specific push channel for the installation
      */
     public void setPushChannel(String value) { pushChannel = value; }
-
-    /**
-     * Creates an installation from the JSON string.
-     *
-     * @param json The JSON string that represents the installation.
-     * @return An installation created from the JSON string.
-     */
-    public static Installation fromJson(String json) {
-        return new Gson().fromJson(json, Installation.class);
-    }
-
-    /**
-     * Creates an installation from the JSON stream.
-     *
-     * @param json The JSON string that represents the installation.
-     * @return An installation created from the JSON stream.
-     * @throws IOException An exception reading from the stream occurred.
-     */
-    public static Installation fromJson(InputStream json) throws IOException {
-        return Installation.fromJson(IOUtils.toString(json, StandardCharsets.UTF_8));
-    }
 }

@@ -72,40 +72,7 @@ namespaceManager.createNotificationHubAsync(hub, new FutureCallback<Notification
 
 ### Throttling and Retrying Operations
 
-By default, the Azure Notification Hubs SDK for Java by default does not have any retry behavior.  You can add this behavior to the SDK by introducing libraries such as [Failsafe](https://jodah.net/failsafe/) or reactive libraries such as RxJava or Reactor.  
-
-The SDK will throw a `NotificationHubsException` if there is anything but a successful HTTP operation such as 200 (OK), 201 (Created) or 204 (No Content).  The `NotificationHubsException` class has two properties worth noting, `isTransient` to determine whether the failure is transient, and `retryAfter` which gives the value from the `Retry-After` header which indicates after how many seconds to retry the operation.
-
-The following HTTP status codes can be retried for the SDK:
-
-- 403 (Quota Exceeded)
-- 408 (RequestTimeout)
-- 429 (Throttling)
-- 500 (ServerError)
-- 503 (ServiceUnavailable)
-- 504 (Timeout)
-
-The following HTTP status codes should not be retried: 400 (Bad Request), 401 (Unauthorized), 404 (Not Found), 405 (Method Not Allowed) , 409 (Conflict), 410 (Gone), 412 (Precondition Failed), 413 (Request Entity Too Large).
-
-```java
-// Create an execution policy
-RetryPolicy<Installation> retryPolicy = new RetryPolicy<>()
-    .handle(NotificationHubsException.class)
-    .handleIf(error -> {
-        NotificationHubsException ex = (NotificationHubsException)err;
-        return ex.isTransient();
-    })
-    .withDelay(Duration.ofSeconds(5))
-    .withMaxRetries(3);
-
-// Initialize installation
-Installation installation = new Installation("installation-id", NotificationPlatform.Adm, "adm-push-channel");
-
-// Run the operation with a static delay
-Installation createdInstallation =
-    Failsafe.with(retryPolicy)
-        .get(() -> hub.createOrUpdateInstallation(installation));
-```
+By default, the Azure Notification Hubs SDK for Java by default has a retry policy called the `BasicRetryPolicy` which retries based upon status codes from Azure Notification Hubs.  To swap out with your own retry policy, you can set the entire HTTP stack using the `HttpClientManager.setHttpAsyncClient` method to set your own HTTP stack including retry policy.
 
 ## Azure Notification Hubs Management Operations
 

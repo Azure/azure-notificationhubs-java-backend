@@ -4,12 +4,11 @@
 
 package com.windowsazure.messaging;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpResponse;
+import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.message.StatusLine;
 
-import java.io.StringWriter;
 import java.time.Duration;
 import java.util.Optional;
 
@@ -66,12 +65,12 @@ public class NotificationHubsException extends Exception {
         return Optional.ofNullable(retryAfter);
     }
 
-    private static boolean isTransientStatusCode(int httpStatusCode) {
+    public static boolean isTransientStatusCode(int httpStatusCode) {
         return httpStatusCode == 403 || httpStatusCode == 408 || httpStatusCode == 429 || httpStatusCode == 500
             || httpStatusCode == 503 || httpStatusCode == 504;
     }
 
-    private static Optional<Duration> parseRetryAfter(HttpResponse response) {
+    private static Optional<Duration> parseRetryAfter(SimpleHttpResponse response) {
         Header retryAfter = response.getFirstHeader(HttpHeaders.RETRY_AFTER);
         if (retryAfter == null) {
             return Optional.empty();
@@ -90,16 +89,10 @@ public class NotificationHubsException extends Exception {
         }
     }
 
-    private static String getErrorString(HttpResponse response) {
-        StringWriter writer = new StringWriter();
-        try{
-            IOUtils.copy(response.getEntity().getContent(), writer, "UTF-8");
-            String body = writer.toString();
-            return "Error: " + response.getStatusLine() + " - " + body;
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot get the HTTP response error string");
-        }
-
+    private static String getErrorString(SimpleHttpResponse response) {
+        String msg = response.getBodyText() != null ? response.getBodyText() : "";
+        StatusLine statusLine = new StatusLine(response);
+        return String.format("Error: %s - %s", statusLine, msg);
     }
 
     /**
@@ -109,7 +102,7 @@ public class NotificationHubsException extends Exception {
      * @param httpStatusCode The HTTP status code from the response.
      * @return A new NotificationHubsException instance based upon the HTTP response data.
      */
-    public static NotificationHubsException create(HttpResponse response, int httpStatusCode) {
+    public static NotificationHubsException create(SimpleHttpResponse response, int httpStatusCode) {
         Optional<Duration> retryAfter = parseRetryAfter(response);
         boolean isTransient = isTransientStatusCode(httpStatusCode);
         if (retryAfter.isPresent()) {
@@ -128,7 +121,7 @@ public class NotificationHubsException extends Exception {
      * @return A new NotificationHubsException instance based upon the HTTP response data.
      */
     public static NotificationHubsException create(
-        HttpResponse response,
+        SimpleHttpResponse response,
         int httpStatusCode,
         String message
     ) {

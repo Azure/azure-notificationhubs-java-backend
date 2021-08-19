@@ -1,6 +1,6 @@
 package com.windowsazure.messaging;
 
-import org.apache.http.entity.ContentType;
+import org.apache.hc.core5.http.ContentType;
 
 import java.util.Map;
 import java.util.Iterator;

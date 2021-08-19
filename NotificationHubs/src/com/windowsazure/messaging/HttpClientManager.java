@@ -4,9 +4,10 @@
 
 package com.windowsazure.messaging;
 
-import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
-import org.apache.http.client.config.RequestConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
+import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
+import org.apache.hc.core5.util.Timeout;
 
 public class HttpClientManager {
 
@@ -22,21 +23,19 @@ public class HttpClientManager {
     // The timeout in milliseconds until a connection is established.
     private static int connectionTimeout = -1;
 
-    // The socket timeout in milliseconds, which is the timeout for waiting for data or,
-    // put differently, a maximum period inactivity between two consecutive data packets.
-    private static int socketTimeout = -1;
-
     private static void initializeHttpAsyncClient() {
         synchronized (HttpClientManager.class) {
             if (httpAsyncClient == null) {
                 RequestConfig config = RequestConfig.custom()
-                    .setConnectionRequestTimeout(connectionRequestTimeout)
-                    .setConnectTimeout(connectionTimeout)
-                    .setSocketTimeout(socketTimeout)
+                    .setConnectionRequestTimeout(Timeout.ofMilliseconds(connectionRequestTimeout))
+                    .setConnectTimeout(Timeout.ofMilliseconds(connectionTimeout))
                     .build();
-                CloseableHttpAsyncClient client = HttpAsyncClientBuilder.create()
+
+                CloseableHttpAsyncClient client = HttpAsyncClients.custom()
                     .setDefaultRequestConfig(config)
+                    .setRetryStrategy(BasicRetryStrategy.INSTANCE)
                     .build();
+
                 client.start();
                 httpAsyncClient = client;
             }
@@ -75,16 +74,6 @@ public class HttpClientManager {
             connectionTimeout = timeout;
         } else {
             throw new RuntimeException("Cannot setConnectTimeout after previously setting httpAsyncClient, or after default already initialized from earlier call to getHttpAsyncClient.");
-        }
-    }
-
-    // Sets the timeout in milliseconds for waiting for data or,
-    // put differently, a maximum period inactivity between two consecutive data packets.
-    public static void setSocketTimeout(int timeout) {
-        if (HttpClientManager.httpAsyncClient == null) {
-            socketTimeout = timeout;
-        } else {
-            throw new RuntimeException("Cannot setSocketTimeout after previously setting httpAsyncClient, or after default already initialized from earlier call to getHttpAsyncClient.");
         }
     }
 }
