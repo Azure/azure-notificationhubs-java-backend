@@ -1,3 +1,7 @@
+//----------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//----------------------------------------------------------------
+
 package com.windowsazure.messaging;
 
 import org.apache.hc.client5.http.async.methods.SimpleRequestBuilder;

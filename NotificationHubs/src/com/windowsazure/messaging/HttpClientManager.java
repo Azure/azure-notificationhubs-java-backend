@@ -4,11 +4,15 @@
 
 package com.windowsazure.messaging;
 
+import org.apache.hc.client5.http.HttpRequestRetryStrategy;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
 import org.apache.hc.core5.util.Timeout;
 
+/**
+ * This class manages the interaction with the HTTP async client.
+ */
 public class HttpClientManager {
 
     private static CloseableHttpAsyncClient httpAsyncClient;
@@ -23,6 +27,8 @@ public class HttpClientManager {
     // The timeout in milliseconds until a connection is established.
     private static int connectionTimeout = -1;
 
+    private static HttpRequestRetryStrategy retryStrategy = BasicRetryStrategy.INSTANCE;
+
     private static void initializeHttpAsyncClient() {
         synchronized (HttpClientManager.class) {
             if (httpAsyncClient == null) {
@@ -33,7 +39,7 @@ public class HttpClientManager {
 
                 CloseableHttpAsyncClient client = HttpAsyncClients.custom()
                     .setDefaultRequestConfig(config)
-                    .setRetryStrategy(BasicRetryStrategy.INSTANCE)
+                    .setRetryStrategy(retryStrategy)
                     .build();
 
                 client.start();
@@ -42,6 +48,10 @@ public class HttpClientManager {
         }
     }
 
+    /**
+     * Gets the current HTTP async client.
+     * @return The current HTTP async client.
+     */
     public static CloseableHttpAsyncClient getHttpAsyncClient() {
         if (httpAsyncClient == null) {
             initializeHttpAsyncClient();
@@ -49,6 +59,10 @@ public class HttpClientManager {
         return httpAsyncClient;
     }
 
+    /**
+     * Sets the current HTTP async client.
+     * @param httpAsyncClient The HTTP async client to set.
+     */
     public static void setHttpAsyncClient(CloseableHttpAsyncClient httpAsyncClient) {
         synchronized (HttpClientManager.class) {
             if (HttpClientManager.httpAsyncClient == null) {
@@ -59,7 +73,10 @@ public class HttpClientManager {
         }
     }
 
-    // Sets the timeout in milliseconds used when requesting a connection from the connection manager.
+    /**
+     * Sets the timeout in milliseconds used when requesting a connection from the connection manager.
+     * @param timeout The timeout in milliseconds used when requesting a connection from the connection manager.
+     */
     public static void setConnectionRequestTimeout(int timeout) {
         if (HttpClientManager.httpAsyncClient == null) {
             connectionRequestTimeout = timeout;
@@ -68,12 +85,27 @@ public class HttpClientManager {
         }
     }
 
-    // Sets the timeout in milliseconds until a connection is established.
+    /**
+     * Sets the timeout in milliseconds until a connection is established.
+     * @param timeout The timeout in milliseconds to set.
+     */
     public static void setConnectTimeout(int timeout) {
         if (HttpClientManager.httpAsyncClient == null) {
             connectionTimeout = timeout;
         } else {
             throw new RuntimeException("Cannot setConnectTimeout after previously setting httpAsyncClient, or after default already initialized from earlier call to getHttpAsyncClient.");
+        }
+    }
+
+    /**
+     * Sets the retry strategy for the HTTP client.
+     * @param strategy The retry strategy for the HTTP client.
+     */
+    public static void setRetryStrategy(HttpRequestRetryStrategy strategy) {
+        if (HttpClientManager.httpAsyncClient == null) {
+            retryStrategy = strategy;
+        } else {
+            throw new RuntimeException("Cannot setRetryStrategy after previously setting httpAsyncClient, or after default already initialized from earlier call to getHttpAsyncClient.");
         }
     }
 }

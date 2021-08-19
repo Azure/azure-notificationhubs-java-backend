@@ -30,7 +30,7 @@ To build, use [Maven](http://maven.apache.org/):
 
 ```bash
 cd NotificationHubs
-mvn package
+mvn source:jar javadoc:jar package
 ```
 
 ## Getting Started
@@ -72,7 +72,11 @@ namespaceManager.createNotificationHubAsync(hub, new FutureCallback<Notification
 
 ### Throttling and Retrying Operations
 
-By default, the Azure Notification Hubs SDK for Java by default has a retry policy called the `BasicRetryPolicy` which retries based upon status codes from Azure Notification Hubs.  To swap out with your own retry policy, you can set the entire HTTP stack using the `HttpClientManager.setHttpAsyncClient` method to set your own HTTP stack including retry policy.
+By default, the Azure Notification Hubs SDK for Java by default has a retry policy called the `BasicRetryPolicy` which retries based upon status codes from Azure Notification Hubs.  To swap out your own `HttpRequestRetryStrategy`, you can use the `HttpClientManager.setRetryPolicy` method before calling any HTTP operation.
+
+```java
+HttpClientManager.setRetryPolicy(new DefaultHttpRequestRetryStrategy(3, TimeValue.ofSeconds(3)));
+```
 
 ## Azure Notification Hubs Management Operations
 
@@ -113,12 +117,12 @@ namespaceManager.deleteNotificationHub("hubname");
 
 ## Azure Notification Hubs Operations
 
-The `NotificationHub` class is the main entry point for installations/registrations, but also sending push notifications.  To create a `NotificationHub`, you need the connection string from your Access Policy with the desired permissions such as `Listen`, `Manage` and `Send`, and in addition, the hub name to use.
+The `NotificationHub` class and `NotificationHubClient` interface is the main entry point for installations/registrations, but also sending push notifications.  To create a `NotificationHub`, you need the connection string from your Access Policy with the desired permissions such as `Listen`, `Manage` and `Send`, and in addition, the hub name to use.
 
 **Create an Azure Notification Hub Client:**
 
 ```java
-NotificationHub hub = new NotificationHub("connection string", "hubname");
+NotificationHubClient hub = new NotificationHub("connection string", "hubname");
 ```
 
 ## Azure Notification Hubs Installation API
