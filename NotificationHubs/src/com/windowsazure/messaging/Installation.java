@@ -4,13 +4,6 @@
 
 package com.windowsazure.messaging;
 
-import com.google.gson.Gson;
-import org.apache.commons.io.IOUtils;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-
 /**
  * Represents an installation for Azure Notification Hubs
  */

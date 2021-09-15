@@ -12,6 +12,9 @@ import com.google.gson.JsonParseException;
 
 import java.lang.reflect.Type;
 
+/**
+ * This class represents a serializer for installations from JSON.
+ */
 public class BaseInstallationDeserializer implements JsonDeserializer<BaseInstallation> {
 
     @Override
