@@ -8,6 +8,8 @@ import org.apache.hc.client5.http.HttpRequestRetryStrategy;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
+import org.apache.hc.core5.reactor.IOReactorConfig;
+import org.apache.hc.core5.reactor.IOReactorStatus;
 import org.apache.hc.core5.util.Timeout;
 
 /**
@@ -17,27 +19,31 @@ public class HttpClientManager {
 
     private static CloseableHttpAsyncClient httpAsyncClient;
 
-    // A timeout value of zero is interpreted as an infinite timeout.
-    // A negative value is interpreted as undefined (system default).
-    // https://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/org/apache/http/client/config/RequestConfig.html#getConnectionRequestTimeout()
+    private static final int DEFAULT_WAIT_TIMEOUT_MILLISECONDS = (60 * 1000);
+    private static final int DEFAULT_CONNECTION_TIMEOUT_MILLISECONDS = (60 * 1000);
 
     // The timeout in milliseconds used when requesting a connection from the connection manager.
-    private static int connectionRequestTimeout = -1;
+    private static int connectionRequestTimeout = DEFAULT_WAIT_TIMEOUT_MILLISECONDS;
 
     // The timeout in milliseconds until a connection is established.
-    private static int connectionTimeout = -1;
+    private static int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT_MILLISECONDS;
 
     private static HttpRequestRetryStrategy retryStrategy = BasicRetryStrategy.INSTANCE;
 
     private static void initializeHttpAsyncClient() {
         synchronized (HttpClientManager.class) {
             if (httpAsyncClient == null) {
-                RequestConfig config = RequestConfig.custom()
+                final IOReactorConfig ioReactorConfig = IOReactorConfig.custom()
+                    .setSoTimeout(Timeout.ofSeconds(5))
+                    .build();
+
+                final RequestConfig config = RequestConfig.custom()
                     .setConnectionRequestTimeout(Timeout.ofMilliseconds(connectionRequestTimeout))
                     .setConnectTimeout(Timeout.ofMilliseconds(connectionTimeout))
                     .build();
 
-                CloseableHttpAsyncClient client = HttpAsyncClients.custom()
+                final CloseableHttpAsyncClient client = HttpAsyncClients.custom()
+                    .setIOReactorConfig(ioReactorConfig)
                     .setDefaultRequestConfig(config)
                     .setRetryStrategy(retryStrategy)
                     .build();
@@ -53,10 +59,10 @@ public class HttpClientManager {
      * @return The current HTTP async client.
      */
     public static CloseableHttpAsyncClient getHttpAsyncClient() {
-        if (httpAsyncClient == null) {
+        if (HttpClientManager.httpAsyncClient == null) {
             initializeHttpAsyncClient();
         }
-        return httpAsyncClient;
+        return HttpClientManager.httpAsyncClient;
     }
 
     /**
@@ -67,6 +73,10 @@ public class HttpClientManager {
         synchronized (HttpClientManager.class) {
             if (HttpClientManager.httpAsyncClient == null) {
                 HttpClientManager.httpAsyncClient = httpAsyncClient;
+
+                if (HttpClientManager.httpAsyncClient.getStatus() == IOReactorStatus.ACTIVE) {
+                    HttpClientManager.httpAsyncClient.start();
+                }
             } else {
                 throw new RuntimeException("Cannot setHttpAsyncClient after having previously set, or after default already initialized from earlier call to getHttpAsyncClient.");
             }
