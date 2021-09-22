@@ -5,13 +5,12 @@
 package com.windowsazure.messaging;
 
 import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
-import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
 import org.apache.hc.core5.concurrent.FutureCallback;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.Method;
-import org.apache.hc.core5.http.message.StatusLine;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 /**
@@ -58,38 +57,23 @@ public class NamespaceManager extends NotificationHubsService implements Namespa
      */
     @Override
     public void getNotificationHubAsync(String hubPath, final FutureCallback<NotificationHubDescription> callback) {
+        URI uri;
         try {
-            URI uri = new URI(endpoint + hubPath + API_VERSION);
-            final SimpleHttpRequest get = createRequest(uri, Method.GET)
-                .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 200) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    try {
-                        callback.completed(NotificationHubDescription.parseOne(response.getBodyBytes()));
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+            uri = new URI(endpoint + hubPath + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest get = createRequest(uri, Method.GET)
+            .build();
+
+        executeRequest(get, callback, 200, response -> {
+            try {
+                callback.completed(NotificationHubDescription.parseOne(response.getBodyBytes()));
+            } catch (Exception e) {
+                callback.failed(e);
+            }
+        });
     }
 
     /**
@@ -114,38 +98,23 @@ public class NamespaceManager extends NotificationHubsService implements Namespa
      */
     @Override
     public void getNotificationHubsAsync(final FutureCallback<List<NotificationHubDescription>> callback) {
+        URI uri;
         try {
-            URI uri = new URI(endpoint + HUBS_COLLECTION_PATH + API_VERSION + SKIP_TOP_PARAM);
-            final SimpleHttpRequest get = createRequest(uri, Method.GET)
-                .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 200) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    try {
-                        callback.completed(NotificationHubDescription.parseCollection(response.getBodyBytes()));
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+            uri = new URI(endpoint + HUBS_COLLECTION_PATH + API_VERSION + SKIP_TOP_PARAM);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest get = createRequest(uri, Method.GET)
+            .build();
+
+        executeRequest(get, callback, 200, response -> {
+            try {
+                callback.completed(NotificationHubDescription.parseCollection(response.getBodyBytes()));
+            } catch (Exception e) {
+                callback.failed(e);
+            }
+        });
     }
 
     /**
@@ -216,45 +185,29 @@ public class NamespaceManager extends NotificationHubsService implements Namespa
     }
 
     private void createOrUpdateNotificationHubAsync(NotificationHubDescription hubDescription, final boolean isUpdate, final FutureCallback<NotificationHubDescription> callback) {
+        URI uri;
         try {
-            URI uri = new URI(endpoint + hubDescription.getPath() + API_VERSION);
-            final SimpleHttpRequest put = createRequest(uri, Method.PUT)
-                .build();
-
-            if (isUpdate) {
-                put.setHeader(IF_MATCH_HEADER_NAME, "*");
-            }
-
-            put.setBody(hubDescription.getXml(), ContentType.APPLICATION_ATOM_XML);
-
-            HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != (isUpdate ? 200 : 201)) {
-                        callback.failed(NotificationHubsException.create(response,
-                            httpStatusCode));
-                        return;
-                    }
-
-                    try {
-                        callback.completed(NotificationHubDescription.parseOne(response.getBodyBytes()));
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+            uri = new URI(endpoint + hubDescription.getPath() + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest put = createRequest(uri, Method.PUT)
+            .build();
+
+        if (isUpdate) {
+            put.setHeader(IF_MATCH_HEADER_NAME, "*");
+        }
+
+        put.setBody(hubDescription.getXml(), ContentType.APPLICATION_ATOM_XML);
+
+        executeRequest(put, callback, isUpdate ? 200 : 201, response -> {
+            try {
+                callback.completed(NotificationHubDescription.parseOne(response.getBodyBytes()));
+            } catch (Exception e) {
+                callback.failed(e);
+            }
+        });
     }
 
     /**
@@ -265,34 +218,17 @@ public class NamespaceManager extends NotificationHubsService implements Namespa
      */
     @Override
     public void deleteNotificationHubAsync(String hubPath, final FutureCallback<Object> callback) {
+        URI uri;
         try {
-            URI uri = new URI(endpoint + hubPath + API_VERSION);
-            final SimpleHttpRequest delete = createRequest(uri, Method.DELETE)
-                .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 200 && httpStatusCode != 404) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    callback.completed(null);
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+            uri = new URI(endpoint + hubPath + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest delete = createRequest(uri, Method.DELETE)
+            .build();
+
+        executeRequest(delete, callback, new int[] { 200, 404 }, response -> callback.completed(null));
     }
 
     /**

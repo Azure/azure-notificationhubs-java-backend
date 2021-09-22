@@ -19,7 +19,7 @@
 
   <organization>
     <name>Microsoft Corporation</name>
-    <url>http://www.microsoft.com/</url>
+    <url>https://www.microsoft.com/</url>
   </organization>
 
   <developers>
@@ -29,7 +29,7 @@
       <email>matthewp@microsoft.com</email>
       <url>https://github.com/mpodwysocki</url>
       <organization>Microsoft Corporation</organization>
-      <organizationUrl>http://www.microsoft.com/</organizationUrl>
+      <organizationUrl>https://www.microsoft.com/</organizationUrl>
       <roles>
         <role>developer</role>
       </roles>
@@ -183,20 +183,35 @@
       <groupId>org.apache.httpcomponents.client5</groupId>
       <artifactId>httpclient5</artifactId>
       <version>5.1</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.httpcomponents.core5</groupId>
+          <artifactId>httpcore5</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.httpcomponents.core5</groupId>
+          <artifactId>httpcore5-h2</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents.core5</groupId>
       <artifactId>httpcore5</artifactId>
-      <version>5.1.1</version>
+      <version>5.2-alpha1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents.core5</groupId>
       <artifactId>httpcore5-h2</artifactId>
-      <version>5.1.1</version>
+      <version>5.2-alpha1</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+      <version>1.7.25</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
       <version>1.7.25</version>
     </dependency>
 		<dependency>

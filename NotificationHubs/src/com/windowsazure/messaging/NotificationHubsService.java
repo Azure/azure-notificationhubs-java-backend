@@ -4,10 +4,13 @@
 
 package com.windowsazure.messaging;
 
-import org.apache.hc.client5.http.async.methods.SimpleRequestBuilder;
+import org.apache.hc.client5.http.async.methods.*;
+import org.apache.hc.core5.concurrent.FutureCallback;
 import org.apache.hc.core5.http.Method;
 
 import java.net.URI;
+import java.util.Arrays;
+import java.util.function.Consumer;
 
 public abstract class NotificationHubsService {
     protected static final String AUTHORIZATION_HEADER_NAME = "Authorization";
@@ -35,5 +38,46 @@ public abstract class NotificationHubsService {
         String os = System.getProperty("os.name");
         String osVersion = System.getProperty("os.version");
         return String.format(USER_AGENT, os, osVersion);
+    }
+
+    protected <T> void executeRequest(
+        final SimpleHttpRequest request,
+        final FutureCallback<T> callback,
+        final int statusCode,
+        Consumer<SimpleHttpResponse> consumer) {
+        executeRequest(request, callback, new int[] { statusCode }, consumer);
+    }
+
+    protected <T> void executeRequest(
+        final SimpleHttpRequest request,
+        final FutureCallback<T> callback,
+        final int[] statusCodes,
+        Consumer<SimpleHttpResponse> consumer) {
+        HttpClientManager.getHttpAsyncClient().execute(
+            SimpleRequestProducer.create(request),
+            SimpleResponseConsumer.create(),
+            new FutureCallback<SimpleHttpResponse>() {
+
+                @Override
+                public void completed(SimpleHttpResponse simpleHttpResponse) {
+                    final int statusCode = simpleHttpResponse.getCode();
+                    if (Arrays.stream(statusCodes).noneMatch(x -> x == statusCode)) {
+                        callback.failed(NotificationHubsException.create(simpleHttpResponse, statusCode));
+                        return;
+                    }
+
+                    consumer.accept(simpleHttpResponse);
+                }
+
+                @Override
+                public void failed(Exception e) {
+                    callback.failed(e);
+                }
+
+                @Override
+                public void cancelled() {
+                    callback.cancelled();
+                }
+            });
     }
 }

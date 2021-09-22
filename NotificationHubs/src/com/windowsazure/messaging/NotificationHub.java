@@ -16,11 +16,12 @@ import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.Method;
-import org.apache.hc.core5.http.message.StatusLine;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -83,39 +84,24 @@ public class NotificationHub extends NotificationHubsService implements Notifica
      */
     @Override
     public <T extends Registration> void createRegistrationAsync(T registration, final FutureCallback<T> callback) {
+        URI uri;
         try {
-            URI uri = new URI(endpoint + hubPath + "/registrations" + API_VERSION);
-            final SimpleHttpRequest post = createRequest(uri, Method.POST)
-                .setBody(registration.getXml(), ContentType.APPLICATION_ATOM_XML)
-                .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 200) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    try {
-                        callback.completed(Registration.parse(response.getBodyBytes()));
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+            uri = new URI(endpoint + hubPath + "/registrations" + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest post = createRequest(uri, Method.POST)
+            .setBody(registration.getXml(), ContentType.APPLICATION_ATOM_XML)
+            .build();
+
+        executeRequest(post, callback, 200, response -> {
+            try {
+                callback.completed(Registration.parse(response.getBodyBytes()));
+            } catch (Exception e) {
+                callback.failed(e);
+            }
+        });
     }
 
     /**
@@ -144,47 +130,28 @@ public class NotificationHub extends NotificationHubsService implements Notifica
      */
     @Override
     public void createRegistrationIdAsync(final FutureCallback<String> callback) {
+        URI uri;
         try {
-            URI uri = new URI(endpoint + hubPath + "/registrationids" + API_VERSION);
-            final SimpleHttpRequest post = createRequest(uri, Method.POST)
-                .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 201) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    try {
-                        String location = response.getFirstHeader(CONTENT_LOCATION_HEADER).getValue();
-                        Pattern extractId = Pattern.compile("(\\S+)/registrationids/([^?]+).*");
-                        Matcher m = extractId.matcher(location);
-
-                        if (m.matches()) {
-                            String id = m.group(2);
-                            callback.completed(id);
-                        } else {
-                            callback.completed(null);
-                        }
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+            uri = new URI(endpoint + hubPath + "/registrationids" + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest post = createRequest(uri, Method.POST)
+            .build();
+
+        executeRequest(post, callback, 201, response -> {
+            String location = response.getFirstHeader(CONTENT_LOCATION_HEADER).getValue();
+            Pattern extractId = Pattern.compile("(\\S+)/registrationids/([^?]+).*");
+            Matcher m = extractId.matcher(location);
+
+            if (m.matches()) {
+                String id = m.group(2);
+                callback.completed(id);
+            } else {
+                callback.completed(null);
+            }
+        });
     }
 
     /**
@@ -215,40 +182,25 @@ public class NotificationHub extends NotificationHubsService implements Notifica
      */
     @Override
     public <T extends Registration> void updateRegistrationAsync(T registration, final FutureCallback<T> callback) {
+        URI uri;
         try {
-            URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + API_VERSION);
-            final SimpleHttpRequest put = createRequest(uri, Method.PUT)
-                .setHeader("If-Match", registration.getEtag() == null ? "*" : "W/\"" + registration.getEtag() + "\"")
-                .setBody(registration.getXml(), ContentType.APPLICATION_ATOM_XML)
-                .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 200) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    try {
-                        callback.completed(Registration.parse(response.getBodyBytes()));
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+            uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest put = createRequest(uri, Method.PUT)
+            .setHeader("If-Match", registration.getEtag() == null ? "*" : "W/\"" + registration.getEtag() + "\"")
+            .setBody(registration.getXml(), ContentType.APPLICATION_ATOM_XML)
+            .build();
+
+        executeRequest(put, callback, 200, response -> {
+            try {
+                callback.completed(Registration.parse(response.getBodyBytes()));
+            } catch (Exception e) {
+                callback.failed(e);
+            }
+        });
     }
 
     /**
@@ -283,39 +235,24 @@ public class NotificationHub extends NotificationHubsService implements Notifica
      */
     @Override
     public <T extends Registration> void upsertRegistrationAsync(T registration, final FutureCallback<T> callback) {
+        URI uri;
         try {
-            URI uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + API_VERSION);
-            final SimpleHttpRequest put = createRequest(uri, Method.PUT)
-                .setBody(registration.getXml(), ContentType.APPLICATION_ATOM_XML)
-                    .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 200) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    try {
-                        callback.completed(Registration.parse(response.getBodyBytes()));
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+            uri = new URI(endpoint + hubPath + "/registrations/" + registration.getRegistrationId() + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest put = createRequest(uri, Method.PUT)
+            .setBody(registration.getXml(), ContentType.APPLICATION_ATOM_XML)
+            .build();
+
+        executeRequest(put, callback, 200, response -> {
+            try {
+                callback.completed(Registration.parse(response.getBodyBytes()));
+            } catch (Exception e) {
+                callback.failed(e);
+            }
+        });
     }
 
     /**
@@ -373,35 +310,18 @@ public class NotificationHub extends NotificationHubsService implements Notifica
      */
     @Override
     public void deleteRegistrationAsync(String registrationId, final FutureCallback<Object> callback) {
+        URI uri;
         try {
-            URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + API_VERSION);
-            final SimpleHttpRequest delete = createRequest(uri, Method.DELETE)
-                .setHeader("If-Match", "*")
-                    .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 200 && httpStatusCode != 404) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    callback.completed(null);
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+            uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest delete = createRequest(uri, Method.DELETE)
+            .setHeader("If-Match", "*")
+            .build();
+
+        executeRequest(delete, callback, new int[] { 200, 404 }, response -> callback.completed(null));
     }
 
     /**
@@ -427,38 +347,23 @@ public class NotificationHub extends NotificationHubsService implements Notifica
      */
     @Override
     public <T extends Registration> void getRegistrationAsync(String registrationId, final FutureCallback<T> callback) {
+        URI uri;
         try {
-            URI uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + API_VERSION);
-            final SimpleHttpRequest get = createRequest(uri, Method.GET)
-                .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 200) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    try {
-                        callback.completed(Registration.parse(response.getBodyBytes()));
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+            uri = new URI(endpoint + hubPath + "/registrations/" + registrationId + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest get = createRequest(uri, Method.GET)
+            .build();
+
+        executeRequest(get, callback, 200, response -> {
+            try {
+                callback.completed(Registration.parse(response.getBodyBytes()));
+            } catch (Exception e) {
+                callback.failed(e);
+            }
+        });
     }
 
     /**
@@ -681,44 +586,32 @@ public class NotificationHub extends NotificationHubsService implements Notifica
     }
 
     private void retrieveRegistrationCollectionAsync(String queryUri, final FutureCallback<CollectionResult> callback) {
+        URI uri;
         try {
-            URI uri = new URI(queryUri);
-            final SimpleHttpRequest get = createRequest(uri, Method.GET)
-                .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 200) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    try {
-                        CollectionResult result = Registration.parseRegistrations(response.getBodyBytes());
-                        Header contTokenHeader = response.getFirstHeader("X-MS-ContinuationToken");
-                        if (contTokenHeader != null) {
-                            result.setContinuationToken(contTokenHeader.getValue());
-                        }
-
-                        callback.completed(result);
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+            uri = new URI(queryUri);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest get = createRequest(uri, Method.GET)
+            .build();
+
+        executeRequest(get, callback, 200, response -> {
+            CollectionResult result;
+            try {
+                result = Registration.parseRegistrations(response.getBodyBytes());
+            } catch (Exception e) {
+                callback.failed(e);
+                return;
+            }
+
+            Header contTokenHeader = response.getFirstHeader("X-MS-ContinuationToken");
+            if (contTokenHeader != null) {
+                result.setContinuationToken(contTokenHeader.getValue());
+            }
+
+            callback.completed(result);
+        });
     }
 
     /**
@@ -894,63 +787,52 @@ public class NotificationHub extends NotificationHubsService implements Notifica
      */
     @Override
     public void scheduleNotificationAsync(Notification notification, String tagExpression, Date scheduledTime, final FutureCallback<NotificationOutcome> callback) {
+        URI uri;
         try {
-            URI uri = new URI(endpoint + hubPath + (scheduledTime == null ? "/messages" : "/schedulednotifications") + API_VERSION);
-            final SimpleHttpRequest post = createRequest(uri, Method.POST)
-                .setBody(notification.getBody(), notification.getContentType())
-                .build();
-
-            if (scheduledTime != null) {
-                DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                df.setTimeZone(TimeZone.getTimeZone("UTC"));
-                String scheduledTimeHeader = df.format(scheduledTime);
-                post.setHeader("ServiceBusNotification-ScheduleTime", scheduledTimeHeader);
-            }
-
-            if (tagExpression != null && !"".equals(tagExpression)) {
-                post.setHeader("ServiceBusNotification-Tags", tagExpression);
-            }
-
-            for (String header : notification.getHeaders().keySet()) {
-                post.setHeader(header, notification.getHeaders().get(header));
-            }
-
-            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 201) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    try {
-                        String trackingId = post.getFirstHeader(TRACKING_ID_HEADER).getValue();
-                        String notificationId = null;
-                        Header locationHeader = response.getFirstHeader(CONTENT_LOCATION_HEADER);
-                        if (locationHeader != null) {
-                            URI location = new URI(locationHeader.getValue());
-                            String[] segments = location.getPath().split("/");
-                            notificationId = segments[segments.length - 1];
-                        }
-
-                        callback.completed(new NotificationOutcome(trackingId, notificationId));
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+            uri = new URI(endpoint + hubPath + (scheduledTime == null ? "/messages" : "/schedulednotifications") + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest post = createRequest(uri, Method.POST)
+            .setBody(notification.getBody(), notification.getContentType())
+            .build();
+
+        if (scheduledTime != null) {
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            df.setTimeZone(TimeZone.getTimeZone("UTC"));
+            String scheduledTimeHeader = df.format(scheduledTime);
+            post.setHeader("ServiceBusNotification-ScheduleTime", scheduledTimeHeader);
+        }
+
+        if (tagExpression != null && !"".equals(tagExpression)) {
+            post.setHeader("ServiceBusNotification-Tags", tagExpression);
+        }
+
+        for (String header : notification.getHeaders().keySet()) {
+            post.setHeader(header, notification.getHeaders().get(header));
+        }
+
+        executeRequest(post, callback, 201, response -> sendNotificationOutcome(callback, post, response));
+    }
+
+    private void sendNotificationOutcome(FutureCallback<NotificationOutcome> callback, SimpleHttpRequest post, SimpleHttpResponse response) {
+        String trackingId = post.getFirstHeader(TRACKING_ID_HEADER).getValue();
+        String notificationId = null;
+        Header locationHeader = response.getFirstHeader(CONTENT_LOCATION_HEADER);
+        if (locationHeader != null) {
+            URI location;
+            try {
+                location = new URI(locationHeader.getValue());
+            } catch (URISyntaxException e) {
+                callback.failed(e);
+                return;
+            }
+            String[] segments = location.getPath().split("/");
+            notificationId = segments[segments.length - 1];
+        }
+
+        callback.completed(new NotificationOutcome(trackingId, notificationId));
     }
 
     /**
@@ -991,34 +873,17 @@ public class NotificationHub extends NotificationHubsService implements Notifica
      */
     @Override
     public void cancelScheduledNotificationAsync(String notificationId, final FutureCallback<Object> callback) {
-        try {
-            URI uri = new URI(endpoint + hubPath + "/schedulednotifications/" + notificationId + API_VERSION);
-            final SimpleHttpRequest delete = createRequest(uri, Method.DELETE)
-                .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 200 && httpStatusCode != 404) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    callback.completed(null);
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+        URI uri;
+        try  {
+            uri = new URI(endpoint + hubPath + "/schedulednotifications/" + notificationId + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest delete = createRequest(uri, Method.DELETE)
+            .build();
+
+        executeRequest(delete, callback, new int[] { 200, 404 }, response -> callback.completed(null));
     }
 
     /**
@@ -1065,53 +930,23 @@ public class NotificationHub extends NotificationHubsService implements Notifica
         String deviceHandle,
         final FutureCallback<NotificationOutcome> callback
     ) {
-        try {
-            URI uri = new URI(endpoint + hubPath + "/messages" + API_VERSION + "&direct");
-            final SimpleHttpRequest post = createRequest(uri, Method.POST)
-                .setHeader("ServiceBusNotification-DeviceHandle", deviceHandle)
-                .setBody(notification.getBody(), notification.getContentType())
-                .build();
-
-            for (String header : notification.getHeaders().keySet()) {
-                post.setHeader(header, notification.getHeaders().get(header));
-            }
-
-            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 201) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    try {
-                        String trackingId = post.getFirstHeader(TRACKING_ID_HEADER).getValue();
-                        String notificationId = null;
-                        Header locationHeader = response.getFirstHeader(CONTENT_LOCATION_HEADER);
-                        if (locationHeader != null) {
-                            URI location = new URI(locationHeader.getValue());
-                            String[] segments = location.getPath().split("/");
-                            notificationId = segments[segments.length - 1];
-                        }
-
-                        callback.completed(new NotificationOutcome(trackingId, notificationId));
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+        URI uri;
+        try  {
+            uri = new URI(endpoint + hubPath + "/messages" + API_VERSION + "&direct");
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest post = createRequest(uri, Method.POST)
+            .setHeader("ServiceBusNotification-DeviceHandle", deviceHandle)
+            .setBody(notification.getBody(), notification.getContentType())
+            .build();
+
+        for (String header : notification.getHeaders().keySet()) {
+            post.setHeader(header, notification.getHeaders().get(header));
+        }
+
+        executeRequest(post, callback, 201, response -> sendNotificationOutcome(callback, post, response));
     }
 
     /**
@@ -1124,75 +959,49 @@ public class NotificationHub extends NotificationHubsService implements Notifica
      */
     @Override
     public void sendDirectNotificationAsync(Notification notification, List<String> deviceHandles, final FutureCallback<NotificationOutcome> callback) {
-        try {
-            URI uri = new URI(endpoint + hubPath + "/messages/$batch" + API_VERSION + "&direct");
-            final SimpleHttpRequest post = createRequest(uri, Method.POST)
-                .build();
-
-            for (String header : notification.getHeaders().keySet()) {
-                post.setHeader(header, notification.getHeaders().get(header));
-            }
-
-            FormBodyPart notificationPart = FormBodyPartBuilder.create()
-                .setName("notification")
-                .addField("Content-Disposition", "inline; name=notification")
-                .setBody(new StringBody(notification.getBody(), notification.getContentType()))
-                .build();
-
-            String deviceHandlesJson = new GsonBuilder().disableHtmlEscaping().create().toJson(deviceHandles);
-            FormBodyPart devicesPart = FormBodyPartBuilder.create()
-                .setName("devices")
-                .addField("Content-Disposition", "inline; name=devices")
-                .setBody(new StringBody(deviceHandlesJson, ContentType.APPLICATION_JSON))
-                .build();
-
-            HttpEntity entity = MultipartEntityBuilder.create()
-                .setBoundary("nh-batch-multipart-boundary")
-                .addPart(notificationPart)
-                .addPart(devicesPart)
-                .build();
-
-            ByteArrayOutputStream baoStream = new ByteArrayOutputStream();
-            entity.writeTo(baoStream);
-
-            post.setBody(baoStream.toByteArray(), ContentType.MULTIPART_MIXED);
-
-            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 201) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    try {
-                        String trackingId = post.getFirstHeader(TRACKING_ID_HEADER).getValue();
-                        String notificationId = null;
-                        Header locationHeader = response.getFirstHeader(CONTENT_LOCATION_HEADER);
-                        if (locationHeader != null) {
-                            URI location = new URI(locationHeader.getValue());
-                            String[] segments = location.getPath().split("/");
-                            notificationId = segments[segments.length - 1];
-                        }
-
-                        callback.completed(new NotificationOutcome(trackingId, notificationId));
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+        URI uri;
+        try  {
+            uri = new URI(endpoint + hubPath + "/messages/$batch" + API_VERSION + "&direct");
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest post = createRequest(uri, Method.POST)
+            .build();
+
+        for (String header : notification.getHeaders().keySet()) {
+            post.setHeader(header, notification.getHeaders().get(header));
+        }
+
+        FormBodyPart notificationPart = FormBodyPartBuilder.create()
+            .setName("notification")
+            .addField("Content-Disposition", "inline; name=notification")
+            .setBody(new StringBody(notification.getBody(), notification.getContentType()))
+            .build();
+
+        String deviceHandlesJson = new GsonBuilder().disableHtmlEscaping().create().toJson(deviceHandles);
+        FormBodyPart devicesPart = FormBodyPartBuilder.create()
+            .setName("devices")
+            .addField("Content-Disposition", "inline; name=devices")
+            .setBody(new StringBody(deviceHandlesJson, ContentType.APPLICATION_JSON))
+            .build();
+
+        HttpEntity entity = MultipartEntityBuilder.create()
+            .setBoundary("nh-batch-multipart-boundary")
+            .addPart(notificationPart)
+            .addPart(devicesPart)
+            .build();
+
+        ByteArrayOutputStream baoStream = new ByteArrayOutputStream();
+        try {
+            entity.writeTo(baoStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        post.setBody(baoStream.toByteArray(), ContentType.MULTIPART_MIXED);
+
+        executeRequest(post, callback, 201, response -> sendNotificationOutcome(callback, post, response));
     }
 
     /**
@@ -1219,38 +1028,23 @@ public class NotificationHub extends NotificationHubsService implements Notifica
      */
     @Override
     public void getNotificationTelemetryAsync(String notificationId, final FutureCallback<NotificationTelemetry> callback) {
-        try {
-            URI uri = new URI(endpoint + hubPath + "/messages/" + notificationId + API_VERSION);
-            final SimpleHttpRequest get = createRequest(uri, Method.GET)
-                .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 200) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    try {
-                        callback.completed(NotificationTelemetry.parseOne(response.getBodyBytes()));
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+        URI uri;
+        try  {
+            uri = new URI(endpoint + hubPath + "/messages/" + notificationId + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest get = createRequest(uri, Method.GET)
+            .build();
+
+        executeRequest(get, callback, 200, response -> {
+            try {
+                callback.completed(NotificationTelemetry.parseOne(response.getBodyBytes()));
+            } catch (Exception e) {
+                callback.failed(e);
+            }
+        });
     }
 
     /**
@@ -1261,35 +1055,18 @@ public class NotificationHub extends NotificationHubsService implements Notifica
      */
     @Override
     public void createOrUpdateInstallationAsync(BaseInstallation installation, final FutureCallback<Object> callback) {
-        try {
-            URI uri = new URI(endpoint + hubPath + "/installations/" + installation.getInstallationId() + API_VERSION);
-            final SimpleHttpRequest put = createRequest(uri, Method.PUT)
-                .setBody(installation.toJson(), ContentType.APPLICATION_JSON)
-                    .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(put, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 200) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    callback.completed(null);
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+        URI uri;
+        try  {
+            uri = new URI(endpoint + hubPath + "/installations/" + installation.getInstallationId() + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest put = createRequest(uri, Method.PUT)
+            .setBody(installation.toJson(), ContentType.APPLICATION_JSON)
+            .build();
+
+        executeRequest(put, callback, 200, response -> callback.completed(null));
     }
 
     /**
@@ -1358,35 +1135,18 @@ public class NotificationHub extends NotificationHubsService implements Notifica
     }
 
     private void patchInstallationInternalAsync(String installationId, String operationsJson, final FutureCallback<Object> callback) {
-        try {
-            URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
-            final SimpleHttpRequest patch = createRequest(uri, Method.PATCH)
-                .setBody(operationsJson, ContentType.APPLICATION_JSON)
-                .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(patch, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 200) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    callback.completed(null);
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+        URI uri;
+        try  {
+            uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest patch = createRequest(uri, Method.PATCH)
+            .setBody(operationsJson, ContentType.APPLICATION_JSON)
+            .build();
+
+        executeRequest(patch, callback, 200, response -> callback.completed(null));
     }
 
     /**
@@ -1397,34 +1157,17 @@ public class NotificationHub extends NotificationHubsService implements Notifica
      */
     @Override
     public void deleteInstallationAsync(String installationId, final FutureCallback<Object> callback) {
-        try {
-            URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
-            final SimpleHttpRequest delete = createRequest(uri, Method.DELETE)
-                .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(delete, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 204) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    callback.completed(null);
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+        URI uri;
+        try  {
+            uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest delete = createRequest(uri, Method.DELETE)
+            .build();
+
+        executeRequest(delete, callback, 204, response -> callback.completed(null));
     }
 
     /**
@@ -1450,38 +1193,23 @@ public class NotificationHub extends NotificationHubsService implements Notifica
      */
     @Override
     public <T extends BaseInstallation> void getInstallationAsync(String installationId, final FutureCallback<T> callback) {
-        try {
-            URI uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
-            final SimpleHttpRequest get = createRequest(uri, Method.GET)
-                .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 200) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    try {
-                        callback.completed(BaseInstallation.fromJson(response.getBodyText()));
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+        URI uri;
+        try  {
+            uri = new URI(endpoint + hubPath + "/installations/" + installationId + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest get = createRequest(uri, Method.GET)
+            .build();
+
+        executeRequest(get, callback, 200, response -> {
+            try {
+                callback.completed(BaseInstallation.fromJson(response.getBodyText()));
+            } catch (Exception e) {
+                callback.failed(e);
+            }
+        });
     }
 
     /**
@@ -1508,39 +1236,24 @@ public class NotificationHub extends NotificationHubsService implements Notifica
      */
     @Override
     public void submitNotificationHubJobAsync(NotificationHubJob job, final FutureCallback<NotificationHubJob> callback) {
-        try {
-            URI uri = new URI(endpoint + hubPath + "/jobs" + API_VERSION);
-            final SimpleHttpRequest post = createRequest(uri, Method.POST)
-                .setBody(job.getXml(), ContentType.APPLICATION_ATOM_XML)
-                .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(post, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 201) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    try {
-                        callback.completed(NotificationHubJob.parseOne(response.getBodyBytes()));
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+        URI uri;
+        try  {
+            uri = new URI(endpoint + hubPath + "/jobs" + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest post = createRequest(uri, Method.POST)
+            .setBody(job.getXml(), ContentType.APPLICATION_ATOM_XML)
+            .build();
+
+        executeRequest(post, callback, 201, response -> {
+            try {
+                callback.completed(NotificationHubJob.parseOne(response.getBodyBytes()));
+            } catch (Exception e) {
+                callback.failed(e);
+            }
+        });
     }
 
     /**
@@ -1566,38 +1279,23 @@ public class NotificationHub extends NotificationHubsService implements Notifica
      */
     @Override
     public void getNotificationHubJobAsync(String jobId, final FutureCallback<NotificationHubJob> callback) {
-        try {
-            URI uri = new URI(endpoint + hubPath + "/jobs/" + jobId + API_VERSION);
-            final SimpleHttpRequest get = createRequest(uri, Method.GET)
-                .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 200) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    try {
-                        callback.completed(NotificationHubJob.parseOne(response.getBodyBytes()));
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+        URI uri;
+        try  {
+            uri = new URI(endpoint + hubPath + "/jobs/" + jobId + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest get = createRequest(uri, Method.GET)
+            .build();
+
+        executeRequest(get, callback, 200, response -> {
+            try {
+                callback.completed(NotificationHubJob.parseOne(response.getBodyBytes()));
+            } catch (Exception e) {
+                callback.failed(e);
+            }
+        });
     }
 
     /**
@@ -1622,38 +1320,23 @@ public class NotificationHub extends NotificationHubsService implements Notifica
      */
     @Override
     public void getAllNotificationHubJobsAsync(final FutureCallback<List<NotificationHubJob>> callback) {
-        try {
-            URI uri = new URI(endpoint + hubPath + "/jobs" + API_VERSION);
-            final SimpleHttpRequest get = createRequest(uri, Method.GET)
-                .build();
-
-            HttpClientManager.getHttpAsyncClient().execute(get, new FutureCallback<SimpleHttpResponse>() {
-                public void completed(final SimpleHttpResponse response) {
-                    StatusLine statusLine = new StatusLine(response);
-                    int httpStatusCode = statusLine.getStatusCode();
-                    if (httpStatusCode != 200) {
-                        callback.failed(NotificationHubsException.create(response, httpStatusCode));
-                        return;
-                    }
-
-                    try {
-                        callback.completed(NotificationHubJob.parseCollection(response.getBodyBytes()));
-                    } catch (Exception e) {
-                        callback.failed(e);
-                    }
-                }
-
-                public void failed(final Exception ex) {
-                    callback.failed(ex);
-                }
-
-                public void cancelled() {
-                    callback.cancelled();
-                }
-            });
-        } catch (Exception e) {
+        URI uri;
+        try  {
+            uri = new URI(endpoint + hubPath + "/jobs" + API_VERSION);
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
+        final SimpleHttpRequest get = createRequest(uri, Method.GET)
+            .build();
+
+        executeRequest(get, callback, 200, response -> {
+            try {
+                callback.completed(NotificationHubJob.parseCollection(response.getBodyBytes()));
+            } catch (Exception e) {
+                callback.failed(e);
+            }
+        });
     }
 
     /**
