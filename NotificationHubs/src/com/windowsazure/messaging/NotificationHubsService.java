@@ -34,10 +34,14 @@ public abstract class NotificationHubsService {
             .setHeader(USER_AGENT_HEADER_NAME, getUserAgent());
     }
 
-    private static String getUserAgent() {
+    private String getUserAgent() {
         String os = System.getProperty("os.name");
         String osVersion = System.getProperty("os.version");
         return String.format(USER_AGENT, os, osVersion);
+    }
+
+    protected String getTrackingId(SimpleHttpRequest request) {
+        return request.getFirstHeader(TRACKING_ID_HEADER).getValue();
     }
 
     protected <T> void executeRequest(
@@ -62,7 +66,7 @@ public abstract class NotificationHubsService {
                 public void completed(SimpleHttpResponse simpleHttpResponse) {
                     final int statusCode = simpleHttpResponse.getCode();
                     if (Arrays.stream(statusCodes).noneMatch(x -> x == statusCode)) {
-                        callback.failed(NotificationHubsException.create(simpleHttpResponse, statusCode));
+                        callback.failed(NotificationHubsException.create(simpleHttpResponse, statusCode, getTrackingId(request)));
                         return;
                     }
 

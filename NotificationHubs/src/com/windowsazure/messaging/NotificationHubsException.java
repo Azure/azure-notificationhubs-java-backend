@@ -89,10 +89,10 @@ public class NotificationHubsException extends Exception {
         }
     }
 
-    private static String getErrorString(SimpleHttpResponse response) {
+    private static String getErrorString(SimpleHttpResponse response, String trackingId) {
         String msg = response.getBodyText() != null ? response.getBodyText() : "";
         StatusLine statusLine = new StatusLine(response);
-        return String.format("Error: %s - %s", statusLine, msg);
+        return String.format("Tracking ID: %s Error: %s - %s", trackingId, statusLine, msg);
     }
 
     /**
@@ -100,37 +100,17 @@ public class NotificationHubsException extends Exception {
      * Creates a NotificationHubsException instance based upon the HTTP response and status code.
      * @param response The HTTP response.
      * @param httpStatusCode The HTTP status code from the response.
+     * @param trackingId The Tracking ID
      * @return A new NotificationHubsException instance based upon the HTTP response data.
      */
-    public static NotificationHubsException create(SimpleHttpResponse response, int httpStatusCode) {
+    public static NotificationHubsException create(SimpleHttpResponse response, int httpStatusCode, String trackingId) {
         Optional<Duration> retryAfter = parseRetryAfter(response);
         boolean isTransient = isTransientStatusCode(httpStatusCode);
         if (retryAfter.isPresent()) {
-            return new NotificationHubsException(getErrorString(response), httpStatusCode, isTransient,
+            return new NotificationHubsException(getErrorString(response, trackingId), httpStatusCode, isTransient,
                 retryAfter.get());
         } else {
-            return new NotificationHubsException(getErrorString(response), httpStatusCode, isTransient);
-        }
-    }
-
-    /**
-     * Creates a NotificationHubsException instance based upon the HTTP response and status code.
-     * @param response The HTTP response.
-     * @param httpStatusCode The HTTP status code from the response.
-     * @param message A message for the NotificationHubsException instance.
-     * @return A new NotificationHubsException instance based upon the HTTP response data.
-     */
-    public static NotificationHubsException create(
-        SimpleHttpResponse response,
-        int httpStatusCode,
-        String message
-    ) {
-        Optional<Duration> retryAfter = parseRetryAfter(response);
-        boolean isTransient = isTransientStatusCode(httpStatusCode);
-        if (retryAfter.isPresent()) {
-            return new NotificationHubsException(message, httpStatusCode, isTransient, retryAfter.get());
-        } else {
-            return new NotificationHubsException(message, httpStatusCode, isTransient);
+            return new NotificationHubsException(getErrorString(response, trackingId), httpStatusCode, isTransient);
         }
     }
 }
