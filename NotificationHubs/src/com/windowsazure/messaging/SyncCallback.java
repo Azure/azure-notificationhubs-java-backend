@@ -4,9 +4,9 @@
 
 package com.windowsazure.messaging;
 
-import java.util.concurrent.CountDownLatch;
+import org.apache.hc.core5.concurrent.FutureCallback;
 
-import org.apache.http.concurrent.FutureCallback;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * This class represents getting a synchronous value from an asynchronous operation.

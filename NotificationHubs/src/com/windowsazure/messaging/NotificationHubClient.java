@@ -4,7 +4,7 @@
 
 package com.windowsazure.messaging;
 
-import org.apache.http.concurrent.FutureCallback;
+import org.apache.hc.core5.concurrent.FutureCallback;
 
 import java.util.Date;
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.windowsazure.messaging;
 
-import org.apache.http.concurrent.FutureCallback;
+import org.apache.hc.core5.concurrent.FutureCallback;
 
 import java.util.List;
 
@@ -51,8 +51,10 @@ public interface NamespaceManagerClient {
      * @param callback       A callback, when invoked, returns the populated
      *                       notification hub description.
      */
-    void createNotificationHubAsync(NotificationHubDescription hubDescription,
-                                    FutureCallback<NotificationHubDescription> callback);
+    void createNotificationHubAsync(
+        NotificationHubDescription hubDescription,
+        FutureCallback<NotificationHubDescription> callback
+    );
 
     /**
      * Creates a notification hub with the given notification hub description.

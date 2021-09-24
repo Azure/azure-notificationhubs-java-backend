@@ -4,7 +4,7 @@
 
 package com.windowsazure.messaging;
 
-import org.apache.http.entity.ContentType;
+import org.apache.hc.core5.http.ContentType;
 
 import java.util.Date;
 import java.util.HashMap;
