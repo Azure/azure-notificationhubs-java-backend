@@ -6,7 +6,6 @@ package com.windowsazure.messaging;
 
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.ObjectCreationFactory;
-import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
