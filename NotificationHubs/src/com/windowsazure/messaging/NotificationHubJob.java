@@ -7,6 +7,9 @@ package com.windowsazure.messaging;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -232,10 +235,15 @@ public class NotificationHubJob {
     public String getXml() {
         StringBuilder buf = new StringBuilder();
         buf.append(XML_HEADER);
-        if (this.jobType != null) buf.append("<Type>").append(this.jobType.name()).append("</Type>");
-        if (this.outputContainerUri != null)
-            buf.append("<OutputContainerUri>").append(this.outputContainerUri).append("</OutputContainerUri>");
-        if (this.importFileUri != null) buf.append("<ImportFileUri>").append(this.importFileUri).append("</ImportFileUri>");
+        if (this.jobType != null) {
+            buf.append("<Type>").append(this.jobType.name()).append("</Type>");
+        }
+        if (this.outputContainerUri != null) {
+            buf.append("<OutputContainerUri><![CDATA[").append(this.outputContainerUri).append("]]></OutputContainerUri>");
+        }
+        if (this.importFileUri != null) {
+            buf.append("<ImportFileUri>").append(this.importFileUri).append("</ImportFileUri>");
+        }
         buf.append(XML_FOOTER);
         return buf.toString();
     }
