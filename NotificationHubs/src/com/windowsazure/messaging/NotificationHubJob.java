@@ -135,6 +135,7 @@ public class NotificationHubJob {
      * @param value The Azure Notification Hubs job output container URI value to set.
      */
     public void setOutputContainerUri(String value) {
+        // Keep the raw URI and strip the CDATA
         if (value.matches(CDATA_PATTERN)) {
             value = value.replaceAll(CDATA_PATTERN, "");
         }
@@ -151,7 +152,13 @@ public class NotificationHubJob {
      * Sets the Azure Notification Hubs job file import URI.
      * @param value The Azure Notification Hubs job file import URI value to set.
      */
-    public void setImportFileUri(String value) { importFileUri = value; }
+    public void setImportFileUri(String value) {
+        // Keep the raw URI and strip the CDATA
+        if (value.matches(CDATA_PATTERN)) {
+            value = value.replaceAll(CDATA_PATTERN, "");
+        }
+        importFileUri = value;
+    }
 
     /**
      * Gets the Azure Notification Hubs job failure message.
@@ -237,6 +244,8 @@ public class NotificationHubJob {
         if (this.jobType != null) {
             buf.append("<Type>").append(this.jobType.name()).append("</Type>");
         }
+
+        // Wrap URIs in CDATA sections due to illegal XML characters
         if (this.outputContainerUri != null) {
             String outputContainerUri = this.outputContainerUri;
             if (!outputContainerUri.matches(CDATA_PATTERN)) {
@@ -245,7 +254,12 @@ public class NotificationHubJob {
             buf.append("<OutputContainerUri>").append(outputContainerUri).append("</OutputContainerUri>");
         }
         if (this.importFileUri != null) {
-            buf.append("<ImportFileUri>").append(this.importFileUri).append("</ImportFileUri>");
+            String importFileUri = this.importFileUri;
+            if (!importFileUri.matches(CDATA_PATTERN)) {
+                importFileUri = "<![CDATA[" + importFileUri + "]]>";
+            }
+
+            buf.append("<ImportFileUri>").append(importFileUri).append("</ImportFileUri>");
         }
         buf.append(XML_FOOTER);
         return buf.toString();

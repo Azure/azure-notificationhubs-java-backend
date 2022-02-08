@@ -11,7 +11,7 @@
       <Type>ImportCreateRegistrations</Type>
       <Status>Completed</Status>
       <OutputContainerUri><![CDATA[https://test.blob.core.windows.net/testjobs]]></OutputContainerUri>
-      <ImportFileUri>https://test.blob.core.windows.net/testjobs/CreateFile.txt</ImportFileUri>
+      <ImportFileUri><![CDATA[https://test.blob.core.windows.net/testjobs/CreateFile.txt]]></ImportFileUri>
       <OutputProperties xmlns:d3p1="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
         <d3p1:KeyValueOfstringstring>
           <d3p1:Key>OutputFilePath</d3p1:Key>
