@@ -10,7 +10,7 @@
       <Progress>99.99</Progress>
       <Type>ImportCreateRegistrations</Type>
       <Status>Completed</Status>
-      <OutputContainerUri>https://test.blob.core.windows.net/testjobs</OutputContainerUri>
+      <OutputContainerUri><![CDATA[https://test.blob.core.windows.net/testjobs]]></OutputContainerUri>
       <ImportFileUri>https://test.blob.core.windows.net/testjobs/CreateFile.txt</ImportFileUri>
       <OutputProperties xmlns:d3p1="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
         <d3p1:KeyValueOfstringstring>

@@ -4,20 +4,13 @@
 
 package com.windowsazure.messaging;
 
+import org.apache.commons.digester3.Digester;
+import org.xml.sax.SAXException;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.digester3.Digester;
-import org.xml.sax.SAXException;
+import java.util.*;
 
 /**
  * This class represents an Azure Notification Hubs job.
@@ -25,6 +18,7 @@ import org.xml.sax.SAXException;
 public class NotificationHubJob {
     private static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"utf-8\"?><entry xmlns=\"http://www.w3.org/2005/Atom\"><content type=\"application/atom+xml;type=entry;charset=utf-8\"><NotificationHubJob xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/netservices/2010/10/servicebus/connect\">";
     private static final String XML_FOOTER = "</NotificationHubJob></content></entry>";
+    private static final String CDATA_PATTERN = "<!\\[CDATA\\[.*?\\]\\]>";
 
     private String jobId;
     private double progress;
@@ -140,7 +134,12 @@ public class NotificationHubJob {
      * Sets the Azure Notification Hubs job output container URI.
      * @param value The Azure Notification Hubs job output container URI value to set.
      */
-    public void setOutputContainerUri(String value) { outputContainerUri = value; }
+    public void setOutputContainerUri(String value) {
+        if (value.matches(CDATA_PATTERN)) {
+            value = value.replaceAll(CDATA_PATTERN, "");
+        }
+        outputContainerUri = value;
+    }
 
     /**
      * Gets the Azure Notification Hubs job file import URI.
@@ -239,7 +238,11 @@ public class NotificationHubJob {
             buf.append("<Type>").append(this.jobType.name()).append("</Type>");
         }
         if (this.outputContainerUri != null) {
-            buf.append("<OutputContainerUri><![CDATA[").append(this.outputContainerUri).append("]]></OutputContainerUri>");
+            String outputContainerUri = this.outputContainerUri;
+            if (!outputContainerUri.matches(CDATA_PATTERN)) {
+                outputContainerUri = "<![CDATA[" + outputContainerUri + "]]>";
+            }
+            buf.append("<OutputContainerUri>").append(outputContainerUri).append("</OutputContainerUri>");
         }
         if (this.importFileUri != null) {
             buf.append("<ImportFileUri>").append(this.importFileUri).append("</ImportFileUri>");

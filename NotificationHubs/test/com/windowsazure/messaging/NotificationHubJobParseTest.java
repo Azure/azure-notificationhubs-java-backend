@@ -36,6 +36,8 @@ public class NotificationHubJobParseTest {
 
         String expectedResultXml = IOUtils.toString(this.getClass().getResourceAsStream("NotificationHubJobOutgoing"), StandardCharsets.UTF_8);
         String actualResultXml = job.getXml();
+        System.out.println("expected: " + expectedResultXml);
+        System.out.println("actual: " + actualResultXml);
         assertEquals(expectedResultXml, actualResultXml);
     }
 
