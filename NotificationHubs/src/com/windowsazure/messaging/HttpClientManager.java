@@ -8,6 +8,7 @@ import org.apache.hc.client5.http.HttpRequestRetryStrategy;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
+import org.apache.hc.core5.http2.HttpVersionPolicy;
 import org.apache.hc.core5.reactor.IOReactorConfig;
 import org.apache.hc.core5.reactor.IOReactorStatus;
 import org.apache.hc.core5.util.Timeout;
@@ -43,6 +44,7 @@ public class HttpClientManager {
                     .build();
 
                 final CloseableHttpAsyncClient client = HttpAsyncClients.custom()
+                    .setVersionPolicy(HttpVersionPolicy.FORCE_HTTP_1)
                     .setIOReactorConfig(ioReactorConfig)
                     .setDefaultRequestConfig(config)
                     .setRetryStrategy(retryStrategy)
