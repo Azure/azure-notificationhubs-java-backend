@@ -12,10 +12,7 @@ import org.apache.hc.client5.http.entity.mime.FormBodyPartBuilder;
 import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
 import org.apache.hc.client5.http.entity.mime.StringBody;
 import org.apache.hc.core5.concurrent.FutureCallback;
-import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.Header;
-import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.Method;
+import org.apache.hc.core5.http.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -987,6 +984,7 @@ public class NotificationHub extends NotificationHubsService implements Notifica
             .build();
 
         HttpEntity entity = MultipartEntityBuilder.create()
+            .setMimeSubtype("mixed")
             .setBoundary("nh-batch-multipart-boundary")
             .addPart(notificationPart)
             .addPart(devicesPart)
@@ -999,7 +997,7 @@ public class NotificationHub extends NotificationHubsService implements Notifica
             throw new RuntimeException(e);
         }
 
-        post.setBody(baoStream.toByteArray(), ContentType.MULTIPART_MIXED);
+        post.setBody(baoStream.toByteArray(), ContentType.parse(entity.getContentType()));
 
         executeRequest(post, callback, 201, response -> sendNotificationOutcome(callback, post, response));
     }

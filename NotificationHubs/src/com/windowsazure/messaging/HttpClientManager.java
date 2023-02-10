@@ -42,7 +42,7 @@ public class HttpClientManager {
                     .setConnectTimeout(Timeout.ofMilliseconds(connectionTimeout))
                     .build();
 
-                final CloseableHttpAsyncClient client = HttpAsyncClients.custom()
+                final CloseableHttpAsyncClient client = HttpAsyncClients.customHttp2()
                     .setIOReactorConfig(ioReactorConfig)
                     .setDefaultRequestConfig(config)
                     .setRetryStrategy(retryStrategy)
