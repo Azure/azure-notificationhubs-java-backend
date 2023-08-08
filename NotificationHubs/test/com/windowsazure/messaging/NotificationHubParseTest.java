@@ -6,6 +6,8 @@ package com.windowsazure.messaging;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
@@ -18,10 +20,11 @@ import static org.junit.Assert.assertNotNull;
 
 public class NotificationHubParseTest {
 
-    @Test
-    public void testParseNotificationHubWithAllCredentials() throws IOException, SAXException {
+	@ParameterizedTest
+	@ValueSource(strings = {"NotificationHubDescriptionWithAllCredentials", "NotificationHubDescriptionWithAllCredentialsLowercaseNames"})
+    public void testParseNotificationHubWithAllCredentials(String inputFileName) throws IOException, SAXException {
         InputStream inputXml = this.getClass()
-            .getResourceAsStream("NotificationHubDescriptionWithAllCredentials");
+            .getResourceAsStream(inputFileName);
         NotificationHubDescription hub = NotificationHubDescription.parseOne(inputXml);
         assertNotNull(hub);
         assertEquals("test-hub", hub.getPath());
