@@ -20,7 +20,8 @@ public abstract class PnsCredential {
     private static final String PROPERTIES_END = "</Properties>";
 
     public void setProperty(String propertyName, String propertyValue) throws Exception {
-        this.getClass().getMethod("set" + propertyName, String.class).invoke(this, propertyValue);
+    	var setterName = "set" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
+        this.getClass().getMethod(setterName, String.class).invoke(this, propertyValue);
     }
 
     public static void setupDigester(Digester digester) {
