@@ -47,7 +47,7 @@ public final class GcmCredential extends PnsCredential {
      * Sets the Google Cloud Messaging API key.
      * @param googleApiKey The Google Cloud Messaging API key to set.
      *
-     * @deprecated use {@link #setGoogleApiKey(value) setGoogleApiKey} instead.
+     * @deprecated use {@link #setGoogleApiKey(String) setGoogleApiKey} instead.
      */
     @Deprecated
     public void setgoogleApiKey(String googleApiKey) {
