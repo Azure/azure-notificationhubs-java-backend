@@ -27,7 +27,7 @@ public abstract class PnsCredential {
      * @throws Exception If invoking the setter fails.
      */
     public void setProperty(String propertyName, String propertyValue) throws Exception {
-    	var setterName = "set" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
+    	String setterName = "set" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
         this.getClass().getMethod(setterName, String.class).invoke(this, propertyValue);
     }
 
