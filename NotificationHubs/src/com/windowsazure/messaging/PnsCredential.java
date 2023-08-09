@@ -19,17 +19,32 @@ public abstract class PnsCredential {
     private static final String PROPERTY_END = "</Value></Property>";
     private static final String PROPERTIES_END = "</Properties>";
 
+    /**
+     * Attempts to call the setter for propertyName of this PNS credential.
+     * @param propertyName The property name.
+     * @param propertyValue The property value.
+     * 
+     * @throws Exception If invoking the setter fails.
+     */
     public void setProperty(String propertyName, String propertyValue) throws Exception {
     	var setterName = "set" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
         this.getClass().getMethod(setterName, String.class).invoke(this, propertyValue);
     }
 
+    /**
+     * Configures the Digester for a PNS credential.
+     * @param digester The Digester to set up.
+     */
     public static void setupDigester(Digester digester) {
         digester.addCallMethod("*/Property", "setProperty", 2);
         digester.addCallParam("*/Name", 0);
         digester.addCallParam("*/Value", 1);
     }
 
+    /**
+     * Gets the XML string representation of this PNS credential.
+     * @return The XML string representation of this PNS credential.
+     */
     public String getXml() {
         StringBuilder buf = new StringBuilder();
         buf.append("<");
@@ -50,7 +65,15 @@ public abstract class PnsCredential {
         return buf.toString();
     }
 
+    /**
+     * Gets the list of the name-value pairs of this PNS credential.
+     * @return The list of the name-value pairs of this PNS credential.
+     */
     public abstract List<SimpleEntry<String, String>> getProperties();
 
+    /**
+     * Gets the root XML tag name of this PNS credential.
+     * @return The root XML tag name of this PNS credential.
+     */
     public abstract String getRootTagName();
 }
