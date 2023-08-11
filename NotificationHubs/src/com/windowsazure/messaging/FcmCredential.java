@@ -46,7 +46,9 @@ public final class FcmCredential extends PnsCredential {
     @Override
     public List<SimpleEntry<String, String>> getProperties() {
         ArrayList<SimpleEntry<String, String>> result = new ArrayList<>();
-        result.add(new SimpleEntry<>("GoogleApiKey", getGoogleApiKey()));
+        if (getGoogleApiKey() != null) {
+            result.add(new SimpleEntry<>("GoogleApiKey", getGoogleApiKey()));
+        }
         return result;
     }
 

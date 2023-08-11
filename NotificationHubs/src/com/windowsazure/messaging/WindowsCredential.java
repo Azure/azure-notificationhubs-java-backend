@@ -65,8 +65,10 @@ public final class WindowsCredential extends PnsCredential {
     @Override
     public List<SimpleEntry<String, String>> getProperties() {
         ArrayList<SimpleEntry<String, String>> result = new ArrayList<>();
-        result.add(new SimpleEntry<>("PackageSid", getPackageSid()));
-        result.add(new SimpleEntry<>("SecretKey", getSecretKey()));
+        if (getPackageSid() != null || getSecretKey() != null ) {
+            result.add(new SimpleEntry<>("PackageSid", getPackageSid()));
+            result.add(new SimpleEntry<>("SecretKey", getSecretKey()));
+        }
         return result;
     }
 
