@@ -225,14 +225,20 @@ public final class ApnsCredential extends PnsCredential {
     @Override
     public List<SimpleEntry<String, String>> getProperties() {
         ArrayList<SimpleEntry<String, String>> result = new ArrayList<>();
-        result.add(new SimpleEntry<>("Endpoint", getEndpoint()));
-        result.add(new SimpleEntry<>("ApnsCertificate", getApnsCertificate()));
-        result.add(new SimpleEntry<>("CertificateKey", getCertificateKey()));
-        result.add(new SimpleEntry<>("Thumbprint", getThumbprint()));
-        result.add(new SimpleEntry<>("Token", getToken()));
-        result.add(new SimpleEntry<>("KeyId", getKeyId()));
-        result.add(new SimpleEntry<>("AppName", getAppName()));
-        result.add(new SimpleEntry<>("AppId", getAppId()));
+        if (getApnsCertificate() != null || getCertificateKey() != null) {
+            result.add(new SimpleEntry<>("ApnsCertificate", getApnsCertificate()));
+            result.add(new SimpleEntry<>("CertificateKey", getCertificateKey()));
+            result.add(new SimpleEntry<>("Thumbprint", getThumbprint()));
+        }
+        if (getToken() != null || getKeyId() != null || getAppName() != null || getAppId() != null) {
+            result.add(new SimpleEntry<>("Token", getToken()));
+            result.add(new SimpleEntry<>("KeyId", getKeyId()));
+            result.add(new SimpleEntry<>("AppName", getAppName()));
+            result.add(new SimpleEntry<>("AppId", getAppId()));
+        }
+        if (result.size() > 0) {
+        	result.add(new SimpleEntry<>("Endpoint", getEndpoint()));
+        }
         return result;
     }
 
