@@ -37,7 +37,6 @@ public class PnsCredentialTests {
 		ArrayList<SimpleEntry<String, String>> expected = new ArrayList<>();
 		expected.add(new SimpleEntry<>("ApnsCertificate", cert));
 		expected.add(new SimpleEntry<>("CertificateKey", certKey));
-		expected.add(new SimpleEntry<>("Thumbprint", null));
 		expected.add(new SimpleEntry<>("Endpoint", ApnsCredential.APNS2_DEV_ENDPOINT));
 		
 		Assert.assertEquals(expected, result);

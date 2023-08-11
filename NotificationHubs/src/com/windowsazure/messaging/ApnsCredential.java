@@ -35,6 +35,7 @@ public final class ApnsCredential extends PnsCredential {
     private String endpoint;
     private String apnsCertificate;
     private String certificateKey;
+    @Deprecated
     private String thumbprint;
     private String token;
     private String keyId;
@@ -142,14 +143,18 @@ public final class ApnsCredential extends PnsCredential {
      * Gets the certificate thumbprint.
      *
      * @return The certificate thumbprint.
+     * @deprecated The thumbprint is not used.
      */
+    @Deprecated
     public String getThumbprint() { return thumbprint; }
 
     /**
      * Sets the certificate Thumbprint
      *
      * @param value The certificate thumbprint.
+     * @deprecated The thumbprint is not used.
      */
+    @Deprecated
     public void setThumbprint(String value) { thumbprint = value; }
 
     /**
@@ -228,7 +233,6 @@ public final class ApnsCredential extends PnsCredential {
         if (getApnsCertificate() != null || getCertificateKey() != null) {
             result.add(new SimpleEntry<>("ApnsCertificate", getApnsCertificate()));
             result.add(new SimpleEntry<>("CertificateKey", getCertificateKey()));
-            result.add(new SimpleEntry<>("Thumbprint", getThumbprint()));
         }
         if (getToken() != null || getKeyId() != null || getAppName() != null || getAppId() != null) {
             result.add(new SimpleEntry<>("Token", getToken()));
