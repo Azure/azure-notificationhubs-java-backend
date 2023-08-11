@@ -61,8 +61,8 @@ public final class AdmCredential extends PnsCredential {
     public List<SimpleEntry<String, String>> getProperties() {
         ArrayList<SimpleEntry<String, String>> result = new ArrayList<>();
         if (getClientId() != null || getClientSecret() != null) {
-            result.add(new SimpleEntry<>("ClientId", clientId));
-            result.add(new SimpleEntry<>("ClientSecret", clientSecret));
+            result.add(new SimpleEntry<>("ClientId", getClientId()));
+            result.add(new SimpleEntry<>("ClientSecret", getClientSecret()));
         }
         return result;
     }

@@ -72,8 +72,8 @@ public final class BaiduCredential extends PnsCredential {
     public List<SimpleEntry<String, String>> getProperties() {
         ArrayList<SimpleEntry<String, String>> result = new ArrayList<>();
         if (getBaiduApiKey() != null || getBaiduSecretKey() != null) {
-            result.add(new SimpleEntry<>("BaiduApiKey", baiduApiKey));
-            result.add(new SimpleEntry<>("BaiduSecretKey", baiduSecretKey));
+            result.add(new SimpleEntry<>("BaiduApiKey", getBaiduApiKey()));
+            result.add(new SimpleEntry<>("BaiduSecretKey", getBaiduSecretKey()));
         }
         return result;
     }
