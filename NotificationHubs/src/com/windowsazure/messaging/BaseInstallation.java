@@ -290,6 +290,7 @@ public abstract class BaseInstallation implements Cloneable {
 
         Gson gson = new GsonBuilder()
             .registerTypeAdapter(BaseInstallation.class, new BaseInstallationDeserializer())
+            .registerTypeAdapter(NotificationPlatform.class, new LowerCaseEnumDeserializer())
             .create();
 
         return (T)gson.fromJson(jsonString, BaseInstallation.class);

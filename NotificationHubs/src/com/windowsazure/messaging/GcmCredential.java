@@ -14,6 +14,7 @@ import java.util.List;
 @Deprecated
 public final class GcmCredential extends PnsCredential {
     private String googleApiKey;
+    private String gcmEndpoint = "https://fcm.googleapis.com/fcm/send";
 
     /**
      * Creates a new instance of the GcmCredential class.
@@ -29,6 +30,17 @@ public final class GcmCredential extends PnsCredential {
     public GcmCredential(String googleApiKey) {
         super();
         this.setGoogleApiKey(googleApiKey);
+    }
+
+    /**
+     * Creates a new instance of the GcmCredential class.
+     * @param googleApiKey The Google API key from Firebase.
+     * @param gcmEndpoint The GCM Endpoint for firebase.
+     */
+    public GcmCredential(String googleApiKey, String gcmEndpoint) {
+        super();
+        this.googleApiKey = googleApiKey;
+        this.gcmEndpoint = gcmEndpoint;
     }
 
     /**
@@ -54,9 +66,22 @@ public final class GcmCredential extends PnsCredential {
         this.googleApiKey = googleApiKey; // fix for reflection that's calling 'setgoogleApiKey' instead of 'setGoogleApiKey'.
     }
 
+    /**
+     * Gets the GCM Endpoint for Firebase Messaging.
+     * @return The GCM Endpoint for Firebase Messaging.
+     */
+    public String getGcmEndpoint() { return gcmEndpoint; }
+
+    /**
+     * Sets the GCM Endpoint for Firebase Messaging.
+     * @param value The GCM Endpoint for Firebase Messaging to set.
+     */
+    public void setGcmEndpoint(String value) { gcmEndpoint = value; }
+
     @Override
     public List<SimpleEntry<String, String>> getProperties() {
         ArrayList<SimpleEntry<String, String>> result = new ArrayList<>();
+        result.add(new SimpleEntry<>("GcmEndpoint", getGcmEndpoint()));
         result.add(new SimpleEntry<>("GoogleApiKey", getGoogleApiKey()));
         return result;
     }

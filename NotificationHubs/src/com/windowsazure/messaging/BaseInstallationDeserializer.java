@@ -27,7 +27,7 @@ public class BaseInstallationDeserializer implements JsonDeserializer<BaseInstal
     }
 
     private static Class<?> getClass(String platformString) {
-        switch (platformString) {
+        switch (platformString.toLowerCase()) {
             case "adm":
                 return AdmInstallation.class;
             case "apple":
