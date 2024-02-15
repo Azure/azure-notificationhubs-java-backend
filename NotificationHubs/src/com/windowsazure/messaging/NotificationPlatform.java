@@ -36,6 +36,11 @@ public enum NotificationPlatform {
     @SerializedName("fcm")
     Fcm,
     /**
+     * The FCM V1 platform
+     */
+    @SerializedName("fcmv1")
+    FcmV1,
+    /**
      * The ADM platform.
      */
     @SerializedName("adm")

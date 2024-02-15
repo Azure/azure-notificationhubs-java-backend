@@ -75,7 +75,7 @@ public abstract class BaseInstallation implements Cloneable {
     private static void validateNotificationPlatform(NotificationPlatform notificationPlatform) {
         if (notificationPlatform == NotificationPlatform.Fcm) {
             throw new RuntimeException(
-                "FCM is currently not supported, use NotificationPlatform.Gcm which uses FCM Legacy Mode. See https://aka.ms/AA9dpaz");
+                "FCM is currently not supported, use NotificationPlatform.FcmV1 which uses FCM V1.");
         }
     }
 

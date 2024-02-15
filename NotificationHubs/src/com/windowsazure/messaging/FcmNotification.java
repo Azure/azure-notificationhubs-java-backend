@@ -8,6 +8,7 @@ import org.apache.hc.core5.http.ContentType;
 
 /**
  * This class represents a notification to the Firebase Cloud Messaging service.
+ * @deprecated use {@link com.windowsazure.messaging.FcmV1Notification#FcmV1Notification(String)} instead.
  */
 public class FcmNotification extends Notification {
 

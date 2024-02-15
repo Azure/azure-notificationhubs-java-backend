@@ -36,6 +36,8 @@ public class BaseInstallationDeserializer implements JsonDeserializer<BaseInstal
                 return BaiduInstallation.class;
             case "fcm":
                 return FcmInstallation.class;
+            case "fcmv1":
+                return FcmV1Installation.class;
             case "mpns":
                 return MpnsInstallation.class;
             case "wns":

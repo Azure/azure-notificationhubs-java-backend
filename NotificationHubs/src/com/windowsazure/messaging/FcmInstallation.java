@@ -6,6 +6,7 @@ package com.windowsazure.messaging;
 
 /**
  * This class represents a Firebase Cloud Messaging installation.
+ * @deprecated use {@link com.windowsazure.messaging.FcmV1Installation#FcmV1Installation(String)} instead.
  */
 public class FcmInstallation extends Installation {
 

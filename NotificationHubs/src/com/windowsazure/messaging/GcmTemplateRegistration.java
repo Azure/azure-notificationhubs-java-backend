@@ -7,7 +7,7 @@ package com.windowsazure.messaging;
 import java.util.Objects;
 
 /**
- * @deprecated use {@link com.windowsazure.messaging.FcmTemplateRegistration#FcmTemplateRegistration()} instead.
+ * @deprecated use {@link com.windowsazure.messaging.FcmV1TemplateRegistration#FcmV1TemplateRegistration()} instead.
  */
 @Deprecated
 public class GcmTemplateRegistration extends GcmRegistration implements TemplateRegistration {

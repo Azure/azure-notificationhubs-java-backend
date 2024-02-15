@@ -26,7 +26,9 @@ public class NotificationHubDescription {
     private MpnsCredential mpnsCredential;
     @SuppressWarnings("deprecation")
     private GcmCredential gcmCredential;
+    @SuppressWarnings("deprecation")
     private FcmCredential fcmCredential;
+    private FcmV1Credential fcmV1Credential;
     private BaiduCredential baiduCredential;
 
     private static final ThreadLocal<Digester> singleEntryParser;
@@ -121,14 +123,30 @@ public class NotificationHubDescription {
     /**
      * Gets the Firebase PNS credentials for the notification hub.
      * @return The Firebase PNS credentials for the notification hub.
+     * @deprecated FCM is deprecated. Use getFcmV1Credential instead.
      */
+    @Deprecated
     public FcmCredential getFcmCredential() { return fcmCredential; }
 
     /**
      * Sets the Firebase PNS credentials for the notification hub.
      * @param value The Firebase PNS credentials for the notification hub to set.
+     * @deprecated FCM is deprecated. Use setFcmV1Credential instead.
      */
+    @Deprecated
     public void setFcmCredential(FcmCredential value) { fcmCredential = value; }
+
+    /**
+     * Gets the Firebase V1 PNS credentials for the notification hub.
+     * @return The Firebase V1 PNS credentials for the notification hub.
+     */
+    public FcmV1Credential getFcmV1Credential() { return fcmV1Credential; }
+
+    /**
+     * Sets the Firebase V1 PNS credentials for the notification hub.
+     * @param value The Firebase V1 PNS credentials for the notification hub to set.
+     */
+    public void setFcmV1Credential(FcmV1Credential value) { fcmV1Credential = value; }
 
     /**
      * Gets the Baidu PNS credentials for the notification hub.
@@ -145,7 +163,7 @@ public class NotificationHubDescription {
     /**
      * Gets the Google Cloud Messaging PNS credentials for the notification hub.
      * @return The Google Cloud Messaging PNS credentials for the notification hub.
-     * @deprecated GCM is deprecated.  Use getFcmCredential instead.
+     * @deprecated GCM is deprecated.  Use getFcmV1Credential instead.
      */
     @Deprecated
     public GcmCredential getGcmCredential() { return gcmCredential; }
@@ -153,7 +171,7 @@ public class NotificationHubDescription {
     /**
      * Sets the Google Cloud Messaging credentials for the notification hub.
      * @param value The Browser PNS credentials for the notification hub to set.
-     * @deprecated Use GCM is deprecated, use setFcmCredential.
+     * @deprecated Use GCM is deprecated, use setFcmV1Credential.
      */
     @Deprecated
     public void setGcmCredential(GcmCredential value) { gcmCredential = value; }
@@ -185,6 +203,7 @@ public class NotificationHubDescription {
         if (windowsCredential != null) buf.append(windowsCredential.getXml());
         if (fcmCredential != null) buf.append(fcmCredential.getXml());
         if (gcmCredential != null) buf.append(gcmCredential.getXml());
+        if (fcmV1Credential != null) buf.append(fcmV1Credential.getXml());
         if (mpnsCredential != null) buf.append(mpnsCredential.getXml());
         if (admCredential != null) buf.append(admCredential.getXml());
         if (baiduCredential != null) buf.append(baiduCredential.getXml());
@@ -209,6 +228,7 @@ public class NotificationHubDescription {
         digester.addObjectCreate("*/MpnsCredential", MpnsCredential.class);
         digester.addObjectCreate("*/GcmCredential", GcmCredential.class);
         digester.addObjectCreate("*/FcmCredential", FcmCredential.class);
+        digester.addObjectCreate("*/FcmV1Credential", FcmV1Credential.class);
         digester.addObjectCreate("*/BaiduCredential", BaiduCredential.class);
         PnsCredential.setupDigester(digester);
         digester.addSetNext("*/ApnsCredential", "setApnsCredential", ApnsCredential.class.getName());
@@ -217,6 +237,7 @@ public class NotificationHubDescription {
         digester.addSetNext("*/MpnsCredential", "setMpnsCredential", MpnsCredential.class.getName());
         digester.addSetNext("*/GcmCredential", "setGcmCredential", GcmCredential.class.getName());
         digester.addSetNext("*/FcmCredential", "setFcmCredential", FcmCredential.class.getName());
+        digester.addSetNext("*/FcmV1Credential", "setFcmV1Credential", FcmV1Credential.class.getName());
         digester.addSetNext("*/BaiduCredential", "setBaiduCredential", BaiduCredential.class.getName());
     }
 }

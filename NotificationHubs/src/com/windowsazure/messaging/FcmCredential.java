@@ -10,6 +10,7 @@ import java.util.List;
 
 /**
  * This class represents Azure Notification Hubs credentials for Firebase Messaging.
+ * @deprecated use {@link com.windowsazure.messaging.FcmV1Credential#FcmV1Credential()} instead.
  */
 public final class FcmCredential extends PnsCredential {
 

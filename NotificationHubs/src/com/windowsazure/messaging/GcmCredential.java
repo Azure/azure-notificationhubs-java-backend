@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @deprecated use {@link com.windowsazure.messaging.FcmCredential#FcmCredential()} instead.
+ * @deprecated use {@link com.windowsazure.messaging.FcmV1Credential#FcmV1Credential()} instead.
  */
 @Deprecated
 public final class GcmCredential extends PnsCredential {

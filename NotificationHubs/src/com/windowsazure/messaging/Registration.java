@@ -212,6 +212,10 @@ public abstract class Registration implements Cloneable {
             FcmRegistration.class);
         digester.addObjectCreate("*/FcmTemplateRegistrationDescription",
             FcmTemplateRegistration.class);
+        digester.addObjectCreate("*/FcmV1RegistrationDescription",
+            FcmV1Registration.class);
+        digester.addObjectCreate("*/FcmV1TemplateRegistrationDescription",
+            FcmV1TemplateRegistration.class);
         digester.addObjectCreate("*/MpnsRegistrationDescription",
             MpnsRegistration.class);
         digester.addObjectCreate("*/MpnsTemplateRegistrationDescription",
@@ -236,6 +240,8 @@ public abstract class Registration implements Cloneable {
         digester.addCallParam("*/GcmRegistrationId", 0);
         digester.addCallMethod("*/FcmRegistrationId", "setFcmRegistrationId", 1);
         digester.addCallParam("*/FcmRegistrationId", 0);
+        digester.addCallMethod("*/FcmV1RegistrationId", "setFcmRegistrationId", 1);
+        digester.addCallParam("*/FcmV1RegistrationId", 0);
         digester.addCallMethod("*/Tags", "setTagsFromString", 1);
         digester.addCallParam("*/Tags", 0);
         digester.addCallMethod("*/BodyTemplate", "setBodyTemplate", 1);
@@ -279,6 +285,8 @@ public abstract class Registration implements Cloneable {
         digester.addSetNext("*/GcmTemplateRegistrationDescription", "addRegistration");
         digester.addSetNext("*/FcmRegistrationDescription", "addRegistration");
         digester.addSetNext("*/FcmTemplateRegistrationDescription", "addRegistration");
+        digester.addSetNext("*/FcmV1RegistrationDescription", "addRegistration");
+        digester.addSetNext("*/FcmV1TemplateRegistrationDescription", "addRegistration");
         digester.addSetNext("*/MpnsRegistrationDescription", "addRegistration");
         digester.addSetNext("*/MpnsTemplateRegistrationDescription", "addRegistration");
         digester.addSetNext("*/AdmRegistrationDescription", "addRegistration");
@@ -324,6 +332,14 @@ public abstract class Registration implements Cloneable {
             if ("FcmTemplateRegistrationDescription".equals(attributes
                 .getValue("i:type"))) {
                 return new FcmTemplateRegistration();
+            }
+            if ("FcmV1RegistrationDescription".equals(attributes
+                .getValue("i:type"))) {
+                return new FcmV1Registration();
+            }
+            if ("FcmV1TemplateRegistrationDescription".equals(attributes
+                .getValue("i:type"))) {
+                return new FcmV1TemplateRegistration();
             }
             if ("MpnsRegistrationDescription".equals(attributes
                 .getValue("i:type"))) {
