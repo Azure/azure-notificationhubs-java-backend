@@ -15,7 +15,7 @@ import java.util.List;
 public final class FcmCredential extends PnsCredential {
 
     private String googleApiKey;
-    private String gcmEndpoint = "https://fcm.googleapis.com/fcm/send";
+    private String gcmEndpoint;
 
     /**
      * Creates a new instance of the FcmCredential class.
