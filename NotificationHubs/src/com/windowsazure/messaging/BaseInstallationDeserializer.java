@@ -27,7 +27,7 @@ public class BaseInstallationDeserializer implements JsonDeserializer<BaseInstal
     }
 
     private static Class<?> getClass(String platformString) {
-        switch (platformString) {
+        switch (platformString.toLowerCase()) {
             case "adm":
                 return AdmInstallation.class;
             case "apple":
@@ -36,6 +36,8 @@ public class BaseInstallationDeserializer implements JsonDeserializer<BaseInstal
                 return BaiduInstallation.class;
             case "fcm":
                 return FcmInstallation.class;
+            case "fcmv1":
+                return FcmV1Installation.class;
             case "mpns":
                 return MpnsInstallation.class;
             case "wns":

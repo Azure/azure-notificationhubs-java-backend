@@ -32,6 +32,7 @@ public class NotificationTelemetry {
     private Map<String, Integer> wnsOutcomeCounts;
     private Map<String, Integer> gcmOutcomeCounts;
     private Map<String, Integer> fcmOutcomeCounts;
+    private Map<String, Integer> fcmV1OutcomeCounts;
     private Map<String, Integer> admOutcomeCounts;
     private Map<String, Integer> baiduOutcomeCounts;
     private String pnsErrorDetailsUri;
@@ -239,6 +240,18 @@ public class NotificationTelemetry {
     public void setFcmOutcomeCounts(Map<String, Integer> value) { fcmOutcomeCounts = value; }
 
     /**
+     * Gets the FCM V1 outcome counts for the Azure Notification Hub notification.
+     * @return The FCM V1 outcome counts for the Azure Notification Hub notification.
+     */
+    public Map<String, Integer> getFcmV1OutcomeCounts() { return fcmV1OutcomeCounts; }
+
+    /**
+     * Sets the FCM V1 outcome counts for the Azure Notification Hub notification.
+     * @param value The FCM V1 outcome counts for the Azure Notification Hub notification value to set.
+     */
+    public void setFcmV1OutcomeCounts(Map<String, Integer> value) { fcmV1OutcomeCounts = value; }
+
+    /**
      * Gets the Baidu outcome counts for the Azure Notification Hub notification.
      * @return The Baidu outcome counts for the Azure Notification Hub notification.
      */
@@ -324,6 +337,12 @@ public class NotificationTelemetry {
         digester.addCallParam("*/Name", 0);
         digester.addCallParam("*/Count", 1);
         digester.addSetNext("*/FcmOutcomeCounts", "setFcmOutcomeCounts", Map.class.getName());
+
+        digester.addObjectCreate("*/FcmV1OutcomeCounts", HashMap.class);
+        digester.addCallMethod("*/Outcome", "put", 2, new Class[]{String.class, Integer.class});
+        digester.addCallParam("*/Name", 0);
+        digester.addCallParam("*/Count", 1);
+        digester.addSetNext("*/FcmV1OutcomeCounts", "setFcmV1OutcomeCounts", Map.class.getName());
 
         digester.addObjectCreate("*/AdmOutcomeCounts", HashMap.class);
         digester.addCallMethod("*/Outcome", "put", 2, new Class[]{String.class, Integer.class});

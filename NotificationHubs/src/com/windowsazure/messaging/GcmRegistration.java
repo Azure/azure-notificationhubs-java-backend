@@ -9,7 +9,7 @@ import java.util.Objects;
 /**
  * Class representing a native registration for devices using GCM.
  *
- * @deprecated use {@link com.windowsazure.messaging.FcmRegistration#FcmRegistration()} instead.
+ * @deprecated use {@link com.windowsazure.messaging.FcmV1Registration#FcmV1Registration()} instead.
  */
 
 @Deprecated

@@ -98,7 +98,7 @@ public class Notification {
      *
      * @param body the body for the GCM message.
      * @return a GCM notification with the body
-     * @deprecated use {@link #createFcmNotification(String)} instead.
+     * @deprecated use {@link #createFcmV1Notification(String)} instead.
      */
     @Deprecated
     public static Notification createGcmNotification(String body) {
@@ -110,9 +110,21 @@ public class Notification {
      *
      * @param body the body for the FCM notification
      * @return an FCM notification
+     * @deprecated use {@link #createFcmV1Notification(String)} instead.
      */
+    @Deprecated
     public static Notification createFcmNotification(String body) {
         return new FcmNotification(body);
+    }
+
+    /**
+     * Utility method to set up a native notification for FCM V1.
+     *
+     * @param body the body for the FCM V1 notification
+     * @return an FCM V1 notification
+     */
+    public static Notification createFcmV1Notification(String body) {
+        return new FcmV1Notification(body);
     }
 
     /**

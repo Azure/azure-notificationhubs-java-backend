@@ -7,38 +7,37 @@ package com.windowsazure.messaging;
 import java.util.Objects;
 
 /**
- * Class representing a native registration for devices using FCM.
- * @deprecated use {@link com.windowsazure.messaging.FcmV1Registration#FcmV1Registration()} instead.
+ * Class representing a native registration for devices using FCM V1.
  */
-public class FcmRegistration extends Registration {
-    private static final String FCM_NATIVE_REGISTRATION1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><entry xmlns=\"http://www.w3.org/2005/Atom\"><content type=\"application/xml\"><GcmRegistrationDescription xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/netservices/2010/10/servicebus/connect\">";
-    private static final String FCM_NATIVE_REGISTRATION2 = "<GcmRegistrationId>";
-    private static final String FCM_NATIVE_REGISTRATION3 = "</GcmRegistrationId></GcmRegistrationDescription></content></entry>";
+public class FcmV1Registration extends Registration {
+    private static final String FCM_V1_NATIVE_REGISTRATION1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><entry xmlns=\"http://www.w3.org/2005/Atom\"><content type=\"application/xml\"><FcmV1RegistrationDescription xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/netservices/2010/10/servicebus/connect\">";
+    private static final String FCM_V1_NATIVE_REGISTRATION2 = "<FcmV1RegistrationId>";
+    private static final String FCM_V1_NATIVE_REGISTRATION3 = "</FcmV1RegistrationId></FcmV1RegistrationDescription></content></entry>";
 
     protected String fcmRegistrationId;
 
     /**
-     * Creates a new instance of the FcmRegistration class.
+     * Creates a new instance of the FcmV1Registration class.
      */
-    public FcmRegistration() {
+    public FcmV1Registration() {
         super();
     }
 
     /**
-     * Creates a new instance of the FcmRegistration with a registration ID and FCM registration ID.
+     * Creates a new instance of the FcmV1Registration with a registration ID and FCM registration ID.
      * @param registrationId The Azure Notification Hubs registration ID.
      * @param fcmRegistrationId The Firebase Cloud Messaging registration ID.
      */
-    public FcmRegistration(String registrationId, String fcmRegistrationId) {
+    public FcmV1Registration(String registrationId, String fcmRegistrationId) {
         super(registrationId);
         this.fcmRegistrationId = fcmRegistrationId;
     }
 
     /**
-     * Creates a new instance of the FcmRegistration with a Firebase Cloud Messaging registration ID.
-     * @param fcmRegistrationId The Firebase Cloud Messaging registration ID.
+     * Creates a new instance of the FcmV1Registration with a Firebase Cloud Messaging V1 registration ID.
+     * @param fcmRegistrationId The Firebase Cloud Messaging V1 registration ID.
      */
-    public FcmRegistration(String fcmRegistrationId) {
+    public FcmV1Registration(String fcmRegistrationId) {
         super();
         this.fcmRegistrationId = fcmRegistrationId;
     }
@@ -60,7 +59,7 @@ public class FcmRegistration extends Registration {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        FcmRegistration that = (FcmRegistration) o;
+        FcmV1Registration that = (FcmV1Registration) o;
         return Objects.equals(getFcmRegistrationId(), that.getFcmRegistrationId());
     }
 
@@ -78,11 +77,11 @@ public class FcmRegistration extends Registration {
 
     @Override
     public String getXml() {
-        return FCM_NATIVE_REGISTRATION1 +
+        return FCM_V1_NATIVE_REGISTRATION1 +
             getTagsXml() +
-            FCM_NATIVE_REGISTRATION2 +
+            FCM_V1_NATIVE_REGISTRATION2 +
             fcmRegistrationId +
-            FCM_NATIVE_REGISTRATION3;
+            FCM_V1_NATIVE_REGISTRATION3;
     }
 
 }
