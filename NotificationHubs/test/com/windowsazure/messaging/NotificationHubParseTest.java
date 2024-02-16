@@ -18,7 +18,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class NotificationHubParseTest {
 
-	@Test    
+	@Test
 	public void testParseNotificationHubWithAllCredentials() throws IOException, SAXException {
         InputStream inputXml = this.getClass()
             .getResourceAsStream("NotificationHubDescriptionWithAllCredentials");
@@ -27,11 +27,12 @@ public class NotificationHubParseTest {
         assertEquals("test-hub", hub.getPath());
 
         String expectedResultXml = IOUtils.toString(this.getClass()
-            .getResourceAsStream("NotificationHubDescriptionWithAllCredentialsNoSpaces"), StandardCharsets.UTF_8);
+            .getResourceAsStream("NotificationHubDescriptionWithAllCredentialsNoSpaces"), StandardCharsets.UTF_8)
+            .trim();
         String actualResultXml = hub.getXml();
         assertEquals(expectedResultXml, actualResultXml);
     }
-	
+
 	@Test
     public void testParseNotificationHubWithAllCredentialsLowercaseNames() throws IOException, SAXException {
         InputStream inputXml = this.getClass()
@@ -41,7 +42,8 @@ public class NotificationHubParseTest {
         assertEquals("test-hub", hub.getPath());
 
         String expectedResultXml = IOUtils.toString(this.getClass()
-            .getResourceAsStream("NotificationHubDescriptionWithAllCredentialsNoSpaces"), StandardCharsets.UTF_8);
+            .getResourceAsStream("NotificationHubDescriptionWithAllCredentialsNoSpaces"), StandardCharsets.UTF_8)
+            .trim();
         String actualResultXml = hub.getXml();
         assertEquals(expectedResultXml, actualResultXml);
     }
