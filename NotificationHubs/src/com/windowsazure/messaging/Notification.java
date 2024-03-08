@@ -148,6 +148,16 @@ public class Notification {
     }
 
     /**
+     * Utility method to set up a native notification for browser push.
+     *
+     * @param body the body for the browser notification
+     * @return a browser notification
+     */
+    public static Notification createBrowserNotification(String body) {
+        return new BrowserNotification(body);
+    }
+
+    /**
      * Utility method to set up a native notification for MPNS. Sets the
      * X-WindowsPhone-Target and X-NotificationClass headers based on the body
      * provided. Raw notifications are not supported for MPNS.

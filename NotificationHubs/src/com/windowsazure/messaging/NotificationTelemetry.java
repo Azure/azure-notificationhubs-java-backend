@@ -35,6 +35,7 @@ public class NotificationTelemetry {
     private Map<String, Integer> fcmV1OutcomeCounts;
     private Map<String, Integer> admOutcomeCounts;
     private Map<String, Integer> baiduOutcomeCounts;
+    private Map<String, Integer> browserOutcomeCounts;
     private String pnsErrorDetailsUri;
 
     private static final ThreadLocal<Digester> parser;
@@ -276,6 +277,18 @@ public class NotificationTelemetry {
     public void setAdmOutcomeCounts(Map<String, Integer> value) { admOutcomeCounts = value; }
 
     /**
+     * Sets the browser PNS outcome counts for the Azure Notification Hub notification.
+     * @param value The browser PNS outcome counts for the Azure Notification Hub notification value to set.
+     */
+    public void setBrowserOutcomeCounts(Map<String, Integer> value) { browserOutcomeCounts = value; }
+
+    /**
+     * Gets the browser PNS outcome counts for the Azure Notification Hub notification.
+     * @return The browser PNS outcome counts for the Azure Notification Hub notification.
+     */
+    public Map<String, Integer> getBrowserOutcomeCounts() { return browserOutcomeCounts; }
+
+    /**
      * Gets the PNS Error Details container URI for the Azure Notification Hub notification.
      * @return The PNS Error Details container URI for the Azure Notification Hub notification.
      */
@@ -355,5 +368,11 @@ public class NotificationTelemetry {
         digester.addCallParam("*/Name", 0);
         digester.addCallParam("*/Count", 1);
         digester.addSetNext("*/BaiduOutcomeCounts", "setBaiduOutcomeCounts", Map.class.getName());
+
+        digester.addObjectCreate("*/BrowserOutcomeCounts", HashMap.class);
+        digester.addCallMethod("*/Outcome", "put", 2, new Class[]{String.class, Integer.class});
+        digester.addCallParam("*/Name", 0);
+        digester.addCallParam("*/Count", 1);
+        digester.addSetNext("*/BrowserOutcomeCounts", "setBrowserOutcomeCounts", Map.class.getName());
     }
 }

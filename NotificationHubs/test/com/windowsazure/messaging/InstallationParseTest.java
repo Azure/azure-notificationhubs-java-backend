@@ -61,6 +61,21 @@ public class InstallationParseTest {
     }
 
     @Test
+    public void InstallationBrowser() throws IOException, ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
+        InputStream inputJson = this.getClass().getResourceAsStream("InstallationBrowser");
+        BrowserInstallation installation = BaseInstallation.fromJson(inputJson);
+        assertNotNull(installation);
+        assertEquals("123", installation.getInstallationId());
+        assertEquals(NotificationPlatform.Browser, installation.getPlatform());
+        assertEquals("{\"endpoint\":\"foo\",\"p256dh\":\"bar\",\"auth\":\"baz\"}", installation.getPushChannel());
+        assertNotNull(installation.getTemplates());
+        assertEquals("{\"title\": \"$(message)\", \"message\": \"$(message)\"}", installation.getTemplates().get("template1").getBody());
+        Date expiration = installation.getExpirationTime();
+        assertEquals(expiration.toString(), sdf.parse("Wed Nov 26 15:34:01 PST 2024").toString());
+    }
+
+    @Test
     public void PartialUpdates() throws IOException {
         PartialUpdateOperation add = new PartialUpdateOperation(UpdateOperationType.Add, "/templates/template1", new InstallationTemplate("{\"data\":{\"key1\":\"value\"}}").toJson());
         PartialUpdateOperation remove = new PartialUpdateOperation(UpdateOperationType.Remove, "/remove/path");
