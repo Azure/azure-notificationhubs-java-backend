@@ -30,6 +30,7 @@ public class NotificationHubDescription {
     private FcmCredential fcmCredential;
     private FcmV1Credential fcmV1Credential;
     private BaiduCredential baiduCredential;
+    private BrowserCredential browserCredential;
 
     private static final ThreadLocal<Digester> singleEntryParser;
     private static final ThreadLocal<Digester> collectionParser;
@@ -160,6 +161,18 @@ public class NotificationHubDescription {
      */
     public void setBaiduCredential(BaiduCredential value) { baiduCredential = value; }
 
+        /**
+     * Gets the browser push credentials for the notification hub.
+     * @return The browser push credentials for the notification hub.
+     */
+    public BrowserCredential getBrowserCredential() { return browserCredential; }
+
+    /**
+     * Sets the browser push credentials for the notification hub.
+     * @param value The browser push credentials for the notification hub to set.
+     */
+    public void setBrowserCredential(BrowserCredential value) { browserCredential = value; }
+
     /**
      * Gets the Google Cloud Messaging PNS credentials for the notification hub.
      * @return The Google Cloud Messaging PNS credentials for the notification hub.
@@ -207,6 +220,7 @@ public class NotificationHubDescription {
         if (mpnsCredential != null) buf.append(mpnsCredential.getXml());
         if (admCredential != null) buf.append(admCredential.getXml());
         if (baiduCredential != null) buf.append(baiduCredential.getXml());
+        if (browserCredential != null) buf.append(browserCredential.getXml());
         buf.append(XML_FOOTER);
         return buf.toString();
     }
@@ -230,6 +244,7 @@ public class NotificationHubDescription {
         digester.addObjectCreate("*/FcmCredential", FcmCredential.class);
         digester.addObjectCreate("*/FcmV1Credential", FcmV1Credential.class);
         digester.addObjectCreate("*/BaiduCredential", BaiduCredential.class);
+        digester.addObjectCreate("*/BrowserCredential", BrowserCredential.class);
         PnsCredential.setupDigester(digester);
         digester.addSetNext("*/ApnsCredential", "setApnsCredential", ApnsCredential.class.getName());
         digester.addSetNext("*/AdmCredential", "setAdmCredential", AdmCredential.class.getName());
@@ -239,5 +254,6 @@ public class NotificationHubDescription {
         digester.addSetNext("*/FcmCredential", "setFcmCredential", FcmCredential.class.getName());
         digester.addSetNext("*/FcmV1Credential", "setFcmV1Credential", FcmV1Credential.class.getName());
         digester.addSetNext("*/BaiduCredential", "setBaiduCredential", BaiduCredential.class.getName());
+        digester.addSetNext("*/BrowserCredential", "setBrowserCredential", BrowserCredential.class.getName());
     }
 }

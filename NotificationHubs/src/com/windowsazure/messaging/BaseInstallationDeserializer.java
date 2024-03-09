@@ -42,6 +42,8 @@ public class BaseInstallationDeserializer implements JsonDeserializer<BaseInstal
                 return MpnsInstallation.class;
             case "wns":
                 return WindowsInstallation.class;
+            case "browser":
+                return BrowserInstallation.class;
             default:
                 return Installation.class;
         }

@@ -50,4 +50,9 @@ public enum NotificationPlatform {
      */
     @SerializedName("baidu")
     Baidu,
+    /**
+     * The Browser Push Platform.
+     */
+    @SerializedName("browser")
+    Browser,
 }

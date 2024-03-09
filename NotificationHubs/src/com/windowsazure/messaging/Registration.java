@@ -228,6 +228,10 @@ public abstract class Registration implements Cloneable {
             BaiduRegistration.class);
         digester.addObjectCreate("*/BaiduTemplateRegistrationDescription",
             BaiduTemplateRegistration.class);
+        digester.addObjectCreate("*/BrowserRegistrationDescription",
+            BrowserRegistration.class);
+        digester.addObjectCreate("*/BrowserTemplateRegistrationDescription",
+            BrowserTemplateRegistration.class);
         digester.addCallMethod("*/RegistrationId", "setRegistrationId", 1);
         digester.addCallParam("*/RegistrationId", 0);
         digester.addCallMethod("*/ETag", "setEtag", 1);
@@ -262,6 +266,12 @@ public abstract class Registration implements Cloneable {
         digester.addCallParam("*/BaiduUserId", 0);
         digester.addCallMethod("*/BaiduChannelId", "setBaiduChannelId", 1);
         digester.addCallParam("*/BaiduChannelId", 0);
+        digester.addCallMethod("*/Endpoint", "setEndpoint", 1);
+        digester.addCallParam("*/Endpoint", 0);
+        digester.addCallMethod("*/P256DH", "setP256dh", 1);
+        digester.addCallParam("*/P256DH", 0);
+        digester.addCallMethod("*/Auth", "setAuth", 1);
+        digester.addCallParam("*/Auth", 0);
     }
 
     public static CollectionResult parseRegistrations(InputStream inputStream)
@@ -293,6 +303,8 @@ public abstract class Registration implements Cloneable {
         digester.addSetNext("*/AdmTemplateRegistrationDescription", "addRegistration");
         digester.addSetNext("*/BaiduRegistrationDescription", "addRegistration");
         digester.addSetNext("*/BaiduTemplateRegistrationDescription", "addRegistration");
+        digester.addSetNext("*/BrowserRegistrationDescription", "addRegistration");
+        digester.addSetNext("*/BrowserTemplateRegistrationDescription", "addRegistration");
     }
 
     public static class RegistrationCreationFactory implements
@@ -364,6 +376,14 @@ public abstract class Registration implements Cloneable {
             if ("BaiduTemplateRegistrationDescription".equals(attributes
                 .getValue("i:type"))) {
                 return new BaiduTemplateRegistration();
+            }
+            if ("BrowserRegistrationDescription".equals(attributes
+                .getValue("i:type"))) {
+                return new BrowserRegistration();
+            }
+            if ("BrowserTemplateRegistrationDescription".equals(attributes
+                .getValue("i:type"))) {
+                return new BrowserTemplateRegistration();
             }
             throw new UnsupportedOperationException("unknown type: "
                 + attributes.getValue("i:type"));

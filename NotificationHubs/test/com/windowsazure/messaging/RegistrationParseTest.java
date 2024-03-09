@@ -27,11 +27,15 @@ public class RegistrationParseTest {
     private static final String MPNSCHANNELURI = "http://dm2.notify.live.net/throttledthirdparty/01.00/AQG9Ed13-Lb5RbCii5fWzpFpAgAAAAADAQAAAAQUZm52OkJCMjg1QTg1QkZDMkUxREQFBlVTTkMwMQ";
     private static final String MPNSBODYTEMPLATE = "<wp:Notification xmlns:wp=\"WPNotification\"><wp:Toast><wp:Text1>$(message)</wp:Text1></wp:Toast></wp:Notification>";
     private static final Date EXPIRATIONTIME = new Date(1409587066778L);
-    private static final Object ADMREGID = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    private static final Object ADMBODYTEMPLATE = "{ \"aps\": { \"alert\": \"$(message)\"} }";
-    private static final Object BAIDUUSER = "baidu_user";
-    private static final Object BAIDUCHANNEL = "baidu_channel";
-    private static final Object BAIDUBODYTEMPLATE = "{\"data\":{\"key1\":\"$(value1)\"}}";
+    private static final String ADMREGID = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final String ADMBODYTEMPLATE = "{ \"aps\": { \"alert\": \"$(message)\"} }";
+    private static final String BAIDUUSER = "baidu_user";
+    private static final String BAIDUCHANNEL = "baidu_channel";
+    private static final String BAIDUBODYTEMPLATE = "{\"data\":{\"key1\":\"$(value1)\"}}";
+    public static final String BROWSERENDPOINT = "foo";
+    public static final String BROWSERP256DH = "bar";
+    public static final String BROWSERAUTH = "baz";
+    public static final String BROWSERBODYTEMPLATE = "{\"title\": \"$(message)\", \"message\": \"$(message)\"}";
 
     @Test
     public void testParseNativeRegistration1() throws IOException, SAXException, URISyntaxException {
@@ -304,6 +308,37 @@ public class RegistrationParseTest {
         assertEquals(REGID, reg.getRegistrationId());
         assertEquals(1, reg.getTags().size());
         assertEquals(BAIDUBODYTEMPLATE, reg.getBodyTemplate());
+    }
+
+    @Test
+    public void testParseBrowserNativeRegistration() throws IOException, SAXException {
+        InputStream xml = this.getClass().getResourceAsStream("BrowserNativeRegistration");
+        BrowserRegistration reg = (BrowserRegistration) Registration.parse(xml);
+        BrowserPushSubscription subscription = reg.getBrowserPushSubscription();
+        assertNotNull(reg);
+        assertEquals(BrowserRegistration.class, reg.getClass());
+        assertEquals(BROWSERENDPOINT, subscription.getEndpoint());
+        assertEquals(BROWSERP256DH, subscription.getP256dh());
+        assertEquals(BROWSERAUTH, subscription.getAuth());
+        assertEquals("3", reg.getEtag());
+        assertEquals(REGID, reg.getRegistrationId());
+        assertEquals(2, reg.getTags().size());
+    }
+
+    @Test
+    public void testParseBrowserTemplateRegistration() throws IOException, SAXException {
+        InputStream xml = this.getClass().getResourceAsStream("BrowserTemplateRegistration");
+        BrowserTemplateRegistration reg = (BrowserTemplateRegistration) Registration.parse(xml);
+        BrowserPushSubscription subscription = reg.getBrowserPushSubscription();
+        assertNotNull(reg);
+        assertEquals(BrowserTemplateRegistration.class, reg.getClass());
+        assertEquals(BROWSERENDPOINT, subscription.getEndpoint());
+        assertEquals(BROWSERP256DH, subscription.getP256dh());
+        assertEquals(BROWSERAUTH, subscription.getAuth());
+        assertEquals("3", reg.getEtag());
+        assertEquals(REGID, reg.getRegistrationId());
+        assertEquals(2, reg.getTags().size());
+        assertEquals(BROWSERBODYTEMPLATE, reg.getBodyTemplate());
     }
 
     @Test
