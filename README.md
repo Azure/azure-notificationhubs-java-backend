@@ -4,6 +4,10 @@
 
 This repository contains source code for the Java SDK for [Microsoft Azure Notification Hubs](https://azure.microsoft.com/en-us/services/notification-hubs/).
 
+## Note on FCMv1 Migration
+
+The Azure Notification Hubs SDK has support for Firebase Cloud Messaging (FCM) via the Legacy HTTP API which is compatible with GCM. As a reminder, Google will stop supporting FCM legacy HTTP on June 20, 2024, so customer must migrate their applications and notification payloads to the new format before then. For more information, read the [Azure Notification Hubs and Google Firebase Cloud Messaging migration](https://aka.ms/AA9dpaz)
+
 ## Building the Azure Notification Hubs Java SDK
 
 To build, use [Maven](http://maven.apache.org/):
