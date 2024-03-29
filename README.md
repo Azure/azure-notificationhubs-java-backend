@@ -4,25 +4,9 @@
 
 This repository contains source code for the Java SDK for [Microsoft Azure Notification Hubs](https://azure.microsoft.com/en-us/services/notification-hubs/).
 
-## Note on FCM and GCM Support
+## Note on FCMv1 Migration
 
-The Azure Notification Hubs SDK has support for Firebase Cloud Messaging (FCM) via the Legacy HTTP API which is compatible with GCM.  For registrations, use the `FirebaseRegistration` to create registrations, as the `GcmRegistration` class has been deprecated.  For more information, read the [Azure Notification Hubs and Google Firebase Cloud Messaging migration](https://aka.ms/AA9dpaz)
-
-For installations, use the `NotificationPlatform.Gcm` for all FCM registrations which use the legacy HTTP API.  Currently, we do not have full support for FCM and calling `NotificationPlatform.Fcm` will result in an exception.
-
-```java
-Installation i = new Installation();
-
-// Uses the FCM Legacy API
-i.setPlatform(NotificationPlatform.Gcm);
-```
-
-Alternatively, we have created installations specific to each platform, for example, the `FcmInstallation` exists so you do not need to set the `NotificationPlatform` type.
-
-```java
-FcmInstallation i = new FcmInstallation();
-i.getPlatform(); // Set to NotificationPlatform.Gcm
-```
+The Azure Notification Hubs SDK has support for Firebase Cloud Messaging (FCM) via the Legacy HTTP API which is compatible with GCM. As a reminder, Google will stop supporting FCM legacy HTTP on June 20, 2024, so customer must migrate their applications and notification payloads to the new format before then. For more information, read the [Azure Notification Hubs and Google Firebase Cloud Messaging migration](https://aka.ms/AA9dpaz) documentation.
 
 ## Building the Azure Notification Hubs Java SDK
 
@@ -170,7 +154,7 @@ Keep in mind that CreateOrUpdate, Patch and Delete are eventually consistent wit
 
 ## Azure Notification Hub Registration API
 
-A registration associates the Platform Notification Service (PNS) handle for a device with tags and possibly a template. The PNS handle could be a ChannelURI, device token, or FCM registration ID. Tags are used to route notifications to the correct set of device handles. Templates are used to implement per-registration transformation.  The Registration API handles requests for these operations.
+A registration associates the Platform Notification Service (PNS) handle for a device with tags and possibly a template. The PNS handle could be a ChannelURI, device token, or FCMv1 registration ID. Tags are used to route notifications to the correct set of device handles. Templates are used to implement per-registration transformation.  The Registration API handles requests for these operations.
 
 ### Create a Windows Registration
 
@@ -190,7 +174,7 @@ reg.addTag("os_tvos");
 AppleRegistration created = hub.createRegistrationAsync(reg);
 ```
 
-Analogous for Android (GCM), Windows Phone (MPNS), and Kindle Fire (ADM).
+Analogous for Android (FcmV1), Windows Phone (MPNS), and Kindle Fire (ADM).
 
 ### Create Template Registrations
 
